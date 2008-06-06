@@ -1,0 +1,468 @@
+using System;
+using System.Data;
+using System.Data.SqlClient;
+using System.Collections;
+using System.Configuration;
+
+[assembly: CLSCompliant(true)]
+
+namespace ALite
+{
+	/// <summary>
+	/// Abstraction layer for SQL Server data access.
+	/// </summary>
+	[Serializable]
+	public class DataAccess : IDisposable
+	{
+		#region Members
+
+		private SqlConnection mConnection;
+		private SqlCommand mCommand;
+		private string mProcedure;
+		private string mSQLCode;
+		private ArrayList mParameters;
+		private SqlDataReader mDataReader;
+
+		#endregion
+
+		#region Properties
+
+        /// <summary>
+        /// Gets or sets the name of the SQL procedure to execute
+        /// </summary>
+		public string Procedure
+		{
+			get { return mProcedure; }
+			set
+			{
+				mProcedure = value;
+				mSQLCode = "";
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets the SQL code to execute
+		/// </summary>
+		public string SQLCode
+		{
+			get { return mSQLCode; }
+			set
+			{
+				mSQLCode = value;
+				mProcedure = "";
+			}
+		}
+
+        /// <summary>
+        /// Return an array list of SQL parameters
+        /// </summary>
+		public ArrayList ParameterList
+		{
+			get { return mParameters; }
+		}
+
+		#endregion
+
+		#region Constructors
+
+        /// <summary>
+        /// Constructor for the DataAccess class
+        /// </summary>
+		public DataAccess()
+		{
+			this.mConnection = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["db"].ToString());
+			this.mCommand = new SqlCommand();
+			this.mParameters = new ArrayList();
+			this.mProcedure = "";
+			this.mSQLCode = "";
+		}
+
+        /// <summary>
+        /// Constructor for the DataAccess class
+        /// </summary>
+        /// <param name="connection">SQL connection string</param>
+        public DataAccess(string connection)
+        {
+            this.mConnection = new SqlConnection(connection);
+            this.mCommand = new SqlCommand();
+            this.mParameters = new ArrayList();
+			this.mProcedure = "";
+			this.mSQLCode = "";
+        }
+
+		#endregion
+
+		#region Methods
+
+		/// <summary>
+		/// Return a specific parameter from the parameter list
+		/// </summary>
+		/// <param name="name">The name of the parameter to return</param>
+		/// <returns>The SqlParameter with the supplied name</returns>
+		public SqlParameter Parameters(string name)
+		{
+			return mCommand.Parameters[name];
+		}
+
+		/// <summary>
+		/// Open the connection to the database
+		/// </summary>
+		private void Open() 
+		{
+			mCommand.Connection = mConnection;
+
+			// Choose type of command to run - sproc or SQL code
+			if (mProcedure != "")
+			{	
+				// Sproc
+				mCommand.CommandType = CommandType.StoredProcedure;
+				mCommand.CommandText = mProcedure;
+
+				foreach (SqlParameter item in mParameters)
+				{
+					mCommand.Parameters.Add(item);
+				}
+			}
+			else
+			{
+				// Raw SQL code
+				mCommand.CommandType = CommandType.Text;
+				mCommand.CommandText = mSQLCode;
+			}
+
+			mCommand.Connection.Open();
+		}
+
+		/// <summary>
+		/// Close the connection to the database
+		/// </summary>
+		public void Close()
+		{
+			if (mDataReader != null)
+			{
+				mDataReader.Close();
+			}
+			if (mCommand != null)
+			{
+				mCommand.Parameters.Clear();
+			}
+			if ((mConnection != null) && (mConnection.State == ConnectionState.Open))
+			{
+				mConnection.Close();
+			}
+		}
+
+		/// <summary>
+		/// Executes the command contained within this object, keeping the connection open
+		/// so that the results can be read externally
+		/// </summary>
+		/// <returns>True if successful; false otherwise</returns>
+		public bool Fetch()
+		{
+			bool success;
+
+			Open();
+
+			try
+			{
+				mDataReader = mCommand.ExecuteReader();
+				success = mDataReader.Read();
+			}
+			catch
+			{
+				throw;
+			}
+
+			return success;
+		}
+
+		/// <summary>
+		/// Executes the command without returning any results
+		/// </summary>
+		public void Save()
+		{
+			Open();
+
+			mCommand.ExecuteNonQuery();
+		}
+
+		/// <summary>
+		/// Adds a parameter to the list
+		/// </summary>
+		/// <param name="name">The parameter name</param>
+		/// <param name="data">The value of the parameter</param>
+		public void AddParameter(string name, object data)
+		{
+			this.mParameters.Add(new SqlParameter(name, data));
+		}
+
+		/// <summary>
+		/// Gets a guid from the results
+		/// </summary>
+		/// <param name="ordinal">The name of the field to return</param>
+		/// <returns>The requested value</returns>
+		public Guid GetGuid(string ordinal)
+		{
+            int index = mDataReader.GetOrdinal(ordinal);
+
+            if (mDataReader.IsDBNull(index))
+            {
+                return Guid.Empty;
+            }
+            else
+            {
+                return mDataReader.GetGuid(index);
+            }
+		}
+
+		/// <summary>
+		/// Gets a string from the results
+		/// </summary>
+		/// <param name="ordinal">The name of the field to return</param>
+		/// <returns>The requested value</returns>
+		public string GetString(string ordinal)
+		{
+            int index = mDataReader.GetOrdinal(ordinal);
+
+            if (mDataReader.IsDBNull(index))
+            {
+                return "";
+            }
+            else
+            {
+                return mDataReader.GetString(index);
+            }
+		}
+
+		/// <summary>
+		/// Gets a 16-bit int from the results
+		/// </summary>
+		/// <param name="ordinal">The name of the field to return</param>
+		/// <returns>The requested value</returns>
+		public Int16 GetInt16(string ordinal)
+		{
+            int index = mDataReader.GetOrdinal(ordinal);
+
+            if (mDataReader.IsDBNull(index))
+            {
+                return 0;
+            }
+            else
+            {
+                return mDataReader.GetInt16(index);
+            }
+		}
+
+		/// <summary>
+		/// Gets a 32-bit int from the results
+		/// </summary>
+		/// <param name="ordinal">The name of the field to return</param>
+		/// <returns>The requested value</returns>
+		public Int32 GetInt32(string ordinal)
+		{
+            int index = mDataReader.GetOrdinal(ordinal);
+
+            if (mDataReader.IsDBNull(index))
+            {
+                return 0;
+            }
+            else
+            {
+                return mDataReader.GetInt32(index);
+            }
+		}
+
+        /// <summary>
+        /// Gets a 64-bit int from the results
+        /// </summary>
+        /// <param name="ordinal">The name of the field to return</param>
+        /// <returns>The requested value</returns>
+        public Int64 GetInt64(string ordinal)
+        {
+            int index = mDataReader.GetOrdinal(ordinal);
+
+            if (mDataReader.IsDBNull(index))
+            {
+                return 0;
+            }
+            else
+            {
+                return mDataReader.GetInt64(index);
+            }
+        }
+
+		/// <summary>
+		/// Gets a datetime from the results
+		/// </summary>
+		/// <param name="ordinal">The name of the field to return</param>
+		/// <returns>The requested value</returns>
+		public DateTime GetDateTime(string ordinal)
+		{
+            int index = mDataReader.GetOrdinal(ordinal);
+
+            if (mDataReader.IsDBNull(index))
+            {
+                return DateTime.MinValue;
+            }
+            else
+            {
+                return mDataReader.GetDateTime(index);
+            }
+		}
+
+		/// <summary>
+		/// Gets a byte from the results
+		/// </summary>
+		/// <param name="ordinal">The name of the field to return</param>
+		/// <returns>The requested value</returns>
+		public byte GetByte(string ordinal)
+		{
+            int index = mDataReader.GetOrdinal(ordinal);
+
+            if (mDataReader.IsDBNull(index))
+            {
+                return 0;
+            }
+            else
+            {
+                return mDataReader.GetByte(index);
+            }
+		}
+
+		/// <summary>
+		/// Gets a bool from the results
+		/// </summary>
+		/// <param name="ordinal">The name of the field to return</param>
+		/// <returns>The requested value</returns>
+		public bool GetBoolean(string ordinal)
+		{
+            int index = mDataReader.GetOrdinal(ordinal);
+
+            if (mDataReader.IsDBNull(index))
+            {
+                return false;
+            }
+            else
+            {
+                return mDataReader.GetBoolean(index);
+            }
+		}
+
+		/// <summary>
+		/// Gets a double from the results
+		/// </summary>
+		/// <param name="ordinal">The name of the field to return</param>
+		/// <returns>The requested value</returns>
+		public double GetDouble(string ordinal)
+		{
+            int index = mDataReader.GetOrdinal(ordinal);
+
+            if (mDataReader.IsDBNull(index))
+            {
+                return 0;
+            }
+            else
+            {
+                return mDataReader.GetDouble(index);
+            }
+		}
+
+		/// <summary>
+		/// Gets a decimal from the results
+		/// </summary>
+		/// <param name="ordinal">The name of the field to return</param>
+		/// <returns>The requested value</returns>
+		public decimal GetDecimal(string ordinal)
+		{
+            int index = mDataReader.GetOrdinal(ordinal);
+
+            if (mDataReader.IsDBNull(index))
+            {
+                return 0;
+            }
+            else
+            {
+                return mDataReader.GetDecimal(index);
+            }
+		}
+
+        /// <summary>
+        /// Gets a single from the results
+        /// </summary>
+        /// <param name="ordinal">The name of the field to return</param>
+        /// <returns>The requested value</returns>
+        public float GetSingle(string ordinal)
+        {
+            int index = mDataReader.GetOrdinal(ordinal);
+
+            if (mDataReader.IsDBNull(index))
+            {
+                return 0;
+            }
+            else
+            {
+                return mDataReader.GetFloat(index);
+            }
+        }
+
+        /// <summary>
+        /// Move to the next row of the recordset
+        /// </summary>
+        /// <returns>Whether or not the next row was retrieved successfully</returns>
+		public bool NextResult()
+		{
+			return mDataReader.NextResult();
+		}
+
+        /// <summary>
+        /// Move to the next record set
+        /// </summary>
+        /// <returns>Whether or not the next record set was retrieved successfully</returns>
+		public bool Read()
+		{
+			return mDataReader.Read();
+		}
+
+		#endregion
+
+		#region IDisposable Members
+
+		/// <summary>
+		/// Dispose of the object
+		/// </summary>
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		/// <summary>
+		/// Dispose of the object
+		/// </summary>
+		/// <param name="disposing"></param>
+		protected virtual void Dispose(bool disposing)
+		{
+			try
+			{
+				if (disposing)
+				{
+					if (mCommand != null)
+					{
+						mCommand.Dispose();
+					}
+					if (mConnection != null)
+					{
+						mConnection.Dispose();
+					}
+				}
+			}
+			finally
+			{
+				mCommand = null;
+				mConnection = null;
+			}
+		}
+
+		#endregion
+	}
+}

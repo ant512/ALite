@@ -1,0 +1,1013 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ALite</name>
+    </assembly>
+    <members>
+        <member name="T:ALite.ValidationException">
+            <summary>
+            Thrown if an error occurs when validating a DBObject
+            </summary>
+        </member>
+        <member name="M:ALite.ValidationException.#ctor">
+            <summary>
+            Basic constructor
+            </summary>
+        </member>
+        <member name="M:ALite.ValidationException.#ctor(System.String)">
+            <summary>
+            Constructor
+            </summary>
+            <param name="message">Error message</param>
+        </member>
+        <member name="M:ALite.ValidationException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Constructor
+            </summary>
+            <param name="info"></param>
+            <param name="context"></param>
+        </member>
+        <member name="M:ALite.ValidationException.#ctor(System.String,System.Exception)">
+            <summary>
+            Constructor
+            </summary>
+            <param name="message"></param>
+            <param name="innerException"></param>
+        </member>
+        <member name="T:ALite.DataAccessException">
+            <summary>
+            Thrown if an error occurs when interacting with the database
+            </summary>
+        </member>
+        <member name="M:ALite.DataAccessException.#ctor">
+            <summary>
+            Basic constructor
+            </summary>
+        </member>
+        <member name="M:ALite.DataAccessException.#ctor(System.String)">
+            <summary>
+            Constructor
+            </summary>
+            <param name="message">Error message</param>
+        </member>
+        <member name="M:ALite.DataAccessException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Constructor
+            </summary>
+            <param name="info"></param>
+            <param name="context"></param>
+        </member>
+        <member name="M:ALite.DataAccessException.#ctor(System.String,System.Exception)">
+            <summary>
+            Constructor
+            </summary>
+            <param name="message"></param>
+            <param name="innerException"></param>
+        </member>
+        <member name="T:ALite.ValidationRule">
+            <summary>
+            Class representing a single validation rule; used for the built-in basic validation system.
+            </summary>
+        </member>
+        <member name="F:ALite.ValidationRule.mType">
+            <summary>
+            The type of validation performed by this rule
+            </summary>
+        </member>
+        <member name="F:ALite.ValidationRule.mValidValue">
+            <summary>
+            The value that is considered "valid" for this rule
+            </summary>
+        </member>
+        <member name="F:ALite.ValidationRule.mInstanceToValidate">
+            <summary>
+            The object that this rule will validate
+            </summary>
+        </member>
+        <member name="F:ALite.ValidationRule.mPropertyName">
+            <summary>
+            The property that this rule will validate
+            </summary>
+        </member>
+        <member name="M:ALite.ValidationRule.#ctor(ALite.ValidationRule.RuleType,System.Object,System.Object,System.String)">
+            <summary>
+            Create a new validation rule.
+            </summary>
+            <param name="type">The type of validation rule being created</param>
+            <param name="validValue">A value representing a valid value for the rule</param>
+            <param name="instanceToValidate">The object that this rule will validate</param>
+            <param name="propertyName">The name of the property that this rule will validate</param>
+        </member>
+        <member name="M:ALite.ValidationRule.Validate(System.Object)">
+            <summary>
+            Check if supplied object is a valid value
+            </summary>
+            <param name="value">The value to validate</param>
+            <returns>True if valid; false if not</returns>
+        </member>
+        <member name="M:ALite.ValidationRule.Validate">
+            <summary>
+            Validate the property of the object that this instance is set up to control
+            </summary>
+            <returns>True if valid; false if not</returns>
+        </member>
+        <member name="M:ALite.ValidationRule.ValidateMaxValue(System.Int32,System.Int32)">
+            <summary>
+            Check that the supplied value is less than or equal to the maximum value
+            </summary>
+            <param name="validValue"></param>
+            <param name="testValue"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ALite.ValidationRule.ValidateMinValue(System.Int32,System.Int32)">
+            <summary>
+            Check that the supplied value is more than or equal to the minimum value
+            </summary>
+            <param name="validValue"></param>
+            <param name="testValue"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ALite.ValidationRule.ValidateMaxLength(System.Int32,System.String)">
+            <summary>
+            Check that the supplied string is shorter than the maximum length or of equal length
+            </summary>
+            <param name="validLength"></param>
+            <param name="text"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ALite.ValidationRule.ValidateMinLength(System.Int32,System.String)">
+            <summary>
+            Check that the supplied string is longer than the minimum length or of equal length
+            </summary>
+            <param name="validLength"></param>
+            <param name="text"></param>
+            <returns></returns>
+        </member>
+        <member name="P:ALite.ValidationRule.PropertyName">
+            <summary>
+            Get the name of the property that this rule will validate
+            </summary>
+        </member>
+        <member name="T:ALite.ValidationRule.RuleType">
+            <summary>
+            List of the types of rule that the object can represent
+            </summary>
+        </member>
+        <member name="F:ALite.ValidationRule.RuleType.MaxLength">
+            <summary>
+            Maximum length of a string
+            </summary>
+        </member>
+        <member name="F:ALite.ValidationRule.RuleType.MinLength">
+            <summary>
+            Minimum length of a string
+            </summary>
+        </member>
+        <member name="F:ALite.ValidationRule.RuleType.NotNull">
+            <summary>
+            Object cannot be null
+            </summary>
+        </member>
+        <member name="F:ALite.ValidationRule.RuleType.MaxValue">
+            <summary>
+            Maximum value of an integer
+            </summary>
+        </member>
+        <member name="F:ALite.ValidationRule.RuleType.MinValue">
+            <summary>
+            Minimum value of an integer
+            </summary>
+        </member>
+        <member name="T:ALite.DBObject">
+            <summary>
+            Base class for objects that interact with the database
+            </summary>
+        </member>
+        <member name="T:ALite.IDBObject">
+            <summary>
+            Interface that describes the DBObject class
+            </summary>
+        </member>
+        <member name="M:ALite.IDBObject.Save">
+            <summary>
+            Save the object to the database
+            </summary>
+            <returns>The outcome of the save attempt</returns>
+        </member>
+        <member name="M:ALite.IDBObject.Fetch">
+            <summary>
+            Fetch the object from the database
+            </summary>
+            <returns>The outcome of the fetch attempt</returns>
+        </member>
+        <member name="M:ALite.IDBObject.MarkOld">
+            <summary>
+            Mark the object as old
+            </summary>
+        </member>
+        <member name="M:ALite.IDBObject.MarkNew">
+            <summary>
+            Mark the object as new
+            </summary>
+        </member>
+        <member name="M:ALite.IDBObject.MarkDeleted">
+            <summary>
+            Mark the object as deleted
+            </summary>
+        </member>
+        <member name="M:ALite.IDBObject.MarkDirty">
+            <summary>
+            Mark the object as dirty
+            </summary>
+        </member>
+        <member name="M:ALite.IDBObject.ResetUndo">
+            <summary>
+            Should be called before properties are altered at the start of a group of property alterations that represent
+            a single change transaction.
+            </summary>
+        </member>
+        <member name="M:ALite.IDBObject.Undo">
+            <summary>
+            Restores the state of the object at the last call to "ResetUndo().
+            </summary>
+        </member>
+        <member name="E:ALite.IDBObject.PropertyChanged">
+            <summary>
+            Property changed event
+            </summary>
+        </member>
+        <member name="P:ALite.IDBObject.IsDirty">
+            <summary>
+            Is the object dirty?
+            </summary>
+        </member>
+        <member name="P:ALite.IDBObject.IsNew">
+            <summary>
+            Is the object new?
+            </summary>
+        </member>
+        <member name="P:ALite.IDBObject.IsDeleted">
+            <summary>
+            Is the object deleted?
+            </summary>
+        </member>
+        <member name="P:ALite.IDBObject.Created">
+            <summary>
+            Date that the object was created
+            </summary>
+        </member>
+        <member name="P:ALite.IDBObject.Updated">
+            <summary>
+            Date that the object was updated
+            </summary>
+        </member>
+        <member name="F:ALite.DBObject.mCreated">
+            <summary>
+            Date that the object was created
+            </summary>
+        </member>
+        <member name="F:ALite.DBObject.mUpdated">
+            <summary>
+            Date that the object was updated
+            </summary>
+        </member>
+        <member name="F:ALite.DBObject.mStatus">
+            <summary>
+            Status of the object as a bitmask; use the Status enum to unpack it
+            </summary>
+        </member>
+        <member name="F:ALite.DBObject.mMemento">
+            <summary>
+            Stores backup data for later restoration
+            </summary>
+        </member>
+        <member name="F:ALite.DBObject.mRules">
+            <summary>
+            List of rules that properties are checked against before they are set
+            </summary>
+        </member>
+        <member name="F:ALite.DBObject.mDelegateRules">
+            <summary>
+            List of delegates that function as custom rules
+            </summary>
+        </member>
+        <member name="F:ALite.DBObject.mIsUndoing">
+            <summary>
+            Set to true when the object is reverting to its previous state
+            </summary>
+        </member>
+        <member name="M:ALite.DBObject.#ctor">
+            <summary>
+            Constructor for the DBObject class
+            </summary>
+        </member>
+        <member name="M:ALite.DBObject.Save">
+            <summary>
+            Based on the current status of the object, chooses whether to create, update or delete
+            </summary>
+            <returns>Any errors returned during the save attempt</returns>
+        </member>
+        <member name="M:ALite.DBObject.Create">
+            <summary>
+            Marks the object as old; intended to be overriden
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ALite.DBObject.Update">
+            <summary>
+            Marks the object as old; intended to be overriden
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ALite.DBObject.Fetch">
+            <summary>
+            Marks the object as old; intended to be overriden
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ALite.DBObject.Delete">
+            <summary>
+            Marks the object as old; intended to be overriden
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ALite.DBObject.MarkDirty">
+            <summary>
+            Marks the object as dirty
+            </summary>
+        </member>
+        <member name="M:ALite.DBObject.MarkNew">
+            <summary>
+            Marks the object as new
+            </summary>
+        </member>
+        <member name="M:ALite.DBObject.MarkOld">
+            <summary>
+            Marks the object as old
+            </summary>
+        </member>
+        <member name="M:ALite.DBObject.MarkDeleted">
+            <summary>
+            Marks the object as deleted
+            </summary>
+        </member>
+        <member name="M:ALite.DBObject.OnMarkDirty">
+            <summary>
+            Stub method that should be overridden if extra functionality is needed when MarkDirty() is called.
+            </summary>
+        </member>
+        <member name="M:ALite.DBObject.OnMarkNew">
+            <summary>
+            Stub method that should be overridden if extra functionality is needed when MarkNew() is called.
+            </summary>
+        </member>
+        <member name="M:ALite.DBObject.OnMarkOld">
+            <summary>
+            Stub method that should be overridden if extra functionality is needed when MarkOld() is called.
+            </summary>
+        </member>
+        <member name="M:ALite.DBObject.OnMarkDeleted">
+            <summary>
+            Stub method that should be overridden if extra functionality is needed when MarkDeleted() is called.
+            </summary>
+        </member>
+        <member name="M:ALite.DBObject.ResetUndo">
+            <summary>
+            Should be called before properties are altered at the start of a group of property alterations that represent
+            a single change transaction.
+            This method calls "OnResetUndo()", which should be overridden if extra functionality is needed.
+            </summary>
+        </member>
+        <member name="M:ALite.DBObject.Undo">
+            <summary>
+            Restores the object to its state at the last call to "ResetUndo().
+            </summary>
+        </member>
+        <member name="M:ALite.DBObject.OnResetUndo">
+            <summary>
+            Stub method that should be overridden if extra functionality is needed when ResetUndo() is called.
+            </summary>
+        </member>
+        <member name="M:ALite.DBObject.OnUndo">
+            <summary>
+            Stub method that should be overridden if extra functionality is needed when Undo() is called.
+            </summary>
+        </member>
+        <member name="M:ALite.DBObject.SetProperty``1(System.String,``0@,``0)">
+            <summary>
+            Set a property and fire a change event.  Throws an exception if any validation rules are violated.
+            </summary>
+            <typeparam name="T">Type of the object</typeparam>
+            <param name="propertyName">Name of the property being changed</param>
+            <param name="oldValue">Reference to the value being updated</param>
+            <param name="newValue">New value</param>
+        </member>
+        <member name="M:ALite.DBObject.OnPropertyChanged(System.String)">
+            <summary>
+            Called when a property is changed
+            </summary>
+            <param name="name">Name of the property that changed</param>
+        </member>
+        <member name="M:ALite.DBObject.AddRule(ALite.ValidationRule.RuleType,System.Int32,System.String)">
+            <summary>
+            Add a rule to the property validation list
+            </summary>
+            <param name="type">Type of rule to add</param>
+            <param name="validValue">Value to validate against</param>
+            <param name="propertyName">Name of the property to validate</param>
+        </member>
+        <member name="M:ALite.DBObject.AddRule(ALite.DBObject.ValidationDelegate,System.String)">
+            <summary>
+            Add a function delegate as a custom rule
+            </summary>
+            <param name="function">The function that will validate the property</param>
+            <param name="propertyName">The name of the property that the function validates</param>
+        </member>
+        <member name="E:ALite.DBObject.PropertyChanged">
+            <summary>
+            Event fired when a property changes value
+            </summary>
+        </member>
+        <member name="P:ALite.DBObject.IsNew">
+            <summary>
+            Is the object new?
+            </summary>
+        </member>
+        <member name="P:ALite.DBObject.IsDirty">
+            <summary>
+            Is the object dirty?
+            </summary>
+        </member>
+        <member name="P:ALite.DBObject.IsDeleted">
+            <summary>
+            Has the object been deleted?
+            </summary>
+        </member>
+        <member name="P:ALite.DBObject.Created">
+            <summary>
+            Date the object was created
+            </summary>
+        </member>
+        <member name="P:ALite.DBObject.Updated">
+            <summary>
+            Date the object was updated
+            </summary>
+        </member>
+        <member name="T:ALite.DBObject.ValidationDelegate">
+            <summary>
+            Template for validation delegates
+            </summary>
+            <param name="propertyName">Name of the property being validated</param>
+            <param name="errorMessage">Error message to return if the value is invalid</param>
+            <param name="oldValue">The current value of the property</param>
+            <param name="newValue">The new value of the property</param>
+            <returns>True if valid, false if not</returns>
+        </member>
+        <member name="T:ALite.DBErrorCode">
+            <summary>
+            List of possible database errors
+            </summary>
+        </member>
+        <member name="F:ALite.DBErrorCode.Ok">
+            <summary>
+            No problems encountered during DB access
+            </summary>
+        </member>
+        <member name="F:ALite.DBErrorCode.AlreadyExists">
+            <summary>
+            Record already exists
+            </summary>
+        </member>
+        <member name="F:ALite.DBErrorCode.Failed">
+            <summary>
+            DB access failed for a non-specific reason
+            </summary>
+        </member>
+        <member name="F:ALite.DBErrorCode.NotSaved">
+            <summary>
+            Object was not saved to the database
+            </summary>
+        </member>
+        <member name="F:ALite.DBErrorCode.DoesNotExist">
+            <summary>
+            Record does not exist
+            </summary>
+        </member>
+        <member name="F:ALite.DBErrorCode.NotPermitted">
+            <summary>
+            Requested DB operation was not permitted
+            </summary>
+        </member>
+        <member name="T:ALite.DBObjectCollection`1">
+            <summary>
+            Collection of IDBObject objects
+            </summary>
+        </member>
+        <member name="T:ALite.IDBObjectCollection">
+            <summary>
+            Interface that describes the DBObjectCollection class
+            </summary>
+        </member>
+        <member name="M:ALite.IDBObjectCollection.Save">
+            <summary>
+            Save the IDBObjectCollection
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ALite.IDBObjectCollection.Fetch">
+            <summary>
+            Populate the collection with data
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ALite.IDBObjectCollection.MarkDeleted">
+            <summary>
+            Mark all children in the object as deleted
+            </summary>
+        </member>
+        <member name="M:ALite.IDBObjectCollection.MarkNew">
+            <summary>
+            Mark all children in the object as new
+            </summary>
+        </member>
+        <member name="M:ALite.IDBObjectCollection.MarkOld">
+            <summary>
+            Mark all children in the object as old
+            </summary>
+        </member>
+        <member name="M:ALite.IDBObjectCollection.MarkDirty">
+            <summary>
+            Mark all children in the object as dirty
+            </summary>
+        </member>
+        <member name="M:ALite.IDBObjectCollection.ResetUndo">
+            <summary>
+            Should be called before properties are altered at the start of a group of property alterations that represent
+            a single change transaction.
+            </summary>
+        </member>
+        <member name="M:ALite.IDBObjectCollection.Undo">
+            <summary>
+            Restores the state of the object at the last call to "ResetUndo().
+            </summary>
+        </member>
+        <member name="P:ALite.IDBObjectCollection.IsDirty">
+            <summary>
+            Is the object dirty?
+            </summary>
+        </member>
+        <member name="P:ALite.IDBObjectCollection.IsNew">
+            <summary>
+            Is the object new?
+            </summary>
+        </member>
+        <member name="P:ALite.IDBObjectCollection.IsDeleted">
+            <summary>
+            Is the object deleted?
+            </summary>
+        </member>
+        <member name="E:ALite.IDBObjectCollection.PropertyChanged">
+            <summary>
+            Event fired when a property changes value
+            </summary>
+        </member>
+        <member name="F:ALite.DBObjectCollection`1.mStatus">
+            <summary>
+            Status of the object as a bitmask; use the Status enum to unpack it
+            </summary>
+        </member>
+        <member name="F:ALite.DBObjectCollection`1.mOldStatus">
+            <summary>
+            Status of the object when ResetUndo() was last called
+            </summary>
+        </member>
+        <member name="F:ALite.DBObjectCollection`1.mInternalList">
+            <summary>
+            Internal list of DBObjects
+            </summary>
+        </member>
+        <member name="M:ALite.DBObjectCollection`1.OnListChanged(System.ComponentModel.ListChangedEventArgs)">
+            <summary>
+            Fired when the list is changed
+            </summary>
+            <param name="e"></param>
+        </member>
+        <member name="M:ALite.DBObjectCollection`1.OnListCleared(System.EventArgs)">
+            <summary>
+            Fired when the list is cleared
+            </summary>
+            <param name="e"></param>
+        </member>
+        <member name="M:ALite.DBObjectCollection`1.IndexOf(`0)">
+            <summary>
+            Get the index of the specified item
+            </summary>
+            <param name="item">Item to find the index of</param>
+            <returns>The index of the item</returns>
+        </member>
+        <member name="M:ALite.DBObjectCollection`1.Insert(System.Int32,`0)">
+            <summary>
+            Insert an item at the specified index
+            </summary>
+            <param name="index">Index to insert at</param>
+            <param name="item">Item to insert</param>
+        </member>
+        <member name="M:ALite.DBObjectCollection`1.RemoveAt(System.Int32)">
+            <summary>
+            Remove the item at the specified index
+            </summary>
+            <param name="index">Index of the item to remove</param>
+        </member>
+        <member name="M:ALite.DBObjectCollection`1.Add(`0)">
+            <summary>
+            Add an item to the end of the list
+            </summary>
+            <param name="item">Them item to add</param>
+        </member>
+        <member name="M:ALite.DBObjectCollection`1.Clear">
+            <summary>
+            Remove all items from the list
+            </summary>
+        </member>
+        <member name="M:ALite.DBObjectCollection`1.Contains(`0)">
+            <summary>
+            Check if the list contains the specified item
+            </summary>
+            <param name="item">The item to check the existence of</param>
+            <returns>True if the item is stored within the list</returns>
+        </member>
+        <member name="M:ALite.DBObjectCollection`1.CopyTo(`0[],System.Int32)">
+            <summary>
+            Disabled because list events remain wired up.
+            </summary>
+            <param name="array"></param>
+            <param name="arrayIndex"></param>
+        </member>
+        <member name="M:ALite.DBObjectCollection`1.Remove(`0)">
+            <summary>
+            Remove the specified item from the list
+            </summary>
+            <param name="item"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ALite.DBObjectCollection`1.GetEnumerator">
+            <summary>
+            Get an enumerator for the list
+            </summary>
+            <returns>An enumerator</returns>
+        </member>
+        <member name="M:ALite.DBObjectCollection`1.System#Collections#IEnumerable#GetEnumerator">
+            <summary>
+            Get an enumeratir for the list
+            </summary>
+            <returns>An enumerator</returns>
+        </member>
+        <member name="M:ALite.DBObjectCollection`1.#ctor">
+            <summary>
+            Constructor for the DBObjectCollection class
+            </summary>
+        </member>
+        <member name="M:ALite.DBObjectCollection`1.Save">
+            <summary>
+            Save all objects in the collection individually by using their own save methods
+            Also removes any deleted objects from the collection
+            </summary>
+            <returns>Always returns true</returns>
+        </member>
+        <member name="M:ALite.DBObjectCollection`1.Fetch">
+            <summary>
+            Clears the list; intended to be overriden
+            </summary>
+            <returns>Always returns true</returns>
+        </member>
+        <member name="M:ALite.DBObjectCollection`1.Sort">
+            <summary>
+            Sort the list
+            </summary>
+        </member>
+        <member name="M:ALite.DBObjectCollection`1.MarkListDirty">
+            <summary>
+            Marks the list as dirty
+            </summary>
+        </member>
+        <member name="M:ALite.DBObjectCollection`1.MarkListNew">
+            <summary>
+            Marks the list as new
+            </summary>
+        </member>
+        <member name="M:ALite.DBObjectCollection`1.MarkListOld">
+            <summary>
+            Marks the list as old
+            </summary>
+        </member>
+        <member name="M:ALite.DBObjectCollection`1.MarkListDeleted">
+            <summary>
+            Marks the list as deleted
+            </summary>
+        </member>
+        <member name="M:ALite.DBObjectCollection`1.MarkDeleted">
+            <summary>
+            Marks all objects as deleted
+            </summary>
+        </member>
+        <member name="M:ALite.DBObjectCollection`1.MarkNew">
+            <summary>
+            Marks all objects as new
+            </summary>
+        </member>
+        <member name="M:ALite.DBObjectCollection`1.MarkOld">
+            <summary>
+            Marks all objects as old
+            </summary>
+        </member>
+        <member name="M:ALite.DBObjectCollection`1.MarkDirty">
+            <summary>
+            Marks all objects as dirty
+            </summary>
+        </member>
+        <member name="M:ALite.DBObjectCollection`1.OnMarkDirty">
+            <summary>
+            Stub method that should be overridden if extra functionality is needed when MarkDirty() is called.
+            </summary>
+        </member>
+        <member name="M:ALite.DBObjectCollection`1.OnMarkNew">
+            <summary>
+            Stub method that should be overridden if extra functionality is needed when MarkNew() is called.
+            </summary>
+        </member>
+        <member name="M:ALite.DBObjectCollection`1.OnMarkOld">
+            <summary>
+            Stub method that should be overridden if extra functionality is needed when MarkOld() is called.
+            </summary>
+        </member>
+        <member name="M:ALite.DBObjectCollection`1.OnMarkDeleted">
+            <summary>
+            Stub method that should be overridden if extra functionality is needed when MarkDeleted() is called.
+            </summary>
+        </member>
+        <member name="M:ALite.DBObjectCollection`1.ResetUndo">
+            <summary>
+            Should be called before properties are altered at the start of a group of property alterations that represent
+            a single change transaction.
+            </summary>
+        </member>
+        <member name="M:ALite.DBObjectCollection`1.Undo">
+            <summary>
+            Restores the state of the object at the last call to "ResetUndo().
+            </summary>
+        </member>
+        <member name="M:ALite.DBObjectCollection`1.OnResetUndo">
+            <summary>
+            Stub method that should be overridden if extra functionality is needed when ResetUndo() is called.
+            </summary>
+        </member>
+        <member name="M:ALite.DBObjectCollection`1.OnUndo">
+            <summary>
+            Stub method that should be overridden if extra functionality is needed when Undo() is called.
+            </summary>
+        </member>
+        <member name="M:ALite.DBObjectCollection`1.SetProperty``1(System.String,``0@,``0)">
+            <summary>
+            Set a property and fire a change event
+            </summary>
+            <typeparam name="TY">Type of the object</typeparam>
+            <param name="propertyName">Name of the property being changed</param>
+            <param name="oldValue">Reference to the value being updated</param>
+            <param name="newValue">New value</param>
+        </member>
+        <member name="M:ALite.DBObjectCollection`1.OnPropertyChanged(System.String)">
+            <summary>
+            Called when a property is changed
+            </summary>
+            <param name="name">Name of the property that has changed</param>
+        </member>
+        <member name="E:ALite.DBObjectCollection`1.PropertyChanged">
+            <summary>
+            Event fired when a property changes value
+            </summary>
+        </member>
+        <member name="E:ALite.DBObjectCollection`1.ListChanged">
+            <summary>
+            List changed event handler
+            </summary>
+        </member>
+        <member name="E:ALite.DBObjectCollection`1.ListCleared">
+            <summary>
+            List cleared event handler
+            </summary>
+        </member>
+        <member name="P:ALite.DBObjectCollection`1.Item(System.Int32)">
+            <summary>
+            Get or set the item at the specified index
+            </summary>
+            <param name="index">Index of the item to retrieve</param>
+            <returns>The item at the specified index</returns>
+        </member>
+        <member name="P:ALite.DBObjectCollection`1.Count">
+            <summary>
+            Get the number of items in the list
+            </summary>
+        </member>
+        <member name="P:ALite.DBObjectCollection`1.IsReadOnly">
+            <summary>
+            Returns true if the list is read-only
+            </summary>
+        </member>
+        <member name="P:ALite.DBObjectCollection`1.IsNew">
+            <summary>
+            Returns true if any object is new
+            </summary>
+        </member>
+        <member name="P:ALite.DBObjectCollection`1.IsDirty">
+            <summary>
+            Returns true if any object is dirty
+            </summary>
+        </member>
+        <member name="P:ALite.DBObjectCollection`1.IsDeleted">
+            <summary>
+            Returns true if any object is deleted
+            </summary>
+        </member>
+        <member name="T:ALite.DBObjectCollection`1.ListChangedEventHandler">
+            <summary>
+            Delegate for handling the list being changed
+            </summary>
+            <param name="source">DBObjectCollection that fired the event</param>
+            <param name="e">Event arguments</param>
+        </member>
+        <member name="T:ALite.DBObjectCollection`1.ListClearedEventHandler">
+            <summary>
+            Delegate for handling the list being cleared
+            </summary>
+            <param name="source">DBObjectCollection that fired the event</param>
+            <param name="e">Event arguments</param>
+        </member>
+        <member name="T:ALite.DataAccess">
+            <summary>
+            Abstraction layer for SQL Server data access.
+            </summary>
+        </member>
+        <member name="M:ALite.DataAccess.#ctor">
+            <summary>
+            Constructor for the DataAccess class
+            </summary>
+        </member>
+        <member name="M:ALite.DataAccess.#ctor(System.String)">
+            <summary>
+            Constructor for the DataAccess class
+            </summary>
+            <param name="connection">SQL connection string</param>
+        </member>
+        <member name="M:ALite.DataAccess.Parameters(System.String)">
+            <summary>
+            Return a specific parameter from the parameter list
+            </summary>
+            <param name="name">The name of the parameter to return</param>
+            <returns>The SqlParameter with the supplied name</returns>
+        </member>
+        <member name="M:ALite.DataAccess.Open">
+            <summary>
+            Open the connection to the database
+            </summary>
+        </member>
+        <member name="M:ALite.DataAccess.Close">
+            <summary>
+            Close the connection to the database
+            </summary>
+        </member>
+        <member name="M:ALite.DataAccess.Fetch">
+            <summary>
+            Executes the command contained within this object, keeping the connection open
+            so that the results can be read externally
+            </summary>
+            <returns>True if successful; false otherwise</returns>
+        </member>
+        <member name="M:ALite.DataAccess.Save">
+            <summary>
+            Executes the command without returning any results
+            </summary>
+        </member>
+        <member name="M:ALite.DataAccess.AddParameter(System.String,System.Object)">
+            <summary>
+            Adds a parameter to the list
+            </summary>
+            <param name="name">The parameter name</param>
+            <param name="data">The value of the parameter</param>
+        </member>
+        <member name="M:ALite.DataAccess.GetGuid(System.String)">
+            <summary>
+            Gets a guid from the results
+            </summary>
+            <param name="ordinal">The name of the field to return</param>
+            <returns>The requested value</returns>
+        </member>
+        <member name="M:ALite.DataAccess.GetString(System.String)">
+            <summary>
+            Gets a string from the results
+            </summary>
+            <param name="ordinal">The name of the field to return</param>
+            <returns>The requested value</returns>
+        </member>
+        <member name="M:ALite.DataAccess.GetInt16(System.String)">
+            <summary>
+            Gets a 16-bit int from the results
+            </summary>
+            <param name="ordinal">The name of the field to return</param>
+            <returns>The requested value</returns>
+        </member>
+        <member name="M:ALite.DataAccess.GetInt32(System.String)">
+            <summary>
+            Gets a 32-bit int from the results
+            </summary>
+            <param name="ordinal">The name of the field to return</param>
+            <returns>The requested value</returns>
+        </member>
+        <member name="M:ALite.DataAccess.GetInt64(System.String)">
+            <summary>
+            Gets a 64-bit int from the results
+            </summary>
+            <param name="ordinal">The name of the field to return</param>
+            <returns>The requested value</returns>
+        </member>
+        <member name="M:ALite.DataAccess.GetDateTime(System.String)">
+            <summary>
+            Gets a datetime from the results
+            </summary>
+            <param name="ordinal">The name of the field to return</param>
+            <returns>The requested value</returns>
+        </member>
+        <member name="M:ALite.DataAccess.GetByte(System.String)">
+            <summary>
+            Gets a byte from the results
+            </summary>
+            <param name="ordinal">The name of the field to return</param>
+            <returns>The requested value</returns>
+        </member>
+        <member name="M:ALite.DataAccess.GetBoolean(System.String)">
+            <summary>
+            Gets a bool from the results
+            </summary>
+            <param name="ordinal">The name of the field to return</param>
+            <returns>The requested value</returns>
+        </member>
+        <member name="M:ALite.DataAccess.GetDouble(System.String)">
+            <summary>
+            Gets a double from the results
+            </summary>
+            <param name="ordinal">The name of the field to return</param>
+            <returns>The requested value</returns>
+        </member>
+        <member name="M:ALite.DataAccess.GetDecimal(System.String)">
+            <summary>
+            Gets a decimal from the results
+            </summary>
+            <param name="ordinal">The name of the field to return</param>
+            <returns>The requested value</returns>
+        </member>
+        <member name="M:ALite.DataAccess.GetSingle(System.String)">
+            <summary>
+            Gets a single from the results
+            </summary>
+            <param name="ordinal">The name of the field to return</param>
+            <returns>The requested value</returns>
+        </member>
+        <member name="M:ALite.DataAccess.NextResult">
+            <summary>
+            Move to the next row of the recordset
+            </summary>
+            <returns>Whether or not the next row was retrieved successfully</returns>
+        </member>
+        <member name="M:ALite.DataAccess.Read">
+            <summary>
+            Move to the next record set
+            </summary>
+            <returns>Whether or not the next record set was retrieved successfully</returns>
+        </member>
+        <member name="M:ALite.DataAccess.Dispose">
+            <summary>
+            Dispose of the object
+            </summary>
+        </member>
+        <member name="M:ALite.DataAccess.Dispose(System.Boolean)">
+            <summary>
+            Dispose of the object
+            </summary>
+            <param name="disposing"></param>
+        </member>
+        <member name="P:ALite.DataAccess.Procedure">
+            <summary>
+            Gets or sets the name of the SQL procedure to execute
+            </summary>
+        </member>
+        <member name="P:ALite.DataAccess.SQLCode">
+            <summary>
+            Gets or sets the SQL code to execute
+            </summary>
+        </member>
+        <member name="P:ALite.DataAccess.ParameterList">
+            <summary>
+            Return an array list of SQL parameters
+            </summary>
+        </member>
+    </members>
+</doc>
