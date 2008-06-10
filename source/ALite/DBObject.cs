@@ -72,7 +72,8 @@ namespace ALite
 
 		#region Enums
 
-		private enum Status
+		[Flags]
+		private enum Status : byte
 		{
 			New = 0x1,
 			Dirty = 0x2,
@@ -96,7 +97,7 @@ namespace ALite
         /// <summary>
         /// Status of the object as a bitmask; use the Status enum to unpack it
         /// </summary>
-		private byte mStatus;
+		private Status mStatus;
 
         /// <summary>
         /// Stores backup data for later restoration
@@ -132,7 +133,7 @@ namespace ALite
         /// </summary>
 		public bool IsNew
 		{
-			get { return ((mStatus & (byte)Status.New) != 0); }
+			get { return ((mStatus & Status.New) != 0); }
 		}
 
         /// <summary>
@@ -140,7 +141,7 @@ namespace ALite
         /// </summary>
 		public bool IsDirty
 		{
-			get { return ((mStatus & (byte)Status.Dirty) != 0); }
+			get { return ((mStatus & Status.Dirty) != 0); }
 		}
 
         /// <summary>
@@ -148,7 +149,7 @@ namespace ALite
         /// </summary>
 		public bool IsDeleted
 		{
-			get { return ((mStatus & (byte)Status.Deleted) != 0); }
+			get { return ((mStatus & Status.Deleted) != 0); }
 		}
 
         /// <summary>
@@ -275,7 +276,7 @@ namespace ALite
 		/// </summary>
 		public void MarkDirty()
 		{
-			mStatus |= (byte)Status.Dirty;
+			mStatus |= Status.Dirty;
 			OnMarkDirty();
 		}
 
@@ -284,7 +285,7 @@ namespace ALite
 		/// </summary>
 		public void MarkNew()
 		{
-			mStatus = (byte)Status.New | (byte)Status.Dirty;
+			mStatus = Status.New | Status.Dirty;
 			OnMarkNew();
 		}
 
@@ -293,7 +294,7 @@ namespace ALite
 		/// </summary>
 		public void MarkOld()
 		{
-			mStatus = (byte)(mStatus & (byte)Status.Deleted);
+			mStatus = (mStatus & Status.Deleted);
 			OnMarkOld();
 		}
 
@@ -302,7 +303,7 @@ namespace ALite
 		/// </summary>
 		public void MarkDeleted()
 		{
-			mStatus |= (byte)Status.Deleted | (byte)Status.Dirty;
+			mStatus |= Status.Deleted | Status.Dirty;
 			OnMarkDeleted();
 		}
 
@@ -393,7 +394,7 @@ namespace ALite
 			}
 
 			// Restore the previous status
-			mStatus = (byte)mMemento["mStatus"];
+			mStatus = (Status)mMemento["mStatus"];
 
 			// Clear the backed up property list
 			mMemento.Clear();
