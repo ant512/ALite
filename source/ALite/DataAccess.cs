@@ -22,6 +22,7 @@ namespace ALite
 		private string mSQLCode;
 		private ArrayList mParameters;
 		private SqlDataReader mDataReader;
+		private SqlTransaction mTransaction;
 
 		#endregion
 
@@ -71,7 +72,7 @@ namespace ALite
 		public DataAccess()
 		{
 			this.mConnection = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["db"].ToString());
-			this.mCommand = new SqlCommand();
+			this.mCommand = mConnection.CreateCommand();
 			this.mParameters = new ArrayList();
 			this.mProcedure = "";
 			this.mSQLCode = "";
@@ -84,7 +85,7 @@ namespace ALite
         public DataAccess(string connection)
         {
             this.mConnection = new SqlConnection(connection);
-            this.mCommand = new SqlCommand();
+			this.mCommand = mConnection.CreateCommand();
             this.mParameters = new ArrayList();
 			this.mProcedure = "";
 			this.mSQLCode = "";
@@ -109,7 +110,12 @@ namespace ALite
 		/// </summary>
 		private void Open() 
 		{
+			mConnection.Open();
+
+			mTransaction = mConnection.BeginTransaction();
+
 			mCommand.Connection = mConnection;
+			mCommand.Transaction = mTransaction;
 
 			// Choose type of command to run - sproc or SQL code
 			if (mProcedure != "")
@@ -129,8 +135,6 @@ namespace ALite
 				mCommand.CommandType = CommandType.Text;
 				mCommand.CommandText = mSQLCode;
 			}
-
-			mCommand.Connection.Open();
 		}
 
 		/// <summary>
@@ -170,6 +174,15 @@ namespace ALite
 			}
 			catch
 			{
+				try
+				{
+					mTransaction.Rollback();
+				}
+				catch
+				{
+					throw;
+				}
+
 				throw;
 			}
 
@@ -183,7 +196,23 @@ namespace ALite
 		{
 			Open();
 
-			mCommand.ExecuteNonQuery();
+			try
+			{
+				mCommand.ExecuteNonQuery();
+			}
+			catch
+			{
+				try
+				{
+					mTransaction.Rollback();
+				}
+				catch
+				{
+					throw;
+				}
+
+				throw;
+			}
 		}
 
 		/// <summary>
@@ -442,6 +471,20 @@ namespace ALite
 		/// <param name="disposing"></param>
 		protected virtual void Dispose(bool disposing)
 		{
+			if (mDataReader != null)
+			{
+				mDataReader.Close();
+			}
+
+			try
+			{
+				mTransaction.Commit();
+			}
+			catch
+			{
+				throw;
+			}
+
 			try
 			{
 				if (disposing)
@@ -454,12 +497,23 @@ namespace ALite
 					{
 						mConnection.Dispose();
 					}
+					if (mTransaction != null)
+					{
+						mTransaction.Dispose();
+					}
+					if (mDataReader != null)
+					{
+						mDataReader.Dispose();
+					}
 				}
 			}
 			finally
 			{
 				mCommand = null;
 				mConnection = null;
+				mTransaction = null;
+				mDataReader = null;
+				mParameters = null;
 			}
 		}
 
