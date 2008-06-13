@@ -23,6 +23,7 @@ namespace ALite
 		private ArrayList mParameters;
 		private SqlDataReader mDataReader;
 		private SqlTransaction mTransaction;
+		private bool mUseTransactions;
 
 		#endregion
 
@@ -62,6 +63,15 @@ namespace ALite
 			get { return mParameters; }
 		}
 
+		/// <summary>
+		/// Specify whether or not the object uses transactions when interacting with the DB
+		/// </summary>
+		public bool UseTransactions
+		{
+			get { return mUseTransactions; }
+			set { mUseTransactions = value; }
+		}
+
 		#endregion
 
 		#region Constructors
@@ -76,6 +86,7 @@ namespace ALite
 			this.mParameters = new ArrayList();
 			this.mProcedure = "";
 			this.mSQLCode = "";
+			this.mUseTransactions = false;
 		}
 
         /// <summary>
@@ -89,6 +100,7 @@ namespace ALite
             this.mParameters = new ArrayList();
 			this.mProcedure = "";
 			this.mSQLCode = "";
+			this.mUseTransactions = false;
         }
 
 		#endregion
@@ -112,10 +124,11 @@ namespace ALite
 		{
 			mConnection.Open();
 
-			mTransaction = mConnection.BeginTransaction();
+			if (mUseTransactions) mTransaction = mConnection.BeginTransaction();
 
 			mCommand.Connection = mConnection;
-			mCommand.Transaction = mTransaction;
+
+			if (mUseTransactions) mCommand.Transaction = mTransaction;
 
 			// Choose type of command to run - sproc or SQL code
 			if (mProcedure != "")
@@ -174,13 +187,16 @@ namespace ALite
 			}
 			catch
 			{
-				try
+				if (mUseTransactions)
 				{
-					mTransaction.Rollback();
-				}
-				catch
-				{
-					throw;
+					try
+					{
+						mTransaction.Rollback();
+					}
+					catch
+					{
+						throw;
+					}
 				}
 
 				throw;
@@ -202,13 +218,16 @@ namespace ALite
 			}
 			catch
 			{
-				try
+				if (mUseTransactions)
 				{
-					mTransaction.Rollback();
-				}
-				catch
-				{
-					throw;
+					try
+					{
+						mTransaction.Rollback();
+					}
+					catch
+					{
+						throw;
+					}
 				}
 
 				throw;
@@ -475,14 +494,17 @@ namespace ALite
 			if (mDataReader != null) mDataReader.Close();
 
 			// Ensure that the transaction is committed to the DB
-			try
+			if (mUseTransactions)
 			{
-				mTransaction.Commit();
-			}
-			catch
-			{
-				// Major problem - could not commit!
-				throw;
+				try
+				{
+					mTransaction.Commit();
+				}
+				catch
+				{
+					// Major problem - could not commit!
+					throw;
+				}
 			}
 
 			// Clean up all Sql/etc objects
