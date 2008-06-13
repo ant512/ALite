@@ -471,40 +471,29 @@ namespace ALite
 		/// <param name="disposing"></param>
 		protected virtual void Dispose(bool disposing)
 		{
-			if (mDataReader != null)
-			{
-				mDataReader.Close();
-			}
+			// Ensure that the data reader is shut down
+			if (mDataReader != null) mDataReader.Close();
 
+			// Ensure that the transaction is committed to the DB
 			try
 			{
 				mTransaction.Commit();
 			}
 			catch
 			{
+				// Major problem - could not commit!
 				throw;
 			}
 
+			// Clean up all Sql/etc objects
 			try
 			{
 				if (disposing)
 				{
-					if (mCommand != null)
-					{
-						mCommand.Dispose();
-					}
-					if (mConnection != null)
-					{
-						mConnection.Dispose();
-					}
-					if (mTransaction != null)
-					{
-						mTransaction.Dispose();
-					}
-					if (mDataReader != null)
-					{
-						mDataReader.Dispose();
-					}
+					if (mCommand != null) mCommand.Dispose();
+					if (mConnection != null) mConnection.Dispose();
+					if (mTransaction != null) mTransaction.Dispose();
+					if (mDataReader != null) mDataReader.Dispose();
 				}
 			}
 			finally
