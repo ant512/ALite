@@ -5,6 +5,9 @@ using System.Text;
 
 namespace ALite
 {
+	/// <summary>
+	/// Interface that describes the DataAccess class
+	/// </summary>
 	interface IDataAccess
 	{
 		#region Properties
