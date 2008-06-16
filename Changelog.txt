@@ -1,0 +1,27 @@
+V2.1
+
+ - Status enum uses the [flags] attribute.
+ - Database interaction is optionally transactional.
+ - Improved DataAccess disposal.
+ - Parameters passed when working with raw SQL code as well as sprocs.
+
+V2.0 (20080606)
+
+ - Added delegate-based validation system.
+ - Added ValidationException class.
+ - Added DBObjectCollection sorting.
+ - Replaced backup/restore function with transactional, automatic property
+   backup system and "undo" method.
+ - Made SetProperty() function thread safe.
+ - DataAccess class has an alternative constructor that accepts a connection
+   string.
+ - DataAccess class can execute inline SQL in addition to stored procedures.
+ - Added OnXXX() methods to enable extending functionality without interfering
+   with essential built-in methods.
+ - Status of DBObjects and collections is tracked by the undo system.
+ - Replaced individual status variables with a single bitmask to make undoing
+   changes easier.
+
+V1.0
+
+ - First release.
