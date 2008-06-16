@@ -132,21 +132,22 @@ namespace ALite
 
 			// Choose type of command to run - sproc or SQL code
 			if (mProcedure != "")
-			{	
+			{
 				// Sproc
 				mCommand.CommandType = CommandType.StoredProcedure;
 				mCommand.CommandText = mProcedure;
-
-				foreach (SqlParameter item in mParameters)
-				{
-					mCommand.Parameters.Add(item);
-				}
 			}
 			else
 			{
 				// Raw SQL code
 				mCommand.CommandType = CommandType.Text;
 				mCommand.CommandText = mSQLCode;
+			}
+
+			// Add parameters
+			foreach (SqlParameter item in mParameters)
+			{
+				mCommand.Parameters.Add(item);
 			}
 		}
 
