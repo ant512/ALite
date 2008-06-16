@@ -10,6 +10,8 @@ V2.1
  - DataAccess uses a generic list instead of an array list to store SQL
    parameters.
  - Changed memento in DBObject to a Dictionary<> instead of a SortedList.
+ - Split manual into a separate text file.
+ - Swapped from calling DataAccess.Dispose() to a using block instead.
 
 V2.0 (20080606)
 
