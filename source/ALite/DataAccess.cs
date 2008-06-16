@@ -1,7 +1,7 @@
 using System;
 using System.Data;
 using System.Data.SqlClient;
-using System.Collections;
+using System.Collections.Generic;
 using System.Configuration;
 
 [assembly: CLSCompliant(true)]
@@ -12,15 +12,15 @@ namespace ALite
 	/// Abstraction layer for SQL Server data access.
 	/// </summary>
 	[Serializable]
-	public class DataAccess : IDisposable
+	public class DataAccess : IDisposable, IDataAccess
 	{
 		#region Members
 
 		private SqlConnection mConnection;
 		private SqlCommand mCommand;
 		private string mProcedure;
-		private string mSQLCode;
-		private ArrayList mParameters;
+		private string mInlineCode;
+		private List<SqlParameter> mParameters;
 		private SqlDataReader mDataReader;
 		private SqlTransaction mTransaction;
 		private bool mUseTransactions;
@@ -38,29 +38,21 @@ namespace ALite
 			set
 			{
 				mProcedure = value;
-				mSQLCode = "";
+				mInlineCode = "";
 			}
 		}
 
 		/// <summary>
-		/// Gets or sets the SQL code to execute
+		/// Gets or sets the inline SQL code to execute
 		/// </summary>
-		public string SQLCode
+		public string InlineCode
 		{
-			get { return mSQLCode; }
+			get { return mInlineCode; }
 			set
 			{
-				mSQLCode = value;
+				mInlineCode = value;
 				mProcedure = "";
 			}
-		}
-
-        /// <summary>
-        /// Return an array list of SQL parameters
-        /// </summary>
-		public ArrayList ParameterList
-		{
-			get { return mParameters; }
 		}
 
 		/// <summary>
@@ -83,9 +75,9 @@ namespace ALite
 		{
 			this.mConnection = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["db"].ToString());
 			this.mCommand = mConnection.CreateCommand();
-			this.mParameters = new ArrayList();
+			this.mParameters = new List<SqlParameter>();
 			this.mProcedure = "";
-			this.mSQLCode = "";
+			this.mInlineCode = "";
 			this.mUseTransactions = false;
 		}
 
@@ -97,9 +89,9 @@ namespace ALite
         {
             this.mConnection = new SqlConnection(connection);
 			this.mCommand = mConnection.CreateCommand();
-            this.mParameters = new ArrayList();
+			this.mParameters = new List<SqlParameter>();
 			this.mProcedure = "";
-			this.mSQLCode = "";
+			this.mInlineCode = "";
 			this.mUseTransactions = false;
         }
 
@@ -141,7 +133,7 @@ namespace ALite
 			{
 				// Raw SQL code
 				mCommand.CommandType = CommandType.Text;
-				mCommand.CommandText = mSQLCode;
+				mCommand.CommandText = mInlineCode;
 			}
 
 			// Add parameters
@@ -154,7 +146,7 @@ namespace ALite
 		/// <summary>
 		/// Close the connection to the database
 		/// </summary>
-		public void Close()
+		private void Close()
 		{
 			if (mDataReader != null)
 			{

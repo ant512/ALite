@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Reflection;
@@ -102,7 +101,7 @@ namespace ALite
         /// <summary>
         /// Stores backup data for later restoration
         /// </summary>
-		private SortedList mMemento;
+		private Dictionary<string, object> mMemento;
 
 		/// <summary>
 		/// Event fired when a property changes value
@@ -179,7 +178,7 @@ namespace ALite
 		{
 			mCreated = DateTime.Now;
 			mUpdated = DateTime.Now;
-			mMemento = new SortedList();
+			mMemento = new Dictionary<string, object>();
 			mRules = new List<ValidationRule>();
 			mDelegateRules = new List<DelegateValidationRule>();
 			mIsUndoing = false;
@@ -369,19 +368,18 @@ namespace ALite
 			mIsUndoing = true;
 
 			// Loop through all backed up properties
-			IEnumerator keys = mMemento.Keys.GetEnumerator();
+			IEnumerator<string> keys = mMemento.Keys.GetEnumerator();
 
 			while (keys.MoveNext())
 			{
-				string propertyKey = (string)keys.Current;
-				object propertyValue = mMemento[propertyKey];
+				object propertyValue = mMemento[keys.Current];
 
 				// Loop through all properties
 				for (int i = 0; i < infos.Length; i++)
 				{
 					// Is this property the same as the key?
 					PropertyInfo info = infos[i];
-					if (info.Name == propertyKey)
+					if (info.Name == keys.Current)
 					{
 						// Reset the property to the stored value
 						if (info.CanWrite)
