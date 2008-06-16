@@ -20,7 +20,7 @@ namespace ALite
 		/// <param name="oldValue">The current value of the property</param>
 		/// <param name="newValue">The new value of the property</param>
 		/// <returns>True if valid, false if not</returns>
-		public delegate bool ValidationDelegate(string propertyName, ref string errorMessage, object oldValue, object newValue);
+		public delegate bool Validator(string propertyName, ref string errorMessage, object oldValue, object newValue);
 
 		#endregion
 
@@ -31,14 +31,14 @@ namespace ALite
 		{
 			#region Members
 
-			private ValidationDelegate mDelegate;
+			private Validator mDelegate;
 			private string mPropertyName;
 
 			#endregion
 
 			#region Properties
 
-			public ValidationDelegate Function
+			public Validator Function
 			{
 				get
 				{
@@ -58,7 +58,7 @@ namespace ALite
 
 			#region Constructors
 
-			public DelegateValidationRule(ValidationDelegate function, string propertyName)
+			public DelegateValidationRule(Validator function, string propertyName)
 			{
 				mDelegate = function;
 				mPropertyName = propertyName;
@@ -181,9 +181,9 @@ namespace ALite
 			mMemento = new Dictionary<string, object>();
 			mRules = new List<ValidationRule>();
 			mDelegateRules = new List<DelegateValidationRule>();
-			mIsUndoing = false;
 
-			MarkNew();
+			// Mark the object as new
+			mStatus = Status.New | Status.Dirty;
 		}
 
 		#endregion
@@ -528,7 +528,7 @@ namespace ALite
 		/// </summary>
 		/// <param name="function">The function that will validate the property</param>
 		/// <param name="propertyName">The name of the property that the function validates</param>
-		protected void AddRule(ValidationDelegate function, string propertyName)
+		protected void AddRule(Validator function, string propertyName)
 		{
 			mDelegateRules.Add(new DelegateValidationRule(function, propertyName));
 		}

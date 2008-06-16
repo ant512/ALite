@@ -173,7 +173,7 @@ namespace ALite
 		/// <param name="validValue"></param>
 		/// <param name="testValue"></param>
 		/// <returns></returns>
-		private bool ValidateMaxValue(int validValue, int testValue)
+		private static bool ValidateMaxValue(int validValue, int testValue)
 		{
 			return (testValue <= validValue);
 		}
@@ -184,7 +184,7 @@ namespace ALite
 		/// <param name="validValue"></param>
 		/// <param name="testValue"></param>
 		/// <returns></returns>
-		private bool ValidateMinValue(int validValue, int testValue)
+		private static bool ValidateMinValue(int validValue, int testValue)
 		{
 			return (testValue >= validValue);
 		}
@@ -195,7 +195,7 @@ namespace ALite
 		/// <param name="validLength"></param>
 		/// <param name="text"></param>
 		/// <returns></returns>
-		private bool ValidateMaxLength(int validLength, string text)
+		private static bool ValidateMaxLength(int validLength, string text)
 		{
 			return (validLength >= text.Length);
 		}
@@ -206,7 +206,7 @@ namespace ALite
 		/// <param name="validLength"></param>
 		/// <param name="text"></param>
 		/// <returns></returns>
-		private bool ValidateMinLength(int validLength, string text)
+		private static bool ValidateMinLength(int validLength, string text)
 		{
 			return (validLength <= text.Length);
 		}

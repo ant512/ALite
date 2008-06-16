@@ -16,12 +16,19 @@ namespace ALite
 	{
 		#region Members
 
+		[NonSerialized]
 		private SqlConnection mConnection;
+
+		[NonSerialized]
 		private SqlCommand mCommand;
 		private string mProcedure;
 		private string mInlineCode;
 		private List<SqlParameter> mParameters;
+
+		[NonSerialized]
 		private SqlDataReader mDataReader;
+
+		[NonSerialized]
 		private SqlTransaction mTransaction;
 		private bool mUseTransactions;
 
@@ -78,7 +85,6 @@ namespace ALite
 			this.mParameters = new List<SqlParameter>();
 			this.mProcedure = "";
 			this.mInlineCode = "";
-			this.mUseTransactions = false;
 		}
 
         /// <summary>
@@ -92,7 +98,6 @@ namespace ALite
 			this.mParameters = new List<SqlParameter>();
 			this.mProcedure = "";
 			this.mInlineCode = "";
-			this.mUseTransactions = false;
         }
 
 		#endregion
@@ -123,7 +128,7 @@ namespace ALite
 			if (mUseTransactions) mCommand.Transaction = mTransaction;
 
 			// Choose type of command to run - sproc or SQL code
-			if (mProcedure != "")
+			if (String.IsNullOrEmpty(mProcedure))
 			{
 				// Sproc
 				mCommand.CommandType = CommandType.StoredProcedure;
@@ -140,25 +145,6 @@ namespace ALite
 			foreach (SqlParameter item in mParameters)
 			{
 				mCommand.Parameters.Add(item);
-			}
-		}
-
-		/// <summary>
-		/// Close the connection to the database
-		/// </summary>
-		private void Close()
-		{
-			if (mDataReader != null)
-			{
-				mDataReader.Close();
-			}
-			if (mCommand != null)
-			{
-				mCommand.Parameters.Clear();
-			}
-			if ((mConnection != null) && (mConnection.State == ConnectionState.Open))
-			{
-				mConnection.Close();
 			}
 		}
 

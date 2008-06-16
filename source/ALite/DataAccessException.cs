@@ -27,7 +27,7 @@ namespace ALite
 		/// </summary>
 		/// <param name="info"></param>
 		/// <param name="context"></param>
-   		public DataAccessException(SerializationInfo info, StreamingContext context) : base(info, context) { }
+   		protected DataAccessException(SerializationInfo info, StreamingContext context) : base(info, context) { }
 
 		/// <summary>
 		/// Constructor

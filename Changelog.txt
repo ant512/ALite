@@ -12,6 +12,9 @@ V2.1
  - Changed memento in DBObject to a Dictionary<> instead of a SortedList.
  - Split manual into a separate text file.
  - Swapped from calling DataAccess.Dispose() to a using block instead.
+ - Removed DataAccess.Close().
+ - Renamed DBObject.ValidationDelegate to Validator.
+ - Fixed a variety of FxCop warnings.
 
 V2.0 (20080606)
 

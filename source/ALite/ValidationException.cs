@@ -27,7 +27,7 @@ namespace ALite
 		/// </summary>
 		/// <param name="info"></param>
 		/// <param name="context"></param>
-		public ValidationException(SerializationInfo info, StreamingContext context) : base(info, context) { }
+		protected ValidationException(SerializationInfo info, StreamingContext context) : base(info, context) { }
 
 		/// <summary>
 		/// Constructor

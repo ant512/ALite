@@ -53,16 +53,16 @@ namespace ALite
 		/// <summary>
 		/// Delegate for handling the list being changed
 		/// </summary>
-		/// <param name="source">DBObjectCollection that fired the event</param>
+		/// <param name="sender">DBObjectCollection that fired the event</param>
 		/// <param name="e">Event arguments</param>
-		public delegate void ListChangedEventHandler(object source, ListChangedEventArgs e);
+		public delegate void ListChangedEventHandler(object sender, ListChangedEventArgs e);
 
 		/// <summary>
 		/// Delegate for handling the list being cleared
 		/// </summary>
-		/// <param name="source">DBObjectCollection that fired the event</param>
+		/// <param name="sender">DBObjectCollection that fired the event</param>
 		/// <param name="e">Event arguments</param>
-		public delegate void ListClearedEventHandler(object source, EventArgs e);
+		public delegate void ListClearedEventHandler(object sender, EventArgs e);
 
 		/// <summary>
 		/// List changed event handler
