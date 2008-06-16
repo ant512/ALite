@@ -3,7 +3,13 @@ V2.1
  - Status enum uses the [flags] attribute.
  - Database interaction is optionally transactional.
  - Improved DataAccess disposal.
- - Parameters passed when working with raw SQL code as well as sprocs.
+ - Parameters now passed when working with inline SQL code as well as sprocs.
+ - Renamed DataAccess.SQLCode to DataAccess.InlineCode.
+ - Added IDataAccess interface.
+ - Removed DataAccess.ParameterList property.
+ - DataAccess uses a generic list instead of an array list to store SQL
+   parameters.
+ - Changed memento in DBObject to a Dictionary<> instead of a SortedList.
 
 V2.0 (20080606)
 
