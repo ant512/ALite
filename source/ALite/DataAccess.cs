@@ -128,7 +128,7 @@ namespace ALite
 			if (mUseTransactions) mCommand.Transaction = mTransaction;
 
 			// Choose type of command to run - sproc or SQL code
-			if (String.IsNullOrEmpty(mProcedure))
+			if (!String.IsNullOrEmpty(mProcedure))
 			{
 				// Sproc
 				mCommand.CommandType = CommandType.StoredProcedure;
