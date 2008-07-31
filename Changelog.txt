@@ -1,3 +1,9 @@
+V2.2
+
+ - Fixed incorrect comments for DataAccess.Read() and DataAccess.NextResult().
+ - Sproc called correctly by DataAccess object if sproc is chosen data retrieval
+   method.
+
 V2.1
 
  - Status enum uses the [flags] attribute.

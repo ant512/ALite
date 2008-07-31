@@ -24,7 +24,7 @@
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
   
-ALite V2.1
+ALite V2.2
 ----------
 
   ALite is a small, lightweight and unobtrusive framework for constructing

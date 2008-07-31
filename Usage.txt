@@ -216,6 +216,10 @@ Usage
    - data.Read()
      Moves to the next result if the dataset returned by the Fetch() method
 	 returned more than one result.
+	 
+   - data.NextResult()
+     Moves to the next recordset if more than one was returned by the Fetch()
+     method.
 
   Using the DataAccess class is simply a matter of:
 

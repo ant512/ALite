@@ -433,18 +433,18 @@ namespace ALite
         }
 
         /// <summary>
-        /// Move to the next row of the recordset
+        /// Move to the next recordset
         /// </summary>
-        /// <returns>Whether or not the next row was retrieved successfully</returns>
+        /// <returns>Whether or not the next recordset was retrieved successfully</returns>
 		public bool NextResult()
 		{
 			return mDataReader.NextResult();
 		}
 
         /// <summary>
-        /// Move to the next record set
+        /// Move to the next row
         /// </summary>
-        /// <returns>Whether or not the next record set was retrieved successfully</returns>
+        /// <returns>Whether or not the next row was retrieved successfully</returns>
 		public bool Read()
 		{
 			return mDataReader.Read();
