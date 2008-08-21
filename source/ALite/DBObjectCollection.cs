@@ -46,6 +46,11 @@ namespace ALite
 		public event PropertyChangedEventHandler PropertyChanged;
 
 		/// <summary>
+		/// Event fired when a property on a child changes value
+		/// </summary>
+		public event PropertyChangedEventHandler ChildPropertyChanged;
+
+		/// <summary>
 		/// Internal list of DBObjects
 		/// </summary>
 		private IList<T> mInternalList;
@@ -131,7 +136,7 @@ namespace ALite
 		/// <param name="item">Item to insert</param>
 		public void Insert(int index, T item)
 		{
-			item.PropertyChanged += this.PropertyChanged;
+			item.PropertyChanged += this.ChildPropertyChanged;
 			mInternalList.Insert(index, item);
 			OnListChanged(new ListChangedEventArgs(ListChangedType.ItemAdded, index));
 		}
@@ -147,7 +152,7 @@ namespace ALite
 				T item = mInternalList[index];
 				if (mInternalList.Remove(item))
 				{
-					item.PropertyChanged -= this.PropertyChanged;
+					item.PropertyChanged -= this.ChildPropertyChanged;
 					OnListChanged(new ListChangedEventArgs(ListChangedType.ItemDeleted, -1, index));
 				}
 			}
@@ -163,7 +168,7 @@ namespace ALite
 			get { return mInternalList[index]; }
 			set
 			{
-				value.PropertyChanged += this.PropertyChanged;
+				value.PropertyChanged += this.ChildPropertyChanged;
 				mInternalList[index] = value;
 				OnListChanged(new ListChangedEventArgs(ListChangedType.ItemChanged, index));
 			}
@@ -179,7 +184,7 @@ namespace ALite
 		/// <param name="item">Them item to add</param>
 		public void Add(T item)
 		{
-			item.PropertyChanged += this.PropertyChanged;
+			item.PropertyChanged += this.ChildPropertyChanged;
 			mInternalList.Add(item);
 			OnListChanged(new ListChangedEventArgs(ListChangedType.ItemAdded, mInternalList.IndexOf(item)));
 		}
@@ -242,7 +247,7 @@ namespace ALite
 				int index = mInternalList.IndexOf(item);
 				if (mInternalList.Remove(item))
 				{
-					item.PropertyChanged -= this.PropertyChanged;
+					item.PropertyChanged -= this.ChildPropertyChanged;
 					OnListChanged(new ListChangedEventArgs(ListChangedType.ItemDeleted, -1, index));
 					return true;
 				}
@@ -315,6 +320,7 @@ namespace ALite
 		public DBObjectCollection()
 		{
 			mInternalList = new List<T>();
+			ChildPropertyChanged += new PropertyChangedEventHandler(HandleChildPropertyChanged);
 			MarkNew();
 		}
 
@@ -590,6 +596,16 @@ namespace ALite
 			{
 				handler(this, new PropertyChangedEventArgs(name));
 			}
+		}
+
+		/// <summary>
+		/// Called when a child's property is changed
+		/// </summary>
+		/// <param name="sender">Name of the property that has changed</param>
+		/// <param name="e">Event arguments</param>
+		protected void HandleChildPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			MarkListDirty();
 		}
 
 		#endregion
