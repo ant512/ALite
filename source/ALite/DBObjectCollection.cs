@@ -15,7 +15,7 @@ namespace ALite
 
 		private enum Status
 		{
-			New = 0x1,
+			NewStatus = 0x1,
 			Dirty = 0x2,
 			Deleted = 0x4
 		}
@@ -286,7 +286,7 @@ namespace ALite
 		/// </summary>
 		public bool IsNew
 		{
-			get { return ((mStatus & (byte)Status.New) != 0); }
+			get { return ((mStatus & (byte)Status.NewStatus) != 0); }
 		}
 
 		/// <summary>
@@ -389,7 +389,7 @@ namespace ALite
 		/// </summary>
 		private void MarkListNew()
 		{
-			mStatus = (byte)Status.New | (byte)Status.Dirty;
+			mStatus = (byte)Status.NewStatus | (byte)Status.Dirty;
 		}
 
 		/// <summary>

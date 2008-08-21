@@ -38,7 +38,7 @@ namespace ALite
 
 			#region Properties
 
-			public Validator Function
+			public Validator DelegateFunction
 			{
 				get
 				{
@@ -58,9 +58,9 @@ namespace ALite
 
 			#region Constructors
 
-			public DelegateValidationRule(Validator function, string propertyName)
+			public DelegateValidationRule(Validator delegateFunction, string propertyName)
 			{
-				mDelegate = function;
+				mDelegate = delegateFunction;
 				mPropertyName = propertyName;
 			}
 
@@ -74,7 +74,7 @@ namespace ALite
 		[Flags]
 		private enum Status : byte
 		{
-			New = 0x1,
+			NewStatus = 0x1,
 			Dirty = 0x2,
 			Deleted = 0x4
 		}
@@ -132,7 +132,7 @@ namespace ALite
         /// </summary>
 		public bool IsNew
 		{
-			get { return ((mStatus & Status.New) != 0); }
+			get { return ((mStatus & Status.NewStatus) != 0); }
 		}
 
         /// <summary>
@@ -183,7 +183,7 @@ namespace ALite
 			mDelegateRules = new List<DelegateValidationRule>();
 
 			// Mark the object as new
-			mStatus = Status.New | Status.Dirty;
+			mStatus = Status.NewStatus | Status.Dirty;
 		}
 
 		#endregion
@@ -284,7 +284,7 @@ namespace ALite
 		/// </summary>
 		public void MarkNew()
 		{
-			mStatus = Status.New | Status.Dirty;
+			mStatus = Status.NewStatus | Status.Dirty;
 			OnMarkNew();
 		}
 
@@ -465,7 +465,7 @@ namespace ALite
 					if (rule.PropertyName == propertyName)
 					{
 						// Is the value valid?
-						if (!rule.Function(propertyName, ref errorMessage, oldValue, newValue))
+						if (!rule.DelegateFunction(propertyName, ref errorMessage, oldValue, newValue))
 						{
 							// Reset to former value
 							throw new ValidationException("New value '" + newValue.ToString() + "' for property '" + propertyName + "' violates custom rule: " + errorMessage);
@@ -526,11 +526,11 @@ namespace ALite
 		/// <summary>
 		/// Add a function delegate as a custom rule
 		/// </summary>
-		/// <param name="function">The function that will validate the property</param>
-		/// <param name="propertyName">The name of the property that the function validates</param>
-		protected void AddRule(Validator function, string propertyName)
+		/// <param name="propertyName">The function that will validate the property</param>
+		/// <param name="delegateFunction">The name of the property that the function validates</param>
+		protected void AddRule(Validator delegateFunction, string propertyName)
 		{
-			mDelegateRules.Add(new DelegateValidationRule(function, propertyName));
+			mDelegateRules.Add(new DelegateValidationRule(delegateFunction, propertyName));
 		}
 
 		#endregion
