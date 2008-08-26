@@ -274,7 +274,7 @@ namespace ALite
 		#region IEnumerable Members
 
 		/// <summary>
-		/// Get an enumeratir for the list
+		/// Get an enumerator for the list
 		/// </summary>
 		/// <returns>An enumerator</returns>
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
