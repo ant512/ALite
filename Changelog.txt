@@ -4,6 +4,8 @@ V2.30
  - DBObject property change events are wired up to the DBObjectCollection.
  - Made DBObjectCollection.HandleChildPropertyChanged private.
  - Added makefile.
+ - Removed Created property from DBObject.
+ - Removed Updated property from DBObject.
 
 V2.20
 

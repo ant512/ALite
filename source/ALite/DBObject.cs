@@ -83,16 +83,6 @@ namespace ALite
 
 		#region Members
 
-		/// <summary>
-        /// Date that the object was created
-        /// </summary>
-		private DateTime mCreated;
-
-        /// <summary>
-        /// Date that the object was updated
-        /// </summary>
-		private DateTime mUpdated;
-
         /// <summary>
         /// Status of the object as a bitmask; use the Status enum to unpack it
         /// </summary>
@@ -151,22 +141,6 @@ namespace ALite
 			get { return ((mStatus & Status.Deleted) != 0); }
 		}
 
-        /// <summary>
-        /// Date the object was created
-        /// </summary>
-		public DateTime Created
-		{
-			get { return mCreated; }
-		}
-
-        /// <summary>
-        /// Date the object was updated
-        /// </summary>
-		public DateTime Updated
-		{
-			get { return mUpdated; }
-		}
-
 		#endregion
 
 		#region Constructors
@@ -176,8 +150,6 @@ namespace ALite
         /// </summary>
 		protected DBObject()
 		{
-			mCreated = DateTime.Now;
-			mUpdated = DateTime.Now;
 			mMemento = new Dictionary<string, object>();
 			mRules = new List<ValidationRule>();
 			mDelegateRules = new List<DelegateValidationRule>();
@@ -564,16 +536,6 @@ namespace ALite
         /// Is the object deleted?
         /// </summary>
 		bool IsDeleted { get; }
-
-        /// <summary>
-        /// Date that the object was created
-        /// </summary>
-		DateTime Created { get; }
-
-        /// <summary>
-        /// Date that the object was updated
-        /// </summary>
-		DateTime Updated { get; }
 
         /// <summary>
         /// Save the object to the database
