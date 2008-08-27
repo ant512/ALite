@@ -603,7 +603,7 @@ namespace ALite
 		/// </summary>
 		/// <param name="sender">Name of the property that has changed</param>
 		/// <param name="e">Event arguments</param>
-		protected void HandleChildPropertyChanged(object sender, PropertyChangedEventArgs e)
+		private void HandleChildPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			MarkListDirty();
 		}
