@@ -3,6 +3,7 @@ V2.30
  - Various internal functions/variables renamed to fix VB.NET compatibility.
  - DBObject property change events are wired up to the DBObjectCollection.
  - Made DBObjectCollection.HandleChildPropertyChanged private.
+ - Added makefile.
 
 V2.20
 
