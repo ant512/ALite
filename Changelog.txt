@@ -7,6 +7,15 @@ V2.4
    fix potential problems in multithreaded applications.
  - DBObjectCollection.Clear() removes all of the list's event listeners from
    the child objects.
+ - Refactored delegate and simple validation lists into their own classes.
+ - Completely refactored simple validation system to be extensible; added:
+   - IValidationRule interface;
+   - StringLengthValidationRule class;
+   - IntegerBoundsValidationRule class;
+ - Removed "propertyName" parameter from "Validator" delegate signature as it is
+   (and always has been) unused.
+ - Simple validation system returns error messages in the same way as the
+   delegate validation system.
 
 V2.30
 

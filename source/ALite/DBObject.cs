@@ -10,65 +10,6 @@ namespace ALite
 	/// </summary>
 	[Serializable] public abstract class DBObject : IDBObject, INotifyPropertyChanged
 	{
-		#region Delegate Types
-
-		/// <summary>
-		/// Template for validation delegates
-		/// </summary>
-		/// <param name="propertyName">Name of the property being validated</param>
-		/// <param name="errorMessage">Error message to return if the value is invalid</param>
-		/// <param name="oldValue">The current value of the property</param>
-		/// <param name="newValue">The new value of the property</param>
-		/// <returns>True if valid, false if not</returns>
-		public delegate bool Validator(string propertyName, ref string errorMessage, object oldValue, object newValue);
-
-		#endregion
-
-		#region Structs
-
-		[Serializable]
-		private struct DelegateValidationRule
-		{
-			#region Members
-
-			private Validator mDelegate;
-			private string mPropertyName;
-
-			#endregion
-
-			#region Properties
-
-			public Validator DelegateFunction
-			{
-				get
-				{
-					return mDelegate;
-				}
-			}
-
-			public string PropertyName
-			{
-				get
-				{
-					return mPropertyName;
-				}
-			}
-
-			#endregion
-
-			#region Constructors
-
-			public DelegateValidationRule(Validator delegateFunction, string propertyName)
-			{
-				mDelegate = delegateFunction;
-				mPropertyName = propertyName;
-			}
-
-			#endregion
-		}
-
-		#endregion
-
 		#region Enums
 
 		[Flags]
@@ -101,12 +42,12 @@ namespace ALite
 		/// <summary>
 		/// List of rules that properties are checked against before they are set
 		/// </summary>
-		private List<ValidationRule> mRules;
+		private ValidationRuleCollection mRules;
 
 		/// <summary>
 		/// List of delegates that function as custom rules
 		/// </summary>
-		private List<DelegateValidationRule> mDelegateRules;
+		private DelegateRuleCollection mDelegateRules;
 
 		#endregion
 
@@ -146,8 +87,8 @@ namespace ALite
 		protected DBObject()
 		{
 			mMemento = new Dictionary<string, object>();
-			mRules = new List<ValidationRule>();
-			mDelegateRules = new List<DelegateValidationRule>();
+			mRules = new ValidationRuleCollection();
+			mDelegateRules = new DelegateRuleCollection();
 
 			// Mark the object as new
 			mStatus = Status.NewStatus | Status.Dirty;
@@ -431,37 +372,21 @@ namespace ALite
 
 				if ((oldValue == null) || (!oldValue.Equals((T)newValue)))
 				{
+					string errorMessage = "";
+
 					// Validate new value against standard rules
-					foreach (ValidationRule rule in mRules)
+					if (!mRules.Validate<T>(propertyName, ref errorMessage, newValue))
 					{
-						// Have we found a relevant rule?
-						if (rule.PropertyName == propertyName)
-						{
-							// Is the object valid?
-							if (!rule.Validate(newValue))
-							{
-								// Reset to former value
-								throw new ValidationException("New value '" + newValue.ToString() + "' for property '" + propertyName + "' violates basic rule.");
-							}
-						}
+						// Reset to former value
+						throw new ValidationException("New value '" + newValue.ToString() + "' for property '" + propertyName + "' violates rule: " + errorMessage);
 					}
 
 					// Validate new value against custom rules
-					string errorMessage = "";
-
-					foreach (DelegateValidationRule rule in mDelegateRules)
+					if (!mDelegateRules.Validate<T>(propertyName, ref errorMessage, oldValue, newValue))
 					{
-						// Have we found a relevant rule?
-						if (rule.PropertyName == propertyName)
-						{
-							// Is the value valid?
-							if (!rule.DelegateFunction(propertyName, ref errorMessage, oldValue, newValue))
-							{
-								// Reset to former value
-								throw new ValidationException("New value '" + newValue.ToString() + "' for property '" + propertyName + "' violates custom rule: " + errorMessage);
-							}
-						}
-					}
+						// Reset to former value
+						throw new ValidationException("New value '" + newValue.ToString() + "' for property '" + propertyName + "' violates rule: " + errorMessage);
+					}		
 
 					// Store the existing value of the property
 					BackupValue<T>(propertyName, oldValue);
@@ -494,15 +419,9 @@ namespace ALite
 
 		#region Rules
 
-		/// <summary>
-		/// Add a rule to the property validation list
-		/// </summary>
-		/// <param name="type">Type of rule to add</param>
-		/// <param name="validValue">Value to validate against</param>
-		/// <param name="propertyName">Name of the property to validate</param>
-		protected void AddRule(ValidationRule.RuleType type, int validValue, string propertyName)
+		protected void AddRule(IValidationRule rule)
 		{
-			mRules.Add(new ValidationRule(type, validValue, this, propertyName));
+			mRules.Add(rule);
 		}
 
 		/// <summary>
