@@ -194,8 +194,17 @@ namespace ALite
 		/// </summary>
 		public void Clear()
 		{
-			mInternalList.Clear();
-			OnListCleared(new EventArgs());
+			lock (this)
+			{
+				// Remove all event handlers from objects
+				foreach (T item in mInternalList)
+				{
+					item.PropertyChanged -= this.ChildPropertyChanged;
+				}
+
+				mInternalList.Clear();
+				OnListCleared(new EventArgs());
+			}
 		}
 
 		/// <summary>
@@ -576,10 +585,13 @@ namespace ALite
 		/// <param name="newValue">New value</param>
 		protected void SetProperty<TY>(string propertyName, ref TY oldValue, TY newValue)
 		{
-			if (!oldValue.Equals((TY)newValue))
+			lock (this)
 			{
-				oldValue = newValue;
-				OnPropertyChanged(propertyName);
+				if (!oldValue.Equals((TY)newValue))
+				{
+					oldValue = newValue;
+					OnPropertyChanged(propertyName);
+				}
 			}
 		}
 

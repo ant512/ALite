@@ -108,11 +108,6 @@ namespace ALite
 		/// </summary>
 		private List<DelegateValidationRule> mDelegateRules;
 
-		/// <summary>
-		/// Set to true when the object is reverting to its previous state
-		/// </summary>
-		private bool mIsUndoing;
-
 		#endregion
 
 		#region Properties
@@ -156,6 +151,9 @@ namespace ALite
 
 			// Mark the object as new
 			mStatus = Status.NewStatus | Status.Dirty;
+
+			// Store the current status
+			mMemento.Add("mStatus", mStatus);
 		}
 
 		#endregion
@@ -336,44 +334,62 @@ namespace ALite
 			Type t = this.GetType();
 			PropertyInfo[] infos = t.GetProperties();
 
-			// Remember that we are entering the undo phase
-			mIsUndoing = true;
-
-			// Loop through all backed up properties
-			IEnumerator<string> keys = mMemento.Keys.GetEnumerator();
-
-			while (keys.MoveNext())
+			// Obtain lock to prevent object changing whilst existing changes are reverted
+			lock (this)
 			{
-				object propertyValue = mMemento[keys.Current];
+				// Loop through all backed up properties
+				IEnumerator<string> keys = mMemento.Keys.GetEnumerator();
 
-				// Loop through all properties
-				for (int i = 0; i < infos.Length; i++)
+				while (keys.MoveNext())
 				{
-					// Is this property the same as the key?
-					PropertyInfo info = infos[i];
-					if (info.Name == keys.Current)
+					object propertyValue = mMemento[keys.Current];
+
+					// Loop through all properties
+					foreach (PropertyInfo info in infos)
 					{
-						// Reset the property to the stored value
+						// Is this property writeable and the same as the key?
 						if (info.CanWrite)
 						{
-							info.SetValue(this, propertyValue, null);
-							break;
+							// Reset the property to the stored value
+							if (info.Name == keys.Current)
+							{
+								info.SetValue(this, propertyValue, null);
+								break;
+							}
 						}
 					}
 				}
-			}
 
-			// Restore the previous status
-			mStatus = (Status)mMemento["mStatus"];
+				// Restore the previous status
+				if (mMemento.ContainsKey("mStatus"))
+				{
+					mStatus = (Status)mMemento["mStatus"];
+				}
+			}
 
 			// Clear the backed up property list
 			mMemento.Clear();
 
 			// Call any user code
 			OnUndo();
+		}
 
-			// Remember that the undo phase has finished
-			mIsUndoing = false;
+		/// <summary>
+		/// Backup the supplied value in the memento list.  Does not back up the value
+		/// if a value for the property already exists in the memento list.
+		/// </summary>
+		/// <typeparam name="T">Type of object to store</typeparam>
+		/// <param name="propertyName">Name of the property for which the value is appropriate</param>
+		/// <param name="value">Current value of the supplied property</param>
+		protected void BackupValue<T>(string propertyName, T value)
+		{
+			lock (mMemento)
+			{
+				if (!mMemento.ContainsKey(propertyName))
+				{
+					mMemento.Add(propertyName, value);
+				}
+			}
 		}
 
 		#endregion
@@ -405,60 +421,54 @@ namespace ALite
 		/// <param name="newValue">New value</param>
 		protected void SetProperty<T>(string propertyName, ref T oldValue, T newValue)
 		{
-			// Are we trying to set a null value to null?
-			if ((oldValue == null) && (newValue == null))
+			lock (this)
 			{
-				return;
-			}
-
-			if ((oldValue == null) || (!oldValue.Equals((T)newValue)))
-			{
-				// Validate new value against standard rules
-				foreach (ValidationRule rule in mRules)
+				// Are we trying to set a null value to null?
+				if ((oldValue == null) && (newValue == null))
 				{
-					// Have we found a relevant rule?
-					if (rule.PropertyName == propertyName)
+					return;
+				}
+
+				if ((oldValue == null) || (!oldValue.Equals((T)newValue)))
+				{
+					// Validate new value against standard rules
+					foreach (ValidationRule rule in mRules)
 					{
-						// Is the object valid?
-						if (!rule.Validate(newValue))
+						// Have we found a relevant rule?
+						if (rule.PropertyName == propertyName)
 						{
-							// Reset to former value
-							throw new ValidationException("New value '" + newValue.ToString() + "' for property '" + propertyName + "' violates basic rule.");
+							// Is the object valid?
+							if (!rule.Validate(newValue))
+							{
+								// Reset to former value
+								throw new ValidationException("New value '" + newValue.ToString() + "' for property '" + propertyName + "' violates basic rule.");
+							}
 						}
 					}
-				}
 
-				// Validate new value against custom rules
-				string errorMessage = "";
+					// Validate new value against custom rules
+					string errorMessage = "";
 
-				foreach (DelegateValidationRule rule in mDelegateRules)
-				{
-					// Have we found a relevant rule?
-					if (rule.PropertyName == propertyName)
+					foreach (DelegateValidationRule rule in mDelegateRules)
 					{
-						// Is the value valid?
-						if (!rule.DelegateFunction(propertyName, ref errorMessage, oldValue, newValue))
+						// Have we found a relevant rule?
+						if (rule.PropertyName == propertyName)
 						{
-							// Reset to former value
-							throw new ValidationException("New value '" + newValue.ToString() + "' for property '" + propertyName + "' violates custom rule: " + errorMessage);
+							// Is the value valid?
+							if (!rule.DelegateFunction(propertyName, ref errorMessage, oldValue, newValue))
+							{
+								// Reset to former value
+								throw new ValidationException("New value '" + newValue.ToString() + "' for property '" + propertyName + "' violates custom rule: " + errorMessage);
+							}
 						}
 					}
+
+					// Store the existing value of the property
+					BackupValue<T>(propertyName, oldValue);
+
+					// Update the value
+					oldValue = newValue;
 				}
-
-				T storedValue = oldValue;
-
-				// Store backup of value if we're not undoing
-				if (!mIsUndoing)
-				{
-					// Only store if a value does not yet exist
-					if (!mMemento.ContainsKey(propertyName))
-					{
-						mMemento.Add(propertyName, storedValue);
-					}
-				}
-
-				// Update the value
-				oldValue = newValue;
 
 				// Handle change event
 				OnPropertyChanged(propertyName);
