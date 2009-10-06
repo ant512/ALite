@@ -50,6 +50,7 @@
     <Compile Include="IValidationRule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StringLengthValidationRule.cs" />
+    <Compile Include="UndoException.cs" />
     <Compile Include="ValidationException.cs" />
     <Compile Include="ValidationRule.cs" />
     <Compile Include="ValidationRuleCollection.cs" />

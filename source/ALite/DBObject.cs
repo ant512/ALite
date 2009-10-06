@@ -268,6 +268,17 @@ namespace ALite
 
 		/// <summary>
 		/// Restores the object to its state at the last call to "ResetUndo().
+		/// 
+		/// This can throw a TargetInvocationException error at the line containing "info.SetValue".
+		/// This occurs if the attempt at resetting the property failed because the setter threw
+		/// an exception.  If this happens, check:
+		///  - That the value being restored does not violate any of the rules applied to the
+		///    object (this can occur if the value is set using a member instead of a property)
+		///  - That the value being restored is valid for the given datatype (this can occur if
+		///    ResetUndo() was not called in the object's constructor, meaning non-nullable values
+		///    are being restored to the default value, ie. null).
+		/// 
+		/// The TargetInvocationException is caught and wrapped in an UndoException.
 		/// </summary>
 		public void Undo()
 		{
@@ -291,10 +302,18 @@ namespace ALite
 						// Is this property writeable and the same as the key?
 						if (info.CanWrite)
 						{
+
 							// Reset the property to the stored value
 							if (info.Name == keys.Current)
 							{
-								info.SetValue(this, propertyValue, null);
+								try
+								{
+									info.SetValue(this, propertyValue, null);
+								}
+								catch (TargetInvocationException ex)
+								{
+									throw new UndoException("Error setting property of object whilst undoing changes.", ex);
+								}
 								break;
 							}
 						}
