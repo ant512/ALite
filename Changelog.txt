@@ -16,6 +16,8 @@ V2.4
    (and always has been) unused.
  - Simple validation system returns error messages in the same way as the
    delegate validation system.
+ - DBObject.Undo() catches any TargetInvocationException errors and re-raises
+   them as UndoException errors.
 
 V2.30
 

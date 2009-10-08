@@ -13,6 +13,7 @@ namespace Tests
 
 			try
 			{
+				myObject.Name = "joe";
 				myObject.Name = "o";
 			}
 			catch (ValidationException ex)
@@ -22,12 +23,21 @@ namespace Tests
 
 			try
 			{
+				myObject.ID = 13;
 				myObject.ID = 22;
 			}
 			catch (ValidationException ex)
 			{
 				System.Console.WriteLine(ex.Message);
 			}
+
+			System.Console.WriteLine(myObject.Name);
+			System.Console.WriteLine(myObject.ID.ToString());
+
+			myObject.Undo();
+
+			System.Console.WriteLine(myObject.Name);
+			System.Console.WriteLine(myObject.ID.ToString());
 
 			System.Console.ReadLine();
 		}
@@ -41,8 +51,11 @@ namespace Tests
 			AddRule(new IntegerBoundsValidationRule("ID", 10, 60));
 			AddRule(ValidateID, "ID");
 
-			mName = "bob";
-			mId = 40;
+			Name = "bob";
+			ID = 19;
+
+			// Must be called so that object is ready to be reset to this state
+			ResetUndo();
 		}
 
 		private string mName;
