@@ -393,19 +393,9 @@ namespace ALite
 				{
 					string errorMessage = "";
 
-					// Validate new value against standard rules
-					if (!mRules.Validate<T>(propertyName, ref errorMessage, newValue))
-					{
-						// Reset to former value
+					if (!Validate(propertyName, ref errorMessage, newValue)) {
 						throw new ValidationException("New value '" + newValue.ToString() + "' for property '" + propertyName + "' violates rule: " + errorMessage);
 					}
-
-					// Validate new value against custom rules
-					if (!mDelegateRules.Validate<T>(propertyName, ref errorMessage, oldValue, newValue))
-					{
-						// Reset to former value
-						throw new ValidationException("New value '" + newValue.ToString() + "' for property '" + propertyName + "' violates rule: " + errorMessage);
-					}		
 
 					// Store the existing value of the property
 					BackupValue<T>(propertyName, oldValue);
@@ -438,6 +428,17 @@ namespace ALite
 
 		#region Rules
 
+		protected bool Validate<T>(string propertyName, ref string errorMessage, T newValue)
+		{
+			// Validate new value against standard rules
+			if (!mRules.Validate<T>(propertyName, ref errorMessage, newValue)) return false;
+
+			// Validate new value against custom rules
+			if (!mDelegateRules.Validate<T>(propertyName, ref errorMessage, newValue)) return false;
+
+			return true;
+		}
+
 		protected void AddRule(IValidationRule rule)
 		{
 			mRules.Add(rule);
@@ -450,7 +451,7 @@ namespace ALite
 		/// <param name="delegateFunction">The name of the property that the function validates</param>
 		protected void AddRule(Validator delegateFunction, string propertyName)
 		{
-			mDelegateRules.Add(new DelegateValidationRule(delegateFunction, propertyName));
+			mDelegateRules.Add(delegateFunction, propertyName);
 		}
 
 		#endregion

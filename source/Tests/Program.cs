@@ -23,7 +23,7 @@ namespace Tests
 
 			try
 			{
-				myObject.ID = 13;
+				myObject.ID = 12;
 				myObject.ID = 22;
 			}
 			catch (ValidationException ex)
@@ -60,7 +60,19 @@ namespace Tests
 			AddRule(new StringLengthValidationRule("Name", 2, 10));
 			AddRule(new IntegerBoundsValidationRule("ID", 10, 60));
 			AddRule(new DateBoundsValidationRule("Date", new DateTime(2009, 1, 1), new DateTime(2009, 11, 30)));
+			AddRule(new DateBoundsValidationRule("Date", new DateTime(2009, 4, 4), new DateTime(2009, 10, 30)));
 			AddRule(ValidateID, "ID");
+
+			// Anonymous method for validating ID
+			AddRule(delegate(ref string errorMessage, object value)
+			{
+				if ((int)value == 12)
+				{
+					errorMessage = "ID cannot be 12";
+					return false;
+				}
+				return true;
+			}, "ID");
 
 			Name = "bob";
 			ID = 19;
@@ -92,9 +104,9 @@ namespace Tests
 			set { SetProperty<DateTime>("Date", ref mDate, value); }
 		}
 
-		public bool ValidateID(ref string errorMessage, object currentValue, object newValue)
+		public bool ValidateID(ref string errorMessage, object value)
 		{
-			if ((int)newValue > 20)
+			if ((int)value > 20)
 			{
 				errorMessage = "ID cannot be greater than 20.";
 				return false;

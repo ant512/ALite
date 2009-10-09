@@ -12,16 +12,18 @@ V3.0
    - IValidationRule interface;
    - StringLengthValidationRule class;
    - IntegerBoundsValidationRule class;
- - Removed "propertyName" parameter from "Validator" delegate signature as it is
-   (and always has been) unused.
+   - DateBoundsValidationRule class.
+ - Removed "propertyName" and "oldValue" parameters from "Validator" delegate
+   signature as they are unused.
  - Simple validation system returns error messages in the same way as the
    delegate validation system.
  - DBObject.Undo() catches any TargetInvocationException errors and re-raises
    them as UndoException errors.
  - Added DictionaryList class to store multiple values for a single key in a
-   dictionary.
- - Both validation schemes use the DictionaryList to maintain lists of
-   validators.
+   dictionary; used by the simple validation system.
+ - Delegate validation system uses a dictionary and multicast delegates to
+   store, locate and call the correct methods for each validation function.
+ - Delegate validation system can be used with anonymous methods.
 
 V2.30
 
