@@ -9,6 +9,8 @@ namespace ALite
 	/// </summary>
 	class ValidationRuleCollection : DictionaryList<string, IValidationRule>
 	{
+		#region Methods
+
 		/// <summary>
 		/// Add a new rule to the rule list.
 		/// </summary>
@@ -46,5 +48,7 @@ namespace ALite
 
 			return true;
 		}
+
+		#endregion
 	}
 }

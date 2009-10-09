@@ -34,6 +34,10 @@ namespace ALite
 
 		#region Constructors
 		
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="propertyName">Name of the property to validate.</param>
 		public ValidationRule(string propertyName)
 		{
 			mPropertyName = propertyName;
@@ -43,6 +47,12 @@ namespace ALite
 
 		#region Methods
 
+		/// <summary>
+		/// Validates the supplied value.
+		/// </summary>
+		/// <param name="value">The value to validate.</param>
+		/// <param name="errorMessage">Error message to populate if the validation fails.</param>
+		/// <returns>True if the value is valid; false if not.</returns>
 		public abstract bool Validate(object value, ref string errorMessage);
 
 		#endregion

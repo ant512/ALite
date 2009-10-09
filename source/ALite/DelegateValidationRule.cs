@@ -19,18 +19,31 @@ namespace ALite
 
 	#region Structs
 
+	/// <summary>
+	/// Stores validation delegates against their property names.
+	/// </summary>
 	[Serializable]
 	public struct DelegateValidationRule
 	{
 		#region Members
 
+		/// <summary>
+		/// Validation delegate that performs validation on the associated property name.
+		/// </summary>
 		private Validator mDelegate;
+
+		/// <summary>
+		/// Name of the property to validate.
+		/// </summary>
 		private string mPropertyName;
 
 		#endregion
 
 		#region Properties
 
+		/// <summary>
+		/// Get the delegate function.
+		/// </summary>
 		public Validator DelegateFunction
 		{
 			get
@@ -39,6 +52,9 @@ namespace ALite
 			}
 		}
 
+		/// <summary>
+		/// Get the name of the property to validate.
+		/// </summary>
 		public string PropertyName
 		{
 			get
@@ -51,6 +67,11 @@ namespace ALite
 
 		#region Constructors
 
+		/// <summary>
+		/// Constructor.
+		/// </summary>
+		/// <param name="delegateFunction">The function that will validate the specified property.</param>
+		/// <param name="propertyName">The name of the property to validate.</param>
 		public DelegateValidationRule(Validator delegateFunction, string propertyName)
 		{
 			mDelegate = delegateFunction;

@@ -6,31 +6,31 @@ using System.Runtime.Serialization;
 namespace ALite
 {
 	/// <summary>
-	/// Thrown if an error occurs when validating a DBObject
+	/// Thrown if an error occurs when validating a DBObject.
 	/// </summary>
 	[Serializable]
 	public class ValidationException : Exception
 	{
 		/// <summary>
-		/// Basic constructor
+		/// Basic constructor.
 		/// </summary>
 		public ValidationException() : base() { }
 
 		/// <summary>
-		/// Constructor
+		/// Constructor.
 		/// </summary>
-		/// <param name="message">Error message</param>
+		/// <param name="message">Error message.</param>
 		public ValidationException(string message) : base(message) { }
 
 		/// <summary>
-		/// Constructor
+		/// Constructor.
 		/// </summary>
 		/// <param name="info"></param>
 		/// <param name="context"></param>
 		protected ValidationException(SerializationInfo info, StreamingContext context) : base(info, context) { }
 
 		/// <summary>
-		/// Constructor
+		/// Constructor.
 		/// </summary>
 		/// <param name="message"></param>
 		/// <param name="innerException"></param>

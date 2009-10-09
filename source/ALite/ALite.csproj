@@ -39,6 +39,7 @@
   <ItemGroup>
     <Compile Include="DataAccess.cs" />
     <Compile Include="DataAccessException.cs" />
+    <Compile Include="DateBoundsValidationRule.cs" />
     <Compile Include="DBObject.cs" />
     <Compile Include="DBObjectCollection.cs" />
     <Compile Include="DelegateRuleCollection.cs" />

@@ -31,6 +31,16 @@ namespace Tests
 				System.Console.WriteLine(ex.Message);
 			}
 
+			try
+			{
+				myObject.Date = new DateTime(2009, 2, 2);
+				myObject.Date = new DateTime(2002, 2, 2);
+			}
+			catch (ValidationException ex)
+			{
+				System.Console.WriteLine(ex.Message);
+			}
+
 			System.Console.WriteLine(myObject.Name);
 			System.Console.WriteLine(myObject.ID.ToString());
 
@@ -49,10 +59,12 @@ namespace Tests
 		{
 			AddRule(new StringLengthValidationRule("Name", 2, 10));
 			AddRule(new IntegerBoundsValidationRule("ID", 10, 60));
+			AddRule(new DateBoundsValidationRule("Date", new DateTime(2009, 1, 1), new DateTime(2009, 11, 30)));
 			AddRule(ValidateID, "ID");
 
 			Name = "bob";
 			ID = 19;
+			Date = new DateTime(2009, 5, 5);
 
 			// Must be called so that object is ready to be reset to this state
 			ResetUndo();
@@ -60,6 +72,7 @@ namespace Tests
 
 		private string mName;
 		private int mId;
+		private DateTime mDate;
 
 		public string Name
 		{
@@ -71,6 +84,12 @@ namespace Tests
 		{
 			get { return mId; }
 			set { SetProperty<int>("ID", ref mId, value); }
+		}
+
+		public DateTime Date
+		{
+			get { return mDate; }
+			set { SetProperty<DateTime>("Date", ref mDate, value); }
 		}
 
 		public bool ValidateID(ref string errorMessage, object currentValue, object newValue)

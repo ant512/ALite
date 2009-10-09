@@ -12,10 +12,16 @@ namespace ALite
 	/// <typeparam name="TValue">Type of the values stored.</typeparam>
 	class DictionaryList<TKey, TValue> : ICollection<KeyValuePair<TKey, TValue>>
 	{
+		#region Members
+
 		/// <summary>
 		/// Dictionary used for storing lists of items
 		/// </summary>
 		private Dictionary<TKey, List<TValue>> mDictionary;
+
+		#endregion
+
+		#region Constructors
 
 		/// <summary>
 		/// Constructor.
@@ -24,6 +30,10 @@ namespace ALite
 		{
 			mDictionary = new Dictionary<TKey, List<TValue>>();
 		}
+
+		#endregion
+
+		#region Methods
 
 		/// <summary>
 		/// Gets the list of items for the specified key.
@@ -35,6 +45,8 @@ namespace ALite
 			if (!mDictionary.ContainsKey(key)) return null;
 			return mDictionary[key];
 		}
+
+		#endregion
 
 		#region ICollection<KeyValuePair<TKey,TValue>> Members
 
