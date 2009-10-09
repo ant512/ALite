@@ -1,4 +1,4 @@
-* Copyright (c) 2008, Antony Dzeryn
+* Copyright (c) 2008-2009, Antony Dzeryn
 * All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
@@ -24,7 +24,7 @@
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
   
-ALite V2.2
+ALite V3.0
 ----------
 
   ALite is a small, lightweight and unobtrusive framework for constructing
