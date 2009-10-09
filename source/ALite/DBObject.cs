@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Text;
 
 namespace ALite
 {
@@ -391,10 +392,17 @@ namespace ALite
 
 				if ((oldValue == null) || (!oldValue.Equals((T)newValue)))
 				{
-					string errorMessage = "";
+					List<string> errorMessages = new List<string>();
 
-					if (!Validate(propertyName, ref errorMessage, newValue)) {
-						throw new ValidationException("New value '" + newValue.ToString() + "' for property '" + propertyName + "' violates rule: " + errorMessage);
+					if (!Validate(propertyName, errorMessages, newValue)) {
+						StringBuilder concatErrors = new StringBuilder();
+						foreach (string err in errorMessages)
+						{
+							concatErrors.Append("\n - ");
+							concatErrors.Append(err);
+						}
+
+						throw new ValidationException("New value '" + newValue.ToString() + "' for property '" + propertyName + "' violates rules:" + concatErrors.ToString());
 					}
 
 					// Store the existing value of the property
@@ -428,17 +436,30 @@ namespace ALite
 
 		#region Rules
 
-		protected bool Validate<T>(string propertyName, ref string errorMessage, T newValue)
+		/// <summary>
+		/// Validate the supplied value using all rules.
+		/// </summary>
+		/// <typeparam name="T">The type of the property to validate.</typeparam>
+		/// <param name="propertyName">The name of the property to validate.</param>
+		/// <param name="errorMessages">Will contain any errors arising from the validation
+		/// attempt once the function ends.</param>
+		/// <param name="value">Value to validate.</param>
+		/// <returns>True if the value is valid; false if not.</returns>
+		protected bool Validate<T>(string propertyName, List<string> errorMessages, T value)
 		{
 			// Validate new value against standard rules
-			if (!mRules.Validate<T>(propertyName, ref errorMessage, newValue)) return false;
+			if (!mRules.Validate<T>(propertyName, errorMessages, value)) return false;
 
 			// Validate new value against custom rules
-			if (!mDelegateRules.Validate<T>(propertyName, ref errorMessage, newValue)) return false;
+			if (!mDelegateRules.Validate<T>(propertyName, errorMessages, value)) return false;
 
 			return true;
 		}
 
+		/// <summary>
+		/// Add an IValidationRule object to the rule list.
+		/// </summary>
+		/// <param name="rule">The IValidation object to add to the list.</param>
 		protected void AddRule(IValidationRule rule)
 		{
 			mRules.Add(rule);

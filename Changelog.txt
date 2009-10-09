@@ -24,6 +24,9 @@ V3.0
  - Delegate validation system uses a dictionary and multicast delegates to
    store, locate and call the correct methods for each validation function.
  - Delegate validation system can be used with anonymous methods.
+ - Validation errors are passed around in a list instead of in a string.
+ - Validation system runs all validators before returning the result, instead of
+   failing at the first error.
 
 V2.30
 

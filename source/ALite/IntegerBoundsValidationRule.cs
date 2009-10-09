@@ -88,23 +88,25 @@ namespace ALite
 		/// Validate the integer.
 		/// </summary>
 		/// <param name="value">The integer to validate.</param>
-		/// <param name="errorMessage">Error message output if an error occurs.</param>
+		/// <param name="errorMessages">List of error messages output if an error occurs.</param>
 		/// <returns>True if the validation passed; false if not.</returns>
-		public override bool Validate(object value, ref string errorMessage)
+		public override bool Validate(object value, List<string> errorMessages)
 		{
+			bool valid = true;
+
 			if (!ValidateMaxValue((int)value))
 			{
-				errorMessage = String.Format(IntegerTooLargeMessage, mMaxValue);
-				return false;
+				errorMessages.Add(String.Format(IntegerTooLargeMessage, mMaxValue));
+				valid = false;
 			}
 
 			if (!ValidateMinValue((int)value))
 			{
-				errorMessage = String.Format(IntegerTooSmallMessage, mMinValue);
-				return false;
+				errorMessages.Add(String.Format(IntegerTooSmallMessage, mMinValue));
+				valid = false;
 			}
-			
-			return true;
+
+			return valid;
 		}
 
 		/// <summary>

@@ -6,6 +6,6 @@ namespace ALite
 	public interface IValidationRule
 	{
 		string PropertyName { get; }
-		bool Validate(object value, ref string errorMessage);
+		bool Validate(object value, List<string> errorMessages);
 	}
 }

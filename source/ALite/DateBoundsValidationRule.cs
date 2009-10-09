@@ -89,23 +89,25 @@ namespace ALite
 		/// Validate the date.
 		/// </summary>
 		/// <param name="value">The date to validate.</param>
-		/// <param name="errorMessage">Error message output if an error occurs.</param>
+		/// <param name="errorMessages">List of error message output if an error occurs.</param>
 		/// <returns>True if the validation passed; false if not.</returns>
-		public override bool Validate(object value, ref string errorMessage)
+		public override bool Validate(object value, List<string> errorMessages)
 		{
+			bool valid = true;
+
 			if (!ValidateMaxValue((DateTime)value))
 			{
-				errorMessage = String.Format(DateTooLargeMessage, mMaxValue);
-				return false;
+				errorMessages.Add(String.Format(DateTooLargeMessage, mMaxValue));
+				valid = false;
 			}
 
 			if (!ValidateMinValue((DateTime)value))
 			{
-				errorMessage = String.Format(DateTooSmallMessage, mMinValue);
-				return false;
+				errorMessages.Add(String.Format(DateTooSmallMessage, mMinValue));
+				valid = false;
 			}
 
-			return true;
+			return valid;
 		}
 
 		/// <summary>

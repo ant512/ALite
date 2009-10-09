@@ -7,12 +7,12 @@ namespace ALite
 	#region Delegate Types
 
 	/// <summary>
-	/// Template for validation delegates
+	/// Template for validation delegates.
 	/// </summary>
-	/// <param name="errorMessage">Error message to return if the value is invalid</param>
-	/// <param name="value">The new value of the property</param>
-	/// <returns>True if valid, false if not</returns>
-	public delegate bool Validator(ref string errorMessage, object value);
+	/// <param name="errorMessages">List of error message populated if the value is invalid.</param>
+	/// <param name="value">The new value of the property.</param>
+	/// <returns>True if valid, false if not.</returns>
+	public delegate bool Validator(List<string> errorMessages, object value);
 
 	#endregion
 
@@ -28,10 +28,10 @@ namespace ALite
 		/// </summary>
 		/// <typeparam name="T">Type of the property to validate.</typeparam>
 		/// <param name="propertyName">Name of the property to validate.</param>
-		/// <param name="errorMessage">Error message returned if the value is invalid.</param>
+		/// <param name="errorMessages">List of error messages populated if the value is invalid.</param>
 		/// <param name="newValue">The new value of the property.</param>
 		/// <returns>True if the new value is valid; false if not.</returns>
-		public bool Validate<T>(string propertyName, ref string errorMessage, T newValue)
+		public bool Validate<T>(string propertyName, List<string> errorMessages, T newValue)
 		{
 			// Locate the delegate for the given property
 			if (this.ContainsKey(propertyName))
@@ -39,7 +39,7 @@ namespace ALite
 				Validator rule = this[propertyName];
 
 				// Is the value valid?
-				if (!rule(ref errorMessage, newValue))
+				if (!rule(errorMessages, newValue))
 				{
 					return false;
 				}

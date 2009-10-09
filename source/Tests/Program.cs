@@ -64,11 +64,11 @@ namespace Tests
 			AddRule(ValidateID, "ID");
 
 			// Anonymous method for validating ID
-			AddRule(delegate(ref string errorMessage, object value)
+			AddRule(delegate(List<string> errorMessages, object value)
 			{
 				if ((int)value == 12)
 				{
-					errorMessage = "ID cannot be 12";
+					errorMessages.Add("ID cannot be 12");
 					return false;
 				}
 				return true;
@@ -104,11 +104,11 @@ namespace Tests
 			set { SetProperty<DateTime>("Date", ref mDate, value); }
 		}
 
-		public bool ValidateID(ref string errorMessage, object value)
+		public bool ValidateID(List<string> errorMessages, object value)
 		{
 			if ((int)value > 20)
 			{
-				errorMessage = "ID cannot be greater than 20.";
+				errorMessages.Add("ID cannot be greater than 20.");
 				return false;
 			}
 

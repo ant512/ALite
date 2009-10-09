@@ -88,23 +88,25 @@ namespace ALite
 		/// Validate the string.
 		/// </summary>
 		/// <param name="value">The string to validate.</param>
-		/// <param name="errorMessage">Error message output if an error occurs.</param>
+		/// <param name="errorMessages">List of error messages output if an error occurs.</param>
 		/// <returns>True if the validation passed; false if not.</returns>
-		public override bool Validate(object value, ref string errorMessage)
+		public override bool Validate(object value, List<string> errorMessages)
 		{
+			bool valid = true;
+
 			if (!ValidateMaxLength((string)value))
 			{
-				errorMessage = String.Format(StringTooLongMessage, mMaxLength);
-				return false;
+				errorMessages.Add(String.Format(StringTooLongMessage, mMaxLength));
+				valid = false;
 			}
 
 			if (!ValidateMinLength((string)value))
 			{
-				errorMessage = String.Format(StringTooShortMessage, mMinLength);
-				return false;
+				errorMessages.Add(String.Format(StringTooShortMessage, mMinLength));
+				valid = false;
 			}
 			
-			return true;
+			return valid;
 		}
 
 		/// <summary>

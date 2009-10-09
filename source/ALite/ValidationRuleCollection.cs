@@ -25,10 +25,10 @@ namespace ALite
 		/// </summary>
 		/// <typeparam name="T">Type of the property to validate.</typeparam>
 		/// <param name="propertyName">Name of the property to validate.</param>
-		/// <param name="errorMessage">Error message returned if the value is invalid.</param>
+		/// <param name="errorMessages">List of error messages returned if the value is invalid.</param>
 		/// <param name="newValue">The new value for the property.</param>
 		/// <returns>True if the new value is valid; false if not.</returns>
-		public bool Validate<T>(string propertyName, ref string errorMessage, T newValue)
+		public bool Validate<T>(string propertyName, List<string> errorMessages, T newValue)
 		{
 			// Locate the list of rules for the current property
 			List<IValidationRule> rules = this.Values(propertyName);
@@ -39,7 +39,7 @@ namespace ALite
 				foreach (ValidationRule rule in rules)
 				{
 					// Is the value valid?
-					if (!rule.Validate(newValue, ref errorMessage))
+					if (!rule.Validate(newValue, errorMessages))
 					{
 						return false;
 					}
