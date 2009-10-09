@@ -33,6 +33,8 @@ namespace ALite
 			// Locate the list of rules for the current property
 			List<IValidationRule> rules = this.Values(propertyName);
 
+			bool valid = true;
+
 			if (rules != null)
 			{
 				// Validate new value against standard rules
@@ -41,12 +43,12 @@ namespace ALite
 					// Is the value valid?
 					if (!rule.Validate(newValue, errorMessages))
 					{
-						return false;
+						valid = false;
 					}
 				}
 			}
 
-			return true;
+			return valid;
 		}
 
 		#endregion

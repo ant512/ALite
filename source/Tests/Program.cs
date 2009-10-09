@@ -58,7 +58,7 @@ namespace Tests
 		public ObjectTest()
 		{
 			AddRule(new StringLengthValidationRule("Name", 2, 10));
-			AddRule(new IntegerBoundsValidationRule("ID", 10, 60));
+			AddRule(new IntegerBoundsValidationRule("ID", 13, 60));
 			AddRule(new DateBoundsValidationRule("Date", new DateTime(2009, 1, 1), new DateTime(2009, 11, 30)));
 			AddRule(new DateBoundsValidationRule("Date", new DateTime(2009, 4, 4), new DateTime(2009, 10, 30)));
 			AddRule(ValidateID, "ID");
@@ -106,9 +106,9 @@ namespace Tests
 
 		public bool ValidateID(List<string> errorMessages, object value)
 		{
-			if ((int)value > 20)
+			if ((int)value < 14)
 			{
-				errorMessages.Add("ID cannot be greater than 20.");
+				errorMessages.Add("ID cannot be less than 14.");
 				return false;
 			}
 

@@ -390,11 +390,16 @@ namespace ALite
 					return;
 				}
 
+				// Is the value different to the old value?
 				if ((oldValue == null) || (!oldValue.Equals((T)newValue)))
 				{
+					// Prepare a list in which to store validation error messages
 					List<string> errorMessages = new List<string>();
 
-					if (!Validate(propertyName, errorMessages, newValue)) {
+					if (!Validate(propertyName, errorMessages, newValue))
+					{
+
+						// Validation failed - combine all error messages and throw an exception
 						StringBuilder concatErrors = new StringBuilder();
 						foreach (string err in errorMessages)
 						{
@@ -405,15 +410,15 @@ namespace ALite
 						throw new ValidationException("New value '" + newValue.ToString() + "' for property '" + propertyName + "' violates rules:" + concatErrors.ToString());
 					}
 
-					// Store the existing value of the property
+					// Validation succeeded - store the existing value of the property
 					BackupValue<T>(propertyName, oldValue);
 
 					// Update the value
 					oldValue = newValue;
-				}
 
-				// Handle change event
-				OnPropertyChanged(propertyName);
+					// Handle change event
+					OnPropertyChanged(propertyName);
+				}
 			}
 		}
 
@@ -447,13 +452,15 @@ namespace ALite
 		/// <returns>True if the value is valid; false if not.</returns>
 		protected bool Validate<T>(string propertyName, List<string> errorMessages, T value)
 		{
+			bool valid = true;
+
 			// Validate new value against standard rules
-			if (!mRules.Validate<T>(propertyName, errorMessages, value)) return false;
+			if (!mRules.Validate<T>(propertyName, errorMessages, value)) valid = false;
 
 			// Validate new value against custom rules
-			if (!mDelegateRules.Validate<T>(propertyName, errorMessages, value)) return false;
+			if (!mDelegateRules.Validate<T>(propertyName, errorMessages, value)) valid = false;
 
-			return true;
+			return valid;
 		}
 
 		/// <summary>

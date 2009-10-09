@@ -33,20 +33,27 @@ namespace ALite
 		/// <returns>True if the new value is valid; false if not.</returns>
 		public bool Validate<T>(string propertyName, List<string> errorMessages, T newValue)
 		{
-			// Locate the delegate for the given property
+			bool valid = true;
+
+			// Are there any rules for this property?
 			if (this.ContainsKey(propertyName))
 			{
+				// Locate all rules
 				Validator rule = this[propertyName];
 
-				// Is the value valid?
-				if (!rule(errorMessages, newValue))
+				// Extract all method invocations from delegate - must do this so
+				// all delegates can run and any errors can be remembered.
+				foreach (Validator subrule in rule.GetInvocationList())
 				{
-					return false;
+					if (!subrule(errorMessages, newValue))
+					{
+						valid = false;
+					}
 				}
 			}
 
 			// New value is valid
-			return true;
+			return valid;
 		}
 
 		/// <summary>

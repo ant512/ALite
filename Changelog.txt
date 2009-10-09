@@ -27,6 +27,8 @@ V3.0
  - Validation errors are passed around in a list instead of in a string.
  - Validation system runs all validators before returning the result, instead of
    failing at the first error.
+ - DBObject's OnPropertyChanged event only fires if the property is actually
+   changed.
 
 V2.30 (20080918)
 

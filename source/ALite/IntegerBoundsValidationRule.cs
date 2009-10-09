@@ -17,12 +17,12 @@ namespace ALite
 		/// <summary>
 		/// Message returned when the integer being validated is too large.
 		/// </summary>
-		private const string IntegerTooLargeMessage = "Integer is larger than maximum value of {1}.";
+		private const string IntegerTooLargeMessage = "Integer is larger than maximum value of {0}.";
 
 		/// <summary>
 		/// Message returned when the integer being validated is too small.
 		/// </summary>
-		private const string IntegerTooSmallMessage = "Integer is smaller than minimum value of {1}.";
+		private const string IntegerTooSmallMessage = "Integer is smaller than minimum value of {0}.";
 
 		#endregion
 
