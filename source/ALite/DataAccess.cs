@@ -104,6 +104,8 @@ namespace ALite
 
 		#region Methods
 
+		#region Parameters
+
 		/// <summary>
 		/// Return a specific parameter from the parameter list
 		/// </summary>
@@ -113,6 +115,20 @@ namespace ALite
 		{
 			return mCommand.Parameters[name];
 		}
+
+		/// <summary>
+		/// Adds a parameter to the list
+		/// </summary>
+		/// <param name="name">The parameter name</param>
+		/// <param name="data">The value of the parameter</param>
+		public void AddParameter(string name, object data)
+		{
+			this.mParameters.Add(new SqlParameter(name, data));
+		}
+
+		#endregion
+
+		#region Database Interaction
 
 		/// <summary>
 		/// Open the connection to the database
@@ -213,15 +229,9 @@ namespace ALite
 			}
 		}
 
-		/// <summary>
-		/// Adds a parameter to the list
-		/// </summary>
-		/// <param name="name">The parameter name</param>
-		/// <param name="data">The value of the parameter</param>
-		public void AddParameter(string name, object data)
-		{
-			this.mParameters.Add(new SqlParameter(name, data));
-		}
+		#endregion
+
+		#region Data Retrieval
 
 		/// <summary>
 		/// Gets a guid from the results
@@ -430,9 +440,13 @@ namespace ALite
             {
                 return mDataReader.GetFloat(index);
             }
-        }
+		}
 
-        /// <summary>
+		#endregion
+
+		#region Data Navigation
+
+		/// <summary>
         /// Move to the next recordset
         /// </summary>
         /// <returns>Whether or not the next recordset was retrieved successfully</returns>
@@ -449,6 +463,8 @@ namespace ALite
 		{
 			return mDataReader.Read();
 		}
+
+		#endregion
 
 		#endregion
 

@@ -1,4 +1,4 @@
-V2.4
+V3.0
 
  - Split DBObject and DBObjectCollection interfaces into separate files.
  - Added Tests project.
@@ -18,6 +18,10 @@ V2.4
    delegate validation system.
  - DBObject.Undo() catches any TargetInvocationException errors and re-raises
    them as UndoException errors.
+ - Added DictionaryList class to store multiple values for a single key in a
+   dictionary.
+ - Both validation schemes use the DictionaryList to maintain lists of
+   validators.
 
 V2.30
 

@@ -4,31 +4,29 @@ using System.Text;
 
 namespace ALite
 {
-	class DelegateRuleCollection
+	/// <summary>
+	/// Collection of validation delegates.  Used by the DBObject to store all custom validation functions.
+	/// </summary>
+	class DelegateRuleCollection : DictionaryList<string, DelegateValidationRule>
 	{
-		private List<DelegateValidationRule> mDelegateList;
-
-		public DelegateRuleCollection()
-		{
-			mDelegateList = new List<DelegateValidationRule>();
-		}
-
-		public void Add(DelegateValidationRule rule)
-		{
-			mDelegateList.Add(rule);
-		}
-
-		public void Clear()
-		{
-			mDelegateList.Clear();
-		}
-
+		/// <summary>
+		/// Validate the new value using all validators specified for the given property name.
+		/// </summary>
+		/// <typeparam name="T">Type of the property to validate.</typeparam>
+		/// <param name="propertyName">Name of the property to validate.</param>
+		/// <param name="errorMessage">Error message returned if the value is invalid.</param>
+		/// <param name="oldValue">The current value of the property.</param>
+		/// <param name="newValue">The new value of the property.</param>
+		/// <returns>True if the new value is valid; false if not.</returns>
 		public bool Validate<T>(string propertyName, ref string errorMessage, T oldValue, T newValue)
 		{
-			foreach (DelegateValidationRule rule in mDelegateList)
+			// Locate the list of rules for the given property
+			List<DelegateValidationRule> rules = this.Values(propertyName);
+
+			if (rules != null)
 			{
-				// Have we found a relevant rule?
-				if (rule.PropertyName == propertyName)
+				// Check the new value against each of the rules
+				foreach (DelegateValidationRule rule in rules)
 				{
 					// Is the value valid?
 					if (!rule.DelegateFunction(ref errorMessage, oldValue, newValue))
@@ -38,7 +36,17 @@ namespace ALite
 				}
 			}
 
+			// New value is valid
 			return true;
+		}
+
+		/// <summary>
+		/// Add a new validation delegate to the list.
+		/// </summary>
+		/// <param name="rule">Delegate to add to the list.</param>
+		public void Add(DelegateValidationRule rule)
+		{
+			this.Add(new KeyValuePair<string, DelegateValidationRule>(rule.PropertyName, rule));
 		}
 	}
 }

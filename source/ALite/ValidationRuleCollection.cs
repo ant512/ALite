@@ -4,56 +4,42 @@ using System.Text;
 
 namespace ALite
 {
-	class ValidationRuleCollection
+	/// <summary>
+	/// Collection of validation rule objects.  Used by the DBObject to store all validation objects.
+	/// </summary>
+	class ValidationRuleCollection : DictionaryList<string, IValidationRule>
 	{
-		private Dictionary<string, List<IValidationRule>> mRules;
-
-		public ValidationRuleCollection()
-		{
-			mRules = new Dictionary<string, List<IValidationRule>>();
-		}
-
+		/// <summary>
+		/// Add a new rule to the rule list.
+		/// </summary>
+		/// <param name="rule">The rule to add to the list.</param>
 		public void Add(IValidationRule rule)
 		{
-			// Locate an existing list of rules for this property
-			List<IValidationRule> ruleList;
-
-			if (mRules.ContainsKey(rule.PropertyName))
-			{
-				ruleList = mRules[rule.PropertyName];
-			}
-			else
-			{
-				ruleList = new List<IValidationRule>();
-				mRules.Add(rule.PropertyName, ruleList);
-			}
-
-			// Add the new rule to the list
-			ruleList.Add(rule);
+			this.Add(new KeyValuePair<string, IValidationRule>(rule.PropertyName, rule));
 		}
 
-		public void Clear()
-		{
-			mRules.Clear();
-		}
-
+		/// <summary>
+		/// Validate the new value using all rules specified for the given property name.
+		/// </summary>
+		/// <typeparam name="T">Type of the property to validate.</typeparam>
+		/// <param name="propertyName">Name of the property to validate.</param>
+		/// <param name="errorMessage">Error message returned if the value is invalid.</param>
+		/// <param name="newValue">The new value for the property.</param>
+		/// <returns>True if the new value is valid; false if not.</returns>
 		public bool Validate<T>(string propertyName, ref string errorMessage, T newValue)
 		{
-			if (mRules.ContainsKey(propertyName))
-			{
-				List<IValidationRule> ruleList = mRules[propertyName];
+			// Locate the list of rules for the current property
+			List<IValidationRule> rules = this.Values(propertyName);
 
+			if (rules != null)
+			{
 				// Validate new value against standard rules
-				foreach (ValidationRule rule in ruleList)
+				foreach (ValidationRule rule in rules)
 				{
-					// Have we found a relevant rule?
-					if (rule.PropertyName == propertyName)
+					// Is the value valid?
+					if (!rule.Validate(newValue, ref errorMessage))
 					{
-						// Is the object valid?
-						if (!rule.Validate(newValue, ref errorMessage))
-						{
-							return false;
-						}
+						return false;
 					}
 				}
 			}

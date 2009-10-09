@@ -43,6 +43,7 @@
     <Compile Include="DBObjectCollection.cs" />
     <Compile Include="DelegateRuleCollection.cs" />
     <Compile Include="DelegateValidationRule.cs" />
+    <Compile Include="DictionaryList.cs" />
     <Compile Include="IDataAccess.cs" />
     <Compile Include="IDBObject.cs" />
     <Compile Include="IDBObjectCollection.cs" />
