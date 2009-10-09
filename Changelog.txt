@@ -28,7 +28,7 @@ V3.0
  - Validation system runs all validators before returning the result, instead of
    failing at the first error.
 
-V2.30
+V2.30 (20080918)
 
  - Various internal functions/variables renamed to fix VB.NET compatibility.
  - DBObject property change events are wired up to the DBObjectCollection.
