@@ -33,6 +33,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ChildDeleteTest\Child.cs" />
+    <Compile Include="ChildDeleteTest\ChildCollection.cs" />
+    <Compile Include="ChildDeleteTest\ChildTest.cs" />
+    <Compile Include="ITest.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

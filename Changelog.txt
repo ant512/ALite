@@ -42,6 +42,9 @@ V3.0
    - Validation errors are passed around in a list instead of in a string.
    - Added DBObject.RetrieveBackedUpProperty() to enable access to properties
      stored in the backup system.
+   - Saving a deleted DBObject raises a DBObjectDeleted event, to which the
+     DBObjectCollection subscribes.  The collection automatically removes the
+     deleted object from its list.
 
 
 V2.30 (20080918)

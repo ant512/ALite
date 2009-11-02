@@ -9,6 +9,11 @@ namespace Tests
 	{
 		static void Main(string[] args)
 		{
+			ITest test;
+			test = new ChildDeleteTest.ChildTest();
+			System.Console.Write(String.Format("{0}: ", test.Name));
+			System.Console.WriteLine(test.Test() ? "Passed" : "Failed");
+
 			ObjectTest myObject = new ObjectTest();
 
 			try

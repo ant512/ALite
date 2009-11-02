@@ -6,11 +6,15 @@ using System.Text;
 
 namespace ALite
 {
+	#region Events
+
 	/// <summary>
 	/// Event raised when a DBObject is deleted.
 	/// </summary>
 	/// <param name="sender">The object that raised the event.</param>
 	public delegate void DBObjectDeletedEventHandler(object sender);
+
+	#endregion
 
 	/// <summary>
 	/// Base class for objects that interact with the database
@@ -132,6 +136,14 @@ namespace ALite
 					if (!IsDeleted)
 					{
 						return Create();
+					}
+					else
+					{
+						// Object is new, so it has not been saved to the database,
+						// so we do not want to call the Delete() method.  However,
+						// we do want to fire the delete event to ensure that the
+						// object is correctly removed from any lists.
+						OnDBObjectDeleted();
 					}
 				}
 				else if (IsDeleted)

@@ -56,11 +56,6 @@ namespace ALite
 		public event DBObjectDeletedEventHandler ChildDeleted;
 
 		/// <summary>
-		/// Internal list of DBObjects
-		/// </summary>
-		private IList<T> mInternalList;
-
-		/// <summary>
 		/// Delegate for handling the list being changed
 		/// </summary>
 		/// <param name="sender">DBObjectCollection that fired the event</param>
@@ -85,6 +80,11 @@ namespace ALite
 		public event ListClearedEventHandler ListCleared;
 
 		#endregion
+
+		/// <summary>
+		/// Internal list of DBObjects
+		/// </summary>
+		private IList<T> mInternalList;
 
 		#endregion
 
