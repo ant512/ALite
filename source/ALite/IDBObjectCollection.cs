@@ -72,10 +72,5 @@ namespace ALite
 		/// Event fired when a property changes value
 		/// </summary>
 		event PropertyChangedEventHandler PropertyChanged;
-
-		/// <summary>
-		/// Event fired when a child object is deleted
-		/// </summary>
-		event DBObjectDeletedEventHandler DBObjectDeleted;
 	}
 }
