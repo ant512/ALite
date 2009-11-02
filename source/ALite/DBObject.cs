@@ -7,6 +7,12 @@ using System.Text;
 namespace ALite
 {
 	/// <summary>
+	/// Event raised when a DBObject is deleted.
+	/// </summary>
+	/// <param name="sender">The object that raised the event.</param>
+	public delegate void DBObjectDeletedEventHandler(object sender);
+
+	/// <summary>
 	/// Base class for objects that interact with the database
 	/// </summary>
 	[Serializable] public abstract class DBObject : IDBObject, INotifyPropertyChanged
@@ -25,7 +31,21 @@ namespace ALite
 
 		#region Members
 
-        /// <summary>
+		#region Events
+
+		/// <summary>
+		/// Event fired when a property changes value
+		/// </summary>
+		public event PropertyChangedEventHandler PropertyChanged;
+
+		/// <summary>
+		/// Event fired when the object is deleted
+		/// </summary>
+		public event DBObjectDeletedEventHandler DBObjectDeleted;
+
+		#endregion
+
+		/// <summary>
         /// Status of the object as a bitmask; use the Status enum to unpack it
         /// </summary>
 		private Status mStatus;
@@ -34,11 +54,6 @@ namespace ALite
         /// Stores backup data for later restoration
         /// </summary>
 		private Dictionary<string, object> mMemento;
-
-		/// <summary>
-		/// Event fired when a property changes value
-		/// </summary>
-		public event PropertyChangedEventHandler PropertyChanged;
 
 		/// <summary>
 		/// List of rules that properties are checked against before they are set
@@ -173,7 +188,23 @@ namespace ALite
 		{
 			MarkOld();
 			ResetUndo();
+
+			// Raise delete event
+			OnDBObjectDeleted();
+
 			return DBErrorCode.Ok;
+		}
+
+		/// <summary>
+		/// Called when the object is deleted
+		/// </summary>
+		protected void OnDBObjectDeleted()
+		{
+			DBObjectDeletedEventHandler handler = DBObjectDeleted;
+			if (handler != null)
+			{
+				handler(this);
+			}
 		}
 
 		#endregion

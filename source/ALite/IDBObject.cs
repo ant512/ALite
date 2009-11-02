@@ -15,6 +15,11 @@ namespace ALite
 		/// </summary>
 		event PropertyChangedEventHandler PropertyChanged;
 
+		/// <summary>
+		/// Object deleted event
+		/// </summary>
+		event DBObjectDeletedEventHandler DBObjectDeleted;
+
         /// <summary>
         /// Is the object dirty?
         /// </summary>

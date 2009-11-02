@@ -51,6 +51,11 @@ namespace ALite
 		public event PropertyChangedEventHandler ChildPropertyChanged;
 
 		/// <summary>
+		/// Event fired when a child is deleted
+		/// </summary>
+		public event DBObjectDeletedEventHandler ChildDeleted;
+
+		/// <summary>
 		/// Internal list of DBObjects
 		/// </summary>
 		private IList<T> mInternalList;
@@ -136,7 +141,7 @@ namespace ALite
 		/// <param name="item">Item to insert</param>
 		public void Insert(int index, T item)
 		{
-			item.PropertyChanged += this.ChildPropertyChanged;
+			AddChildEvents(item);
 			mInternalList.Insert(index, item);
 			OnListChanged(new ListChangedEventArgs(ListChangedType.ItemAdded, index));
 		}
@@ -152,7 +157,7 @@ namespace ALite
 				T item = mInternalList[index];
 				if (mInternalList.Remove(item))
 				{
-					item.PropertyChanged -= this.ChildPropertyChanged;
+					RemoveChildEvents(item);
 					OnListChanged(new ListChangedEventArgs(ListChangedType.ItemDeleted, -1, index));
 				}
 			}
@@ -168,7 +173,7 @@ namespace ALite
 			get { return mInternalList[index]; }
 			set
 			{
-				value.PropertyChanged += this.ChildPropertyChanged;
+				AddChildEvents(value);
 				mInternalList[index] = value;
 				OnListChanged(new ListChangedEventArgs(ListChangedType.ItemChanged, index));
 			}
@@ -184,7 +189,7 @@ namespace ALite
 		/// <param name="item">Them item to add</param>
 		public void Add(T item)
 		{
-			item.PropertyChanged += this.ChildPropertyChanged;
+			AddChildEvents(item);
 			mInternalList.Add(item);
 			OnListChanged(new ListChangedEventArgs(ListChangedType.ItemAdded, mInternalList.IndexOf(item)));
 		}
@@ -199,7 +204,7 @@ namespace ALite
 				// Remove all event handlers from objects
 				foreach (T item in mInternalList)
 				{
-					item.PropertyChanged -= this.ChildPropertyChanged;
+					RemoveChildEvents(item);
 				}
 
 				mInternalList.Clear();
@@ -256,7 +261,7 @@ namespace ALite
 				int index = mInternalList.IndexOf(item);
 				if (mInternalList.Remove(item))
 				{
-					item.PropertyChanged -= this.ChildPropertyChanged;
+					RemoveChildEvents(item);
 					OnListChanged(new ListChangedEventArgs(ListChangedType.ItemDeleted, -1, index));
 					return true;
 				}
@@ -330,6 +335,7 @@ namespace ALite
 		{
 			mInternalList = new List<T>();
 			ChildPropertyChanged += new PropertyChangedEventHandler(HandleChildPropertyChanged);
+			ChildDeleted += new DBObjectDeletedEventHandler(HandleChildDeleted);
 			MarkNew();
 		}
 
@@ -618,6 +624,46 @@ namespace ALite
 		private void HandleChildPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			MarkListDirty();
+		}
+
+		#endregion
+
+		#region List Changed
+
+		/// <summary>
+		/// Called when a child is deleted.  Removes all event listeners
+		/// from the child and removes the child from the list.
+		/// </summary>
+		/// <param name="sender">The child that has been deleted</param>
+		private void HandleChildDeleted(object sender)
+		{
+			T child = (T)sender;
+			RemoveChildEvents(child);
+			Remove(child);
+		}
+
+		#endregion
+
+		#region Child Events
+
+		/// <summary>
+		/// Remove all events from the child
+		/// </summary>
+		/// <param name="child">Child to remove events from</param>
+		private void RemoveChildEvents(T child)
+		{
+			child.DBObjectDeleted -= this.ChildDeleted;
+			child.PropertyChanged -= this.ChildPropertyChanged;
+		}
+
+		/// <summary>
+		/// Add all events to the child
+		/// </summary>
+		/// <param name="child">Child to remove events from</param>
+		private void AddChildEvents(T child)
+		{
+			child.DBObjectDeleted += this.ChildDeleted;
+			child.PropertyChanged += this.ChildPropertyChanged;
 		}
 
 		#endregion
