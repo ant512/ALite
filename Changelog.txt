@@ -1,34 +1,43 @@
 V3.0
 
- - Split DBObject and DBObjectCollection interfaces into separate files.
- - Added Tests project.
- - Minor optimisations to SetProperty() and Undo() methods of DBObject.
- - Added locking to various places in DBObject and DBObjectCollection to
-   fix potential problems in multithreaded applications.
- - DBObjectCollection.Clear() removes all of the list's event listeners from
-   the child objects.
- - Refactored delegate and simple validation lists into their own classes.
- - Completely refactored simple validation system to be extensible; added:
-   - IValidationRule interface;
-   - StringLengthValidationRule class;
-   - IntegerBoundsValidationRule class;
-   - DateBoundsValidationRule class.
- - Removed "propertyName" and "oldValue" parameters from "Validator" delegate
-   signature as they are unused.
- - Simple validation system returns error messages in the same way as the
-   delegate validation system.
- - DBObject.Undo() catches any TargetInvocationException errors and re-raises
-   them as UndoException errors.
- - Added DictionaryList class to store multiple values for a single key in a
-   dictionary; used by the simple validation system.
- - Delegate validation system uses a dictionary and multicast delegates to
-   store, locate and call the correct methods for each validation function.
- - Delegate validation system can be used with anonymous methods.
- - Validation errors are passed around in a list instead of in a string.
- - Validation system runs all validators before returning the result, instead of
-   failing at the first error.
- - DBObject's OnPropertyChanged event only fires if the property is actually
-   changed.
+ - Fixes:
+   - Split DBObject and DBObjectCollection interfaces into separate files.
+   - Minor optimisations to SetProperty() and Undo() methods of DBObject.
+   - Added locking to various places in DBObject and DBObjectCollection to
+     fix potential problems in multithreaded applications.
+   - DBObjectCollection.Clear() removes all of the list's event listeners from
+     the child objects.
+   - Refactored delegate and simple validation lists into their own classes.
+   - Removed "propertyName" and "oldValue" parameters from "Validator" delegate
+     signature as they are unused.
+   - Simple validation system returns error messages in the same way as the
+     delegate validation system.
+   - DBObject.Undo() catches any TargetInvocationException errors and re-raises
+     them as UndoException errors.
+   - Validation system runs all validators before returning the result, instead
+     of failing at the first error.
+   - DBObject's OnPropertyChanged event only fires if the property is actually
+     changed.
+   - Renamed DBObject.BackupValue to DBObject.BackupProperty.
+ 
+ - New Features:
+   - Added Tests project.
+   - Completely refactored simple validation system to be extensible; added:
+     - IValidationRule interface;
+     - StringLengthValidationRule class;
+     - IntegerBoundsValidationRule class;
+     - DateBoundsValidationRule class.
+   - Split DBObject.Undo() into vitual Undo() method and protected
+     RestoreBackedUpState() method to enable more interactive undo overriding.
+   - Split DBObject.ResetUndo() into virtual ResetUndo() method and protected
+     ClearBackedUpState() method to enable more interactive reset overriding.
+   - Added DictionaryList class to store multiple values for a single key in a
+     dictionary; used by the simple validation system.
+   - Delegate validation system uses a dictionary and multicast delegates to
+     store, locate and call the correct methods for each validation function.
+   - Delegate validation system can be used with anonymous methods.
+   - Validation errors are passed around in a list instead of in a string.
+
 
 V2.30 (20080918)
 
@@ -39,11 +48,13 @@ V2.30 (20080918)
  - Removed Created property from DBObject.
  - Removed Updated property from DBObject.
 
+
 V2.20 (20080818)
 
  - Fixed incorrect comments for DataAccess.Read() and DataAccess.NextResult().
  - Sproc called correctly by DataAccess object if sproc is chosen data retrieval
    method.
+
 
 V2.10 (20080617)
 
@@ -63,6 +74,7 @@ V2.10 (20080617)
  - Renamed DBObject.ValidationDelegate to Validator.
  - Fixed a variety of FxCop warnings.
 
+
 V2.0 (20080606)
 
  - Added delegate-based validation system.
@@ -79,6 +91,7 @@ V2.0 (20080606)
  - Status of DBObjects and collections is tracked by the undo system.
  - Replaced individual status variables with a single bitmask to make undoing
    changes easier.
+
 
 V1.0
 

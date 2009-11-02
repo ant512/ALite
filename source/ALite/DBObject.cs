@@ -255,16 +255,37 @@ namespace ALite
 		/// a single change transaction.
 		/// This method calls "OnResetUndo()", which should be overridden if extra functionality is needed.
 		/// </summary>
-		public void ResetUndo()
+		public virtual void ResetUndo()
+		{
+			ClearBackedUpState();
+
+			// Call any user code
+			OnResetUndo();
+		}
+
+		/// <summary>
+		/// Clears the list of backed up properties and stores the current
+		/// state of the object in the backup list.
+		/// </summary>
+		protected void ClearBackedUpState()
 		{
 			// Flush any existing undo data
 			mMemento.Clear();
 
 			// Store the current status
 			mMemento.Add("mStatus", mStatus);
+		}
+
+		/// <summary>
+		/// Restores the object to its state at the last call to "ResetUndo().
+		/// </summary>
+		/// <see cref="DBObject.RestoreProperties"/>
+		public virtual void Undo()
+		{
+			RestoreBackedUpState();
 
 			// Call any user code
-			OnResetUndo();
+			OnUndo();
 		}
 
 		/// <summary>
@@ -281,8 +302,8 @@ namespace ALite
 		/// 
 		/// The TargetInvocationException is caught and wrapped in an UndoException.
 		/// </summary>
-		public void Undo()
-		{
+		protected void RestoreBackedUpState() {
+
 			// Get type of the object via reflection
 			Type t = this.GetType();
 			PropertyInfo[] infos = t.GetProperties();
@@ -330,19 +351,18 @@ namespace ALite
 
 			// Clear the backed up property list
 			mMemento.Clear();
-
-			// Call any user code
-			OnUndo();
 		}
 
 		/// <summary>
 		/// Backup the supplied value in the memento list.  Does not back up the value
-		/// if a value for the property already exists in the memento list.
+		/// if a value for the property already exists in the memento list, ensuring that
+		/// the only stored value is that which existed at the start of the current
+		/// transaction.
 		/// </summary>
 		/// <typeparam name="T">Type of object to store</typeparam>
 		/// <param name="propertyName">Name of the property for which the value is appropriate</param>
 		/// <param name="value">Current value of the supplied property</param>
-		protected void BackupValue<T>(string propertyName, T value)
+		protected void BackupProperty<T>(string propertyName, T value)
 		{
 			lock (mMemento)
 			{
@@ -411,7 +431,7 @@ namespace ALite
 					}
 
 					// Validation succeeded - store the existing value of the property
-					BackupValue<T>(propertyName, oldValue);
+					BackupProperty<T>(propertyName, oldValue);
 
 					// Update the value
 					oldValue = newValue;
