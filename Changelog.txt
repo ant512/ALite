@@ -40,6 +40,8 @@ V3.0
      store, locate and call the correct methods for each validation function.
    - Delegate validation system can be used with anonymous methods.
    - Validation errors are passed around in a list instead of in a string.
+   - Added DBObject.RetrieveBackedUpProperty() to enable access to properties
+     stored in the backup system.
 
 
 V2.30 (20080918)

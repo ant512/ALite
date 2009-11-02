@@ -373,6 +373,27 @@ namespace ALite
 			}
 		}
 
+		/// <summary>
+		/// Fetch a property from the memento list.  If the value returned is a reference
+		/// type it should not be changed.
+		/// </summary>
+		/// <typeparam name="T">The type of the property to retrieve.</typeparam>
+		/// <param name="propertyName">The name of the property to retrieve.</param>
+		/// <returns>The object if it exists, or the default value for the parameter
+		/// type if not.</returns>
+		/// <remarks>In this situation, it would be nice if C# offered C++'s ability to
+		/// return const references.</remarks>
+		protected T RetrieveBackupProperty<T>(string propertyName)
+		{
+			if (mMemento.ContainsKey(propertyName))
+			{
+				return (T)mMemento[propertyName];
+			}
+
+			// Return the closest thing to null we can for this type
+			return default(T);
+		}
+
 		#endregion
 
 		#region Stub Methods
