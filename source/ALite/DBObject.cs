@@ -187,8 +187,8 @@ namespace ALite
 		/// </summary>
 		public void MarkDirty()
 		{
-			mStatus |= Status.Dirty;
 			OnMarkDirty();
+			mStatus |= Status.Dirty;
 		}
 
 		/// <summary>
@@ -196,8 +196,8 @@ namespace ALite
 		/// </summary>
 		public void MarkNew()
 		{
-			mStatus = Status.NewStatus | Status.Dirty;
 			OnMarkNew();
+			mStatus = Status.NewStatus | Status.Dirty;
 		}
 
 		/// <summary>
@@ -205,8 +205,8 @@ namespace ALite
 		/// </summary>
 		public void MarkOld()
 		{
-			mStatus = (mStatus & Status.Deleted);
 			OnMarkOld();
+			mStatus = (mStatus & Status.Deleted);
 		}
 
 		/// <summary>
@@ -214,8 +214,8 @@ namespace ALite
 		/// </summary>
 		public void MarkDeleted()
 		{
-			mStatus |= Status.Deleted | Status.Dirty;
 			OnMarkDeleted();
+			mStatus |= Status.Deleted | Status.Dirty;
 		}
 
 		#endregion
@@ -255,12 +255,12 @@ namespace ALite
 		/// a single change transaction.
 		/// This method calls "OnResetUndo()", which should be overridden if extra functionality is needed.
 		/// </summary>
-		public virtual void ResetUndo()
+		public void ResetUndo()
 		{
-			ClearBackedUpState();
-
 			// Call any user code
 			OnResetUndo();
+
+			ClearBackedUpState();
 		}
 
 		/// <summary>
@@ -280,12 +280,12 @@ namespace ALite
 		/// Restores the object to its state at the last call to "ResetUndo().
 		/// </summary>
 		/// <see cref="DBObject.RestoreProperties"/>
-		public virtual void Undo()
+		public void Undo()
 		{
-			RestoreBackedUpState();
-
 			// Call any user code
 			OnUndo();
+
+			RestoreBackedUpState();
 		}
 
 		/// <summary>

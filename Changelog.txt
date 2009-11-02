@@ -19,6 +19,13 @@ V3.0
    - DBObject's OnPropertyChanged event only fires if the property is actually
      changed.
    - Renamed DBObject.BackupValue to DBObject.BackupProperty.
+   - Split DBObject.Undo() into Undo() and protected RestoreBackedUpState().
+   - Split DBObject.ResetUndo() into virtual ResetUndo() protected
+     ClearBackedUpState().
+   - Altered MarkX(), ResetUndo() and Undo() methods of DBObject class so that
+     OnX() stub methods are called before changes are made to the class,
+     allowing user code to work with the current state of the object and any
+     backup data.
  
  - New Features:
    - Added Tests project.
@@ -27,10 +34,6 @@ V3.0
      - StringLengthValidationRule class;
      - IntegerBoundsValidationRule class;
      - DateBoundsValidationRule class.
-   - Split DBObject.Undo() into vitual Undo() method and protected
-     RestoreBackedUpState() method to enable more interactive undo overriding.
-   - Split DBObject.ResetUndo() into virtual ResetUndo() method and protected
-     ClearBackedUpState() method to enable more interactive reset overriding.
    - Added DictionaryList class to store multiple values for a single key in a
      dictionary; used by the simple validation system.
    - Delegate validation system uses a dictionary and multicast delegates to
