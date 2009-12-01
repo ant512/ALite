@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using ALite;
+using System.Transactions;
+using System.Threading;
 
 namespace Tests
 {
@@ -9,6 +11,27 @@ namespace Tests
 	{
 		static void Main(string[] args)
 		{
+			ObjectTest obj = new ObjectTest();
+			obj.ID = 15;
+
+			try
+			{
+				using (TransactionScope scope = new TransactionScope())
+				{
+					obj.ID = 14;
+					obj.Name = "Joe";
+					obj.ID = 12;
+
+					scope.Complete();
+				}
+			}
+			catch (ValidationException ex)
+			{
+				System.Console.WriteLine(ex.Message);
+			}
+
+			System.Console.WriteLine(obj.ID);
+
 			ITest test;
 			test = new ChildDeleteTest.ChildTest();
 			System.Console.Write(String.Format("{0}: ", test.Name));
@@ -93,19 +116,19 @@ namespace Tests
 
 		public string Name
 		{
-			get { return mName; }
+			get { return GetProperty<string>("Name", ref mName); }
 			set { SetProperty<string>("Name", ref mName, value); }
 		}
 
 		public int ID
 		{
-			get { return mId; }
+			get { return GetProperty<int>("ID", ref mId); }
 			set { SetProperty<int>("ID", ref mId, value); }
 		}
 
 		public DateTime Date
 		{
-			get { return mDate; }
+			get { return GetProperty<DateTime>("Date", ref mDate); }
 			set { SetProperty<DateTime>("Date", ref mDate, value); }
 		}
 

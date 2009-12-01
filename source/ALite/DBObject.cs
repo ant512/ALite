@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using System.Transactions;
 
 namespace ALite
 {
@@ -19,7 +20,7 @@ namespace ALite
 	/// <summary>
 	/// Base class for objects that interact with the database
 	/// </summary>
-	[Serializable] public abstract class DBObject : IDBObject, INotifyPropertyChanged
+	[Serializable] public abstract class DBObject : IDBObject, INotifyPropertyChanged, IEnlistmentNotification
 	{
 		#region Enums
 
@@ -68,6 +69,16 @@ namespace ALite
 		/// List of delegates that function as custom rules
 		/// </summary>
 		private DelegateRuleCollection mDelegateRules;
+
+		/// <summary>
+		/// Tracks transactional locks.
+		/// </summary>
+		private TransactionLock mLock = new TransactionLock();
+
+		/// <summary>
+		/// Tracks if the object has been enlisted in a transaction or not.
+		/// </summary>
+		bool mEnlisted = false;
 
 		#endregion
 
@@ -468,6 +479,12 @@ namespace ALite
 		{
 			lock (this)
 			{
+				// Acquire a lock for the current transaction
+				mLock.AcquireLock();
+
+				// Enlist the object in the current transaction, if it has not been enlisted already
+				Enlist();
+
 				// Are we trying to set a null value to null?
 				if ((oldValue == null) && (newValue == null))
 				{
@@ -567,6 +584,89 @@ namespace ALite
 		}
 
 		#endregion
+
+		#endregion
+
+		#region Transactions
+
+		#region IEnlistmentNotification Members
+
+		public void Commit(Enlistment enlistment)
+		{
+			ResetUndo();
+			mEnlisted = false;
+			mLock.ReleaseLock();
+			enlistment.Done();
+		}
+
+		public void InDoubt(Enlistment enlistment)
+		{
+			mLock.ReleaseLock();
+			mEnlisted = false;
+			enlistment.Done();
+		}
+
+		public void Prepare(PreparingEnlistment preparingEnlistment)
+		{
+			preparingEnlistment.Prepared();
+		}
+
+		public void Rollback(Enlistment enlistment)
+		{
+			Undo();
+			mLock.ReleaseLock();
+			mEnlisted = false;
+			enlistment.Done();
+		}
+
+		#endregion
+
+		/// <summary>
+		/// Enlist the object in the transaction.  Resets the undo system to ensure that it will be rolled back
+		/// to the current state in the event of the transaction aborting.
+		/// </summary>
+		private void Enlist()
+		{
+			lock (this)
+			{
+				// Add object to transaction
+				if (Transaction.Current != null)
+				{
+					if (!mEnlisted)
+					{
+						ResetUndo();
+						Transaction.Current.EnlistVolatile(this, EnlistmentOptions.None);
+						mEnlisted = true;
+					}
+				}
+			}
+		}
+
+		/// <summary>
+		/// Get the value of the specified property.  Returns the latest value for the current transaction, or the last known
+		/// good value for other transactions.
+		/// </summary>
+		/// <typeparam name="T">The type of the property.</typeparam>
+		/// <param name="propertyName">The name of the property.</param>
+		/// <param name="value">The property's current value, passed by reference.</param>
+		/// <returns>The value of the property.</returns>
+		protected T GetProperty<T>(string propertyName, ref T value) {
+			if (Transaction.Current != null) {
+				if (mLock.CurrentTransaction != Transaction.Current) {
+
+					// Another transaction is modifying the object - if this property has been changed,
+					// fetch the old value from the memento object
+					if (mMemento.ContainsKey(propertyName))
+					{
+						return (T)mMemento[propertyName];
+					}
+				}
+			}
+
+			// Either current transaction is modifying transaction, or property has not changed, so
+			// return current value
+			return value;
+		}
 
 		#endregion
 	}
