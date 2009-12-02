@@ -4,34 +4,60 @@ using System.Text;
 using ALite;
 using System.Transactions;
 using System.Threading;
+using System.Diagnostics;
 
 namespace Tests
 {
 	class Program
 	{
+		static ObjectTest mObj;
+
+		static void ThreadTest()
+		{
+			using (TransactionScope scope = new TransactionScope())
+			{
+				bool valid = true;
+
+				try
+				{
+					mObj.ID = 14;
+					mObj.Name = "Joe";
+					mObj.ID = 12;
+				}
+				catch (ValidationException ex)
+				{
+					System.Console.WriteLine(ex.Message);
+					valid = false;
+				}
+
+				if (valid) scope.Complete();
+			}
+
+			System.Console.WriteLine(mObj.ID);
+		}
+
 		static void Main(string[] args)
 		{
-			ObjectTest obj = new ObjectTest();
-			obj.ID = 15;
+			mObj = new ObjectTest();
+			mObj.ID = 15;
 
-			try
-			{
-				using (TransactionScope scope = new TransactionScope())
-				{
-					obj.ID = 14;
-					obj.Name = "Joe";
-					obj.ID = 12;
+			//ThreadTest();
 
-					scope.Complete();
-				}
-			}
-			catch (ValidationException ex)
+			int threads = 6;
+
+			Thread[] t = new Thread[threads];
+			for (int i = 0; i < t.Length; ++i)
 			{
-				System.Console.WriteLine(ex.Message);
+				t[i] = new Thread(ThreadTest);
 			}
 
-			System.Console.WriteLine(obj.ID);
+			for (int i = 0; i < t.Length; ++i)
+			{
+				t[i].Start();
+			}
 
+
+			/*
 			ITest test;
 			test = new ChildDeleteTest.ChildTest();
 			System.Console.Write(String.Format("{0}: ", test.Name));
@@ -76,6 +102,7 @@ namespace Tests
 
 			System.Console.WriteLine(myObject.Name);
 			System.Console.WriteLine(myObject.ID.ToString());
+			 * */
 
 			System.Console.ReadLine();
 		}

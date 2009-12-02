@@ -32,6 +32,8 @@ namespace ALite
 			}
 		}
 
+		public bool IsLocked() { return mCurrentTransaction != null; }
+
 		/// <summary>
 		/// Acquires the lock for the current transaction.  Blocks if another transaction has already acquired the lock.
 		/// </summary>
@@ -46,17 +48,17 @@ namespace ALite
 		/// <param name="transaction"></param>
 		void AcquireLock(Transaction transaction)
 		{
-			// Abort trying to lock if there is no transaction to receive the lock
-			if (transaction == null) return;
-
-			// Owning transaction trying to reacquire lock
-			if (mCurrentTransaction == transaction) return;
-
-			// If not locked, acquire the lock
-			if (mCurrentTransaction == null)
+			lock (this)
 			{
-				mCurrentTransaction = transaction;
-				return;
+				// Owning transaction trying to reacquire lock
+				if (mCurrentTransaction == transaction) return;
+
+				// If not locked, acquire the lock
+				if (mCurrentTransaction == null)
+				{
+					mCurrentTransaction = transaction;
+					return;
+				}
 			}
 
 			// Need to queue the transaction until the lock is released
@@ -69,7 +71,6 @@ namespace ALite
 		/// <param name="transaction">The transaction to enqueue.</param>
 		private void QueueTransaction(Transaction transaction)
 		{
-
 			ManualResetEvent manualEvent = new ManualResetEvent(false);
 
 			KeyValuePair<Transaction, ManualResetEvent> pair;
@@ -81,20 +82,23 @@ namespace ALite
 			}
 
 			// Ensure that the transaction removes itself from the queue when it completes
-			transaction.TransactionCompleted += delegate
+			if (transaction != null)
 			{
-				lock (this)
+				transaction.TransactionCompleted += delegate
 				{
-					mTransactionQueue.Remove(pair);
-				}
-				lock (manualEvent)
-				{
-					if (manualEvent.SafeWaitHandle.IsClosed == false)
+					lock (this)
 					{
-						manualEvent.Set();
+						mTransactionQueue.Remove(pair);
 					}
-				}
-			};
+					lock (manualEvent)
+					{
+						if (manualEvent.SafeWaitHandle.IsClosed == false)
+						{
+							manualEvent.Set();
+						}
+					}
+				};
+			}
 
 			// Block until the transaction is signalled
 			manualEvent.WaitOne();

@@ -78,7 +78,11 @@ namespace ALite
 		/// <summary>
 		/// Tracks if the object has been enlisted in a transaction or not.
 		/// </summary>
-		bool mEnlisted = false;
+		bool mIsEnlisted = false;
+
+		bool mIsRollingBack = false;
+
+		bool mTransactionFailed = false;
 
 		#endregion
 
@@ -323,11 +327,14 @@ namespace ALite
 		/// </summary>
 		protected void ClearBackedUpState()
 		{
-			// Flush any existing undo data
-			mMemento.Clear();
+			lock (mMemento)
+			{
+				// Flush any existing undo data
+				mMemento.Clear();
 
-			// Store the current status
-			mMemento.Add("mStatus", mStatus);
+				// Store the current status
+				mMemento.Add("mStatus", mStatus);
+			}
 		}
 
 		/// <summary>
@@ -356,8 +363,8 @@ namespace ALite
 		/// 
 		/// The TargetInvocationException is caught and wrapped in an UndoException.
 		/// </summary>
-		protected void RestoreBackedUpState() {
-
+		protected void RestoreBackedUpState()
+		{
 			// Get type of the object via reflection
 			Type t = this.GetType();
 			PropertyInfo[] infos = t.GetProperties();
@@ -365,6 +372,9 @@ namespace ALite
 			// Obtain lock to prevent object changing whilst existing changes are reverted
 			lock (this)
 			{
+				// Remember that the object is rolling back
+				mIsRollingBack = true;
+
 				// Loop through all backed up properties
 				IEnumerator<string> keys = mMemento.Keys.GetEnumerator();
 
@@ -382,6 +392,11 @@ namespace ALite
 							// Reset the property to the stored value
 							if (info.Name == keys.Current)
 							{
+								if (keys.Current == "ID")
+								{
+									System.Diagnostics.Debug.WriteLine(keys.Current);
+								}
+
 								try
 								{
 									info.SetValue(this, propertyValue, null);
@@ -401,10 +416,13 @@ namespace ALite
 				{
 					mStatus = (Status)mMemento["mStatus"];
 				}
-			}
 
-			// Clear the backed up property list
-			mMemento.Clear();
+				// Clear the backed up property list
+				mMemento.Clear();
+
+				// No longer rolling back
+				mIsRollingBack = false;
+			}
 		}
 
 		/// <summary>
@@ -418,11 +436,15 @@ namespace ALite
 		/// <param name="value">Current value of the supplied property</param>
 		protected void BackupProperty<T>(string propertyName, T value)
 		{
-			lock (mMemento)
+			// Only back up if we're running in a transaction
+			if (mLock.IsLocked())
 			{
-				if (!mMemento.ContainsKey(propertyName))
+				lock (mMemento)
 				{
-					mMemento.Add(propertyName, value);
+					if (!mMemento.ContainsKey(propertyName))
+					{
+						mMemento.Add(propertyName, value);
+					}
 				}
 			}
 		}
@@ -439,13 +461,16 @@ namespace ALite
 		/// return const references.</remarks>
 		protected T RetrieveBackupProperty<T>(string propertyName)
 		{
-			if (mMemento.ContainsKey(propertyName))
+			lock (mMemento)
 			{
-				return (T)mMemento[propertyName];
-			}
+				if (mMemento.ContainsKey(propertyName))
+				{
+					return (T)mMemento[propertyName];
+				}
 
-			// Return the closest thing to null we can for this type
-			return default(T);
+				// Return the closest thing to null we can for this type
+				return default(T);
+			}
 		}
 
 		#endregion
@@ -479,12 +504,22 @@ namespace ALite
 		{
 			lock (this)
 			{
-				// Acquire a lock for the current transaction
-				mLock.AcquireLock();
+				// Use shortcut if the object is rolling back to a previous state
+				if (mIsRollingBack)
+				{
+					oldValue = newValue;
+					return;
+				}
+			}
 
-				// Enlist the object in the current transaction, if it has not been enlisted already
-				Enlist();
+			// Acquire a lock for the current transaction
+			mLock.AcquireLock();
 
+			// Enlist the object in the current transaction, if it has not been enlisted already
+			Enlist();
+
+			lock (this)
+			{
 				// Are we trying to set a null value to null?
 				if ((oldValue == null) && (newValue == null))
 				{
@@ -499,6 +534,8 @@ namespace ALite
 
 					if (!Validate(propertyName, errorMessages, newValue))
 					{
+						// Remember that the transaction failed
+						mTransactionFailed = true;
 
 						// Validation failed - combine all error messages and throw an exception
 						StringBuilder concatErrors = new StringBuilder();
@@ -585,24 +622,25 @@ namespace ALite
 
 		#endregion
 
-		#endregion
-
 		#region Transactions
 
 		#region IEnlistmentNotification Members
 
 		public void Commit(Enlistment enlistment)
 		{
-			ResetUndo();
-			mEnlisted = false;
-			mLock.ReleaseLock();
-			enlistment.Done();
+			lock (this)
+			{
+				ResetUndo();
+				mIsEnlisted = false;
+				mLock.ReleaseLock();
+				enlistment.Done();
+			}
 		}
 
 		public void InDoubt(Enlistment enlistment)
 		{
+			mIsEnlisted = false;
 			mLock.ReleaseLock();
-			mEnlisted = false;
 			enlistment.Done();
 		}
 
@@ -613,10 +651,14 @@ namespace ALite
 
 		public void Rollback(Enlistment enlistment)
 		{
-			Undo();
-			mLock.ReleaseLock();
-			mEnlisted = false;
-			enlistment.Done();
+			lock (this)
+			{
+				Undo();
+				mIsEnlisted = false;
+				mTransactionFailed = false;
+				mLock.ReleaseLock();
+				enlistment.Done();
+			}
 		}
 
 		#endregion
@@ -632,11 +674,15 @@ namespace ALite
 				// Add object to transaction
 				if (Transaction.Current != null)
 				{
-					if (!mEnlisted)
+					if (!mIsEnlisted)
 					{
-						ResetUndo();
-						Transaction.Current.EnlistVolatile(this, EnlistmentOptions.None);
-						mEnlisted = true;
+						if (Transaction.Current.TransactionInformation.Status == TransactionStatus.Active)
+						{
+							mIsEnlisted = true;
+							mTransactionFailed = false;
+							ResetUndo();
+							Transaction.Current.EnlistVolatile(this, EnlistmentOptions.None);
+						}
 					}
 				}
 			}
@@ -648,25 +694,26 @@ namespace ALite
 		/// </summary>
 		/// <typeparam name="T">The type of the property.</typeparam>
 		/// <param name="propertyName">The name of the property.</param>
-		/// <param name="value">The property's current value, passed by reference.</param>
+		/// <param name="value">The property's current value.</param>
 		/// <returns>The value of the property.</returns>
 		protected T GetProperty<T>(string propertyName, ref T value) {
-			if (Transaction.Current != null) {
-				if (mLock.CurrentTransaction != Transaction.Current) {
+			lock (this)
+			{
+				// Return the current value if it has not been changed
+				if (!mMemento.ContainsKey(propertyName)) return value;
 
-					// Another transaction is modifying the object - if this property has been changed,
-					// fetch the old value from the memento object
-					if (mMemento.ContainsKey(propertyName))
-					{
-						return (T)mMemento[propertyName];
-					}
-				}
+				// Return the memento value if not working within a transaction
+				if (Transaction.Current == null) return (T)mMemento[propertyName];
+
+				// Return the memento value if the lock is held by another transaction
+				if (mLock.CurrentTransaction != Transaction.Current) return (T)mMemento[propertyName];
+
+				// Return the current value if the current transaction holds the lock
+				return value;
 			}
-
-			// Either current transaction is modifying transaction, or property has not changed, so
-			// return current value
-			return value;
 		}
+
+		#endregion
 
 		#endregion
 	}

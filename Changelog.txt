@@ -46,8 +46,8 @@ V3.0
      DBObjectCollection subscribes.  The collection automatically removes the
      deleted object from its list.
    - Upgraded to VS2008.
-   - DBObject.SetProperty() uses System.Transactions to allow automatic
-     rollback if a validation error occurs.
+   - DBObject uses System.Transactions to allow automatic rollback if a
+     validation error occurs.
 
 
 V2.30 (20080918)
