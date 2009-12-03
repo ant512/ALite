@@ -36,6 +36,7 @@ namespace ALite
 		/// </summary>
 		bool HasTransactionFailed { get; }
 
+		/// <summary>
 		/// Get a list of transaction errors if the object is running a transaction.
 		/// </summary>
 		List<string> TransactionErrors { get; }

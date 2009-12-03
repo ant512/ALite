@@ -55,7 +55,7 @@ namespace ALite
 		/// Validates the supplied value.
 		/// </summary>
 		/// <param name="value">The value to validate.</param>
-		/// <param name="errorMessage">List of error messages populated if the validation fails.</param>
+		/// <param name="errorMessages">List of error messages populated if the validation fails.</param>
 		/// <returns>True if the value is valid; false if not.</returns>
 		public abstract bool Validate(object value, List<string> errorMessages);
 

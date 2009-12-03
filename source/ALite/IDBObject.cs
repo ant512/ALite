@@ -11,15 +11,18 @@ namespace ALite
 	public interface IDBObject
 	{
 		/// <summary>
-		/// Property changed event
+		/// Property changed event.
 		/// </summary>
 		event PropertyChangedEventHandler PropertyChanged;
 
 		/// <summary>
-		/// Object deleted event
+		/// Object deleted event.
 		/// </summary>
 		event DBObjectDeletedEventHandler DBObjectDeleted;
 
+		/// <summary>
+		/// Property change attempt failed due to validation error.
+		/// </summary>
 		event PropertyValidationFailedEventHandler PropertyValidationFailed;
 
         /// <summary>
@@ -48,6 +51,7 @@ namespace ALite
 		/// </summary>
 		bool HasTransactionFailed { get; }
 
+		/// <summary>
 		/// Get a list of transaction errors if the object is running a transaction.
 		/// </summary>
 		List<string> TransactionErrors { get; }

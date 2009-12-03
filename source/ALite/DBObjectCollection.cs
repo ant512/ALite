@@ -767,6 +767,11 @@ namespace ALite
 
 		#region Transactions
 
+		/// <summary>
+		/// Begin a new transaction.  If this is not called before the object is modified it will
+		/// not be possible to roll back the object to its initial state if any of the modifications
+		/// do not work.
+		/// </summary>
 		public void BeginTransaction()
 		{
 			mTransactionData = new TransactionData();
@@ -786,6 +791,9 @@ namespace ALite
 			mTransactionData.BackupProperty<List<T>>("mOriginalList", originalList);
 		}
 
+		/// <summary>
+		/// Finish a transaction.
+		/// </summary>
 		public void EndTransaction()
 		{
 			if (IsTransactionInProgress)
@@ -795,6 +803,8 @@ namespace ALite
 					// Inform the item that the transaction is ending
 					item.EndTransaction();
 				}
+
+				Commit();
 
 				mTransactionData = null;
 			}
