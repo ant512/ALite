@@ -23,27 +23,21 @@ namespace Tests
 					mObj.ID = mNewId++;
 					mObj.Name = "Joe";
 					mObj.ID = mNewId - 10;
+
+					mObj.EndTransaction();
 				}
 				catch (ValidationException)
 				{
 					//System.Console.WriteLine(ex.Message);
-				}
 
-				if (mObj.HasTransactionFailed)
-				{
-					foreach (string err in mObj.TransactionErrors)
+					if (mObj.HasTransactionFailed)
 					{
-						System.Console.WriteLine(err);
+						foreach (string err in mObj.TransactionErrors)
+						{
+							System.Console.WriteLine(err);
+						}
 					}
-
-					mObj.Rollback();
 				}
-				else
-				{
-					mObj.Commit();
-				}
-
-				mObj.EndTransaction();
 
 				System.Console.WriteLine(mObj.ID);
 			}
@@ -59,7 +53,7 @@ namespace Tests
 
 			//ThreadTest();
 
-			int threads = 2;
+			int threads = 4;
 
 			Thread[] t = new Thread[threads];
 			for (int i = 0; i < t.Length; ++i)
@@ -70,10 +64,11 @@ namespace Tests
 			for (int i = 0; i < t.Length; ++i)
 			{
 				t[i].Start();
-			}*/
+			}
+			*/
 
 
-
+			
 			// Collection test
 			DBObjectCollection<ObjectTest> collection = new DBObjectCollection<ObjectTest>();
 			ObjectTest obj = new ObjectTest();
@@ -88,18 +83,45 @@ namespace Tests
 
 			collection.Add(obj);
 
-			collection.BeginTransaction();
-			collection.RemoveAt(0);
-			collection[0].ID = 20;
-
-			collection.Rollback();
-			collection.EndTransaction();
-
-			foreach (ObjectTest item in collection)
+			try
 			{
-				System.Console.WriteLine(String.Format("Name: {0}, ID: {1}", item.Name, item.ID));
-			}
 
+				System.Console.WriteLine("Before transaction");
+				foreach (ObjectTest item in collection)
+				{
+					System.Console.WriteLine(String.Format("Name: {0}, ID: {1}", item.Name, item.ID));
+				}
+
+				collection.BeginTransaction();
+				collection.RemoveAt(0);
+				collection[0].ID = 12;
+
+				System.Console.WriteLine("\nDuring transaction");
+				foreach (ObjectTest item in collection)
+				{
+					System.Console.WriteLine(String.Format("Name: {0}, ID: {1}", item.Name, item.ID));
+				}
+
+				collection.Rollback();
+				collection.EndTransaction();
+
+				System.Console.WriteLine("\nPost transaction");
+				foreach (ObjectTest item in collection)
+				{
+					System.Console.WriteLine(String.Format("Name: {0}, ID: {1}", item.Name, item.ID));
+				}
+			}
+			catch (ValidationException ex)
+			{
+				System.Console.WriteLine(ex.Message);
+
+				System.Console.WriteLine("\nPost exception");
+				foreach (ObjectTest item in collection)
+				{
+					System.Console.WriteLine(String.Format("Name: {0}, ID: {1}", item.Name, item.ID));
+				}
+			}
+			
 
 			/*
 			ITest test;
@@ -176,8 +198,6 @@ namespace Tests
 			Name = "bob";
 			ID = 19;
 			Date = new DateTime(2009, 5, 5);
-
-			Commit();
 		}
 
 		private string mName;

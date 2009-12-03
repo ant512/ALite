@@ -37,41 +37,46 @@ namespace ALite
 		#region Event System
 
 		/// <summary>
-		/// Event fired when a property changes value
+		/// Event fired when a property changes value.
 		/// </summary>
 		public event PropertyChangedEventHandler PropertyChanged;
 
 		/// <summary>
-		/// Event fired when a property on a child changes value
+		/// Event fired when a property on a child changes value.
 		/// </summary>
 		public event PropertyChangedEventHandler ChildPropertyChanged;
 
 		/// <summary>
-		/// Event fired when a child is deleted
+		/// Event fired when a child is deleted.
 		/// </summary>
 		public event DBObjectDeletedEventHandler ChildDeleted;
 
 		/// <summary>
-		/// Delegate for handling the list being changed
+		/// Event fired when a child's property is changed but the validation fails.
+		/// </summary>
+		public event PropertyValidationFailedEventHandler ChildPropertyValidationFailed;
+
+		/// <summary>
+		/// Delegate for handling the list being changed.
 		/// </summary>
 		/// <param name="sender">DBObjectCollection that fired the event</param>
 		/// <param name="e">Event arguments</param>
 		public delegate void ListChangedEventHandler(object sender, ListChangedEventArgs e);
 
 		/// <summary>
-		/// Delegate for handling the list being cleared
+		/// Delegate for handling the list being cleared.
 		/// </summary>
 		/// <param name="sender">DBObjectCollection that fired the event</param>
 		/// <param name="e">Event arguments</param>
 		public delegate void ListClearedEventHandler(object sender, EventArgs e);
 
 		/// <summary>
-		/// List changed event handler
+		/// List changed event handler.
 		/// </summary>
 		public event ListChangedEventHandler ListChanged;
 
 		/// <summary>
-		/// List cleared event handler
+		/// List cleared event handler.
 		/// </summary>
 		public event ListClearedEventHandler ListCleared;
 
@@ -83,7 +88,7 @@ namespace ALite
 		private TransactionData mTransactionData;
 
 		/// <summary>
-		/// Internal list of DBObjects
+		/// Internal list of DBObjects.
 		/// </summary>
 		private IList<T> mInternalList;
 
@@ -405,6 +410,7 @@ namespace ALite
 			mInternalList = new List<T>();
 			ChildPropertyChanged += new PropertyChangedEventHandler(HandleChildPropertyChanged);
 			ChildDeleted += new DBObjectDeletedEventHandler(HandleChildDeleted);
+			ChildPropertyValidationFailed += new PropertyValidationFailedEventHandler(HandleChildPropertyValidationFailed);
 			MarkNew();
 		}
 
@@ -711,6 +717,11 @@ namespace ALite
 			MarkListDirty();
 		}
 
+		private void HandleChildPropertyValidationFailed(object sender)
+		{
+			Rollback();
+		}
+
 		#endregion
 
 		#region List Changed
@@ -738,6 +749,7 @@ namespace ALite
 		{
 			child.DBObjectDeleted -= this.ChildDeleted;
 			child.PropertyChanged -= this.ChildPropertyChanged;
+			child.PropertyValidationFailed -= this.ChildPropertyValidationFailed;
 		}
 
 		/// <summary>
@@ -748,6 +760,7 @@ namespace ALite
 		{
 			child.DBObjectDeleted += this.ChildDeleted;
 			child.PropertyChanged += this.ChildPropertyChanged;
+			child.PropertyValidationFailed += this.ChildPropertyValidationFailed;
 		}
 
 		#endregion
@@ -775,13 +788,16 @@ namespace ALite
 
 		public void EndTransaction()
 		{
-			foreach (T item in mInternalList)
+			if (IsTransactionInProgress)
 			{
-				// Inform the item that the transaction is ending
-				item.EndTransaction();
-			}
+				foreach (T item in mInternalList)
+				{
+					// Inform the item that the transaction is ending
+					item.EndTransaction();
+				}
 
-			mTransactionData = null;
+				mTransactionData = null;
+			}
 		}
 
 		/// <summary>
@@ -792,14 +808,17 @@ namespace ALite
 		{
 			lock (this)
 			{
-				OnCommit();
-
-				foreach (T item in mInternalList)
+				if (IsTransactionInProgress)
 				{
-					item.Commit();
-				}
+					OnCommit();
 
-				if (IsTransactionInProgress) mTransactionData.Reset();
+					foreach (T item in mInternalList)
+					{
+						item.Commit();
+					}
+
+					mTransactionData.Reset();
+				}
 			}
 		}
 
@@ -811,12 +830,15 @@ namespace ALite
 		{
 			lock (this)
 			{
-				if (IsTransactionInProgress) mTransactionData.IsRollingBack = true;
+				if (IsTransactionInProgress)
+				{
+					mTransactionData.IsRollingBack = true;
 
-				RestoreBackedUpState();
-				OnRollback();
+					RestoreBackedUpState();
+					OnRollback();
 
-				if (IsTransactionInProgress) mTransactionData.Reset();
+					mTransactionData.IsRollingBack = false;
+				}
 			}
 		}
 

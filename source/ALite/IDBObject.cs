@@ -20,6 +20,8 @@ namespace ALite
 		/// </summary>
 		event DBObjectDeletedEventHandler DBObjectDeleted;
 
+		event PropertyValidationFailedEventHandler PropertyValidationFailed;
+
         /// <summary>
         /// Is the object dirty?
         /// </summary>

@@ -14,6 +14,13 @@ namespace ALite
 	/// <param name="sender">The object that raised the event.</param>
 	public delegate void DBObjectDeletedEventHandler(object sender);
 
+	/// <summary>
+	/// Event raised when a DBObject's property is set but the set fails
+	/// to validate.
+	/// </summary>
+	/// <param name="sender">The object that raised the event.</param>
+	public delegate void PropertyValidationFailedEventHandler(object sender);
+
 	#endregion
 
 	/// <summary>
@@ -38,14 +45,20 @@ namespace ALite
 		#region Events
 
 		/// <summary>
-		/// Event fired when a property changes value
+		/// Event fired when a property changes value.
 		/// </summary>
 		public event PropertyChangedEventHandler PropertyChanged;
 
 		/// <summary>
-		/// Event fired when the object is deleted
+		/// Event fired when the object is deleted.
 		/// </summary>
 		public event DBObjectDeletedEventHandler DBObjectDeleted;
+
+		/// <summary>
+		/// Event fired when a DBObject's property is set but the set fails
+		/// to validate.
+		/// </summary>
+		public event PropertyValidationFailedEventHandler PropertyValidationFailed;
 
 		#endregion
 
@@ -442,6 +455,9 @@ namespace ALite
 						// Remember that the transaction failed
 						if (IsTransactionInProgress) mTransactionData.HasTransactionFailed = true;
 
+						// Rollback all changes so far
+						Rollback();
+
 						// Validation failed - combine all error messages and throw an exception
 						StringBuilder concatErrors = new StringBuilder();
 						string errorMessage = "";
@@ -454,6 +470,9 @@ namespace ALite
 						errorMessage = String.Format("New value '{0}' for property '{1}' violates rules: {2}", newValue.ToString(), propertyName, concatErrors.ToString());
 
 						if (IsTransactionInProgress) mTransactionData.AddErrorMessage(errorMessage);
+
+						// Raise the event to the list
+						OnPropertyValidationFailed(propertyName);
 
 						throw new ValidationException(errorMessage);
 					}
@@ -482,6 +501,19 @@ namespace ALite
 			if (handler != null)
 			{
 				handler(this, new PropertyChangedEventArgs(name));
+			}
+		}
+
+		/// <summary>
+		/// Called when a property is changed
+		/// </summary>
+		/// <param name="name">Name of the property that changed</param>
+		protected void OnPropertyValidationFailed(string name)
+		{
+			PropertyValidationFailedEventHandler handler = PropertyValidationFailed;
+			if (handler != null)
+			{
+				handler(this);
 			}
 		}
 
@@ -564,7 +596,11 @@ namespace ALite
 		/// </summary>
 		public void EndTransaction()
 		{
-			mTransactionData = null;
+			if (IsTransactionInProgress)
+			{
+				Commit();
+				mTransactionData = null;
+			}
 		}
 
 		/// <summary>
@@ -575,8 +611,11 @@ namespace ALite
 		{
 			lock (this)
 			{
-				OnCommit();
-				if (IsTransactionInProgress) mTransactionData.Reset();
+				if (IsTransactionInProgress)
+				{
+					OnCommit();
+					mTransactionData.Reset();
+				}
 			}
 		}
 
@@ -588,12 +627,15 @@ namespace ALite
 		{
 			lock (this)
 			{
-				if (IsTransactionInProgress) mTransactionData.IsRollingBack = true;
+				if (IsTransactionInProgress)
+				{
+					mTransactionData.IsRollingBack = true;
 
-				RestoreBackedUpState();
-				OnRollback();
+					RestoreBackedUpState();
+					OnRollback();
 
-				if (IsTransactionInProgress) mTransactionData.Reset();
+					mTransactionData.IsRollingBack = false;
+				}
 			}
 		}
 
