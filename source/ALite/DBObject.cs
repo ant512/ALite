@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
-using System.Transactions;
 
 namespace ALite
 {
@@ -20,7 +19,7 @@ namespace ALite
 	/// <summary>
 	/// Base class for objects that interact with the database
 	/// </summary>
-	[Serializable] public abstract class DBObject : IDBObject, INotifyPropertyChanged, IEnlistmentNotification
+	[Serializable] public abstract class DBObject : IDBObject, INotifyPropertyChanged
 	{
 		#region Enums
 
@@ -55,11 +54,6 @@ namespace ALite
         /// </summary>
 		private Status mStatus;
 
-        /// <summary>
-        /// Stores backup data for later restoration
-        /// </summary>
-		private Dictionary<string, object> mMemento;
-
 		/// <summary>
 		/// List of rules that properties are checked against before they are set
 		/// </summary>
@@ -70,19 +64,7 @@ namespace ALite
 		/// </summary>
 		private DelegateRuleCollection mDelegateRules;
 
-		/// <summary>
-		/// Tracks transactional locks.
-		/// </summary>
-		private TransactionLock mLock = new TransactionLock();
-
-		/// <summary>
-		/// Tracks if the object has been enlisted in a transaction or not.
-		/// </summary>
-		bool mIsEnlisted = false;
-
-		bool mIsRollingBack = false;
-
-		bool mTransactionFailed = false;
+		TransactionData mTransactionData = null;
 
 		#endregion
 
@@ -93,7 +75,13 @@ namespace ALite
         /// </summary>
 		public bool IsNew
 		{
-			get { return ((mStatus & Status.NewStatus) != 0); }
+			get
+			{
+				lock (this)
+				{
+					return ((mStatus & Status.NewStatus) != 0);
+				}
+			}
 		}
 
         /// <summary>
@@ -101,7 +89,13 @@ namespace ALite
         /// </summary>
 		public bool IsDirty
 		{
-			get { return ((mStatus & Status.Dirty) != 0); }
+			get
+			{
+				lock (this)
+				{
+					return ((mStatus & Status.Dirty) != 0);
+				}
+			}
 		}
 
         /// <summary>
@@ -109,7 +103,57 @@ namespace ALite
         /// </summary>
 		public bool IsDeleted
 		{
-			get { return ((mStatus & Status.Deleted) != 0); }
+			get
+			{
+				lock (this)
+				{
+					return ((mStatus & Status.Deleted) != 0);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Get a list of transaction errors if the object is running a transaction.
+		/// </summary>
+		public List<string> TransactionErrors
+		{
+			get
+			{
+				if (IsTransactionInProgress)
+				{
+					return mTransactionData.ErrorMessages;
+				}
+				else
+				{
+					return null;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Returns true if a transaction is in progress and has encountered errors.
+		/// </summary>
+		public bool HasTransactionFailed
+		{
+			get
+			{
+				if (IsTransactionInProgress)
+				{
+					return mTransactionData.HasTransactionFailed;
+				}
+				else
+				{
+					return false;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Returns true if a transaction is in progress.
+		/// </summary>
+		public bool IsTransactionInProgress
+		{
+			get { return (mTransactionData != null); }
 		}
 
 		#endregion
@@ -121,15 +165,11 @@ namespace ALite
         /// </summary>
 		protected DBObject()
 		{
-			mMemento = new Dictionary<string, object>();
 			mRules = new ValidationRuleCollection();
 			mDelegateRules = new DelegateRuleCollection();
 
 			// Mark the object as new
 			mStatus = Status.NewStatus | Status.Dirty;
-
-			// Store the current status
-			mMemento.Add("mStatus", mStatus);
 		}
 
 		#endregion
@@ -181,7 +221,6 @@ namespace ALite
 		protected virtual DBErrorCode Create()
 		{
 			MarkOld();
-			ResetUndo();
 			return DBErrorCode.Ok;
 		}
 
@@ -192,7 +231,6 @@ namespace ALite
 		protected virtual DBErrorCode Update()
 		{
 			MarkOld();
-			ResetUndo();
 			return DBErrorCode.Ok;
 		}
 
@@ -203,7 +241,6 @@ namespace ALite
 		public virtual DBErrorCode Fetch()
 		{
 			MarkOld();
-			ResetUndo();
 			return DBErrorCode.Ok;
 		}
 
@@ -214,7 +251,6 @@ namespace ALite
 		protected virtual DBErrorCode Delete()
 		{
 			MarkOld();
-			ResetUndo();
 
 			// Raise delete event
 			OnDBObjectDeleted();
@@ -309,167 +345,33 @@ namespace ALite
 		#region Framework Methods
 
 		/// <summary>
-		/// Should be called before properties are altered at the start of a group of property alterations that represent
-		/// a single change transaction.
-		/// This method calls "OnResetUndo()", which should be overridden if extra functionality is needed.
-		/// </summary>
-		public void ResetUndo()
-		{
-			// Call any user code
-			OnResetUndo();
-
-			ClearBackedUpState();
-		}
-
-		/// <summary>
-		/// Clears the list of backed up properties and stores the current
-		/// state of the object in the backup list.
-		/// </summary>
-		protected void ClearBackedUpState()
-		{
-			lock (mMemento)
-			{
-				// Flush any existing undo data
-				mMemento.Clear();
-
-				// Store the current status
-				mMemento.Add("mStatus", mStatus);
-			}
-		}
-
-		/// <summary>
-		/// Restores the object to its state at the last call to "ResetUndo().
-		/// </summary>
-		/// <see cref="DBObject.RestoreProperties"/>
-		public void Undo()
-		{
-			// Call any user code
-			OnUndo();
-
-			RestoreBackedUpState();
-		}
-
-		/// <summary>
-		/// Restores the object to its state at the last call to "ResetUndo().
+		/// Restores the object to its state at the start of the current transaction.
 		/// 
 		/// This can throw a TargetInvocationException error at the line containing "info.SetValue".
 		/// This occurs if the attempt at resetting the property failed because the setter threw
 		/// an exception.  If this happens, check:
-		///  - That the value being restored does not violate any of the rules applied to the
-		///    object (this can occur if the value is set using a member instead of a property)
 		///  - That the value being restored is valid for the given datatype (this can occur if
-		///    ResetUndo() was not called in the object's constructor, meaning non-nullable values
+		///    Commit() was not called in the object's constructor, meaning non-nullable values
 		///    are being restored to the default value, ie. null).
 		/// 
 		/// The TargetInvocationException is caught and wrapped in an UndoException.
 		/// </summary>
 		protected void RestoreBackedUpState()
 		{
-			// Get type of the object via reflection
-			Type t = this.GetType();
-			PropertyInfo[] infos = t.GetProperties();
-
-			// Obtain lock to prevent object changing whilst existing changes are reverted
 			lock (this)
 			{
-				// Remember that the object is rolling back
-				mIsRollingBack = true;
-
-				// Loop through all backed up properties
-				IEnumerator<string> keys = mMemento.Keys.GetEnumerator();
-
-				while (keys.MoveNext())
+				if (IsTransactionInProgress)
 				{
-					object propertyValue = mMemento[keys.Current];
+					// Retrieve the old status - this cannot be restored automatically as the property has no public setter
+					Status? oldStatus = null;
+					if (mTransactionData.ContainsProperty("mStatus")) oldStatus = mTransactionData.RetrieveProperty<Status>("mStatus");
 
-					// Loop through all properties
-					foreach (PropertyInfo info in infos)
-					{
-						// Is this property writeable and the same as the key?
-						if (info.CanWrite)
-						{
+					// Restore all of the old properties that have public setters
+					mTransactionData.Restore(this);
 
-							// Reset the property to the stored value
-							if (info.Name == keys.Current)
-							{
-								if (keys.Current == "ID")
-								{
-									System.Diagnostics.Debug.WriteLine(keys.Current);
-								}
-
-								try
-								{
-									info.SetValue(this, propertyValue, null);
-								}
-								catch (TargetInvocationException ex)
-								{
-									throw new UndoException("Error setting property of object whilst undoing changes.", ex);
-								}
-								break;
-							}
-						}
-					}
+					// Restore the old status
+					if (oldStatus != null) mStatus = (Status)oldStatus;
 				}
-
-				// Restore the previous status
-				if (mMemento.ContainsKey("mStatus"))
-				{
-					mStatus = (Status)mMemento["mStatus"];
-				}
-
-				// Clear the backed up property list
-				mMemento.Clear();
-
-				// No longer rolling back
-				mIsRollingBack = false;
-			}
-		}
-
-		/// <summary>
-		/// Backup the supplied value in the memento list.  Does not back up the value
-		/// if a value for the property already exists in the memento list, ensuring that
-		/// the only stored value is that which existed at the start of the current
-		/// transaction.
-		/// </summary>
-		/// <typeparam name="T">Type of object to store</typeparam>
-		/// <param name="propertyName">Name of the property for which the value is appropriate</param>
-		/// <param name="value">Current value of the supplied property</param>
-		protected void BackupProperty<T>(string propertyName, T value)
-		{
-			// Only back up if we're running in a transaction
-			if (mLock.IsLocked())
-			{
-				lock (mMemento)
-				{
-					if (!mMemento.ContainsKey(propertyName))
-					{
-						mMemento.Add(propertyName, value);
-					}
-				}
-			}
-		}
-
-		/// <summary>
-		/// Fetch a property from the memento list.  If the value returned is a reference
-		/// type it should not be changed.
-		/// </summary>
-		/// <typeparam name="T">The type of the property to retrieve.</typeparam>
-		/// <param name="propertyName">The name of the property to retrieve.</param>
-		/// <returns>The object if it exists, or the default value for the parameter
-		/// type if not.</returns>
-		/// <remarks>In this situation, it would be nice if C# offered C++'s ability to
-		/// return const references.</remarks>
-		protected T RetrieveBackupProperty<T>(string propertyName)
-		{
-			lock (mMemento)
-			{
-				if (mMemento.ContainsKey(propertyName))
-				{
-					return (T)mMemento[propertyName];
-				}
-
-				// Return the closest thing to null we can for this type
-				return default(T);
 			}
 		}
 
@@ -478,14 +380,14 @@ namespace ALite
 		#region Stub Methods
 
 		/// <summary>
-		/// Stub method that should be overridden if extra functionality is needed when ResetUndo() is called.
+		/// Stub method that should be overridden if extra functionality is needed when Commit() is called.
 		/// </summary>
-		protected virtual void OnResetUndo() { }
+		protected virtual void OnCommit() { }
 
 		/// <summary>
-		/// Stub method that should be overridden if extra functionality is needed when Undo() is called.
+		/// Stub method that should be overridden if extra functionality is needed when Rollback() is called.
 		/// </summary>
-		protected virtual void OnUndo() { }
+		protected virtual void OnRollback() { }
 
 		#endregion
 
@@ -504,22 +406,16 @@ namespace ALite
 		{
 			lock (this)
 			{
-				// Use shortcut if the object is rolling back to a previous state
-				if (mIsRollingBack)
+				// Use shortcut and bypass rules if the object is rolling back to a previous state
+				if (IsTransactionInProgress)
 				{
-					oldValue = newValue;
-					return;
+					if (mTransactionData.IsRollingBack)
+					{
+						oldValue = newValue;
+						return;
+					}
 				}
-			}
 
-			// Acquire a lock for the current transaction
-			mLock.AcquireLock();
-
-			// Enlist the object in the current transaction, if it has not been enlisted already
-			Enlist();
-
-			lock (this)
-			{
 				// Are we trying to set a null value to null?
 				if ((oldValue == null) && (newValue == null))
 				{
@@ -535,21 +431,26 @@ namespace ALite
 					if (!Validate(propertyName, errorMessages, newValue))
 					{
 						// Remember that the transaction failed
-						mTransactionFailed = true;
+						if (IsTransactionInProgress) mTransactionData.HasTransactionFailed = true;
 
 						// Validation failed - combine all error messages and throw an exception
 						StringBuilder concatErrors = new StringBuilder();
+						string errorMessage = "";
 						foreach (string err in errorMessages)
 						{
 							concatErrors.Append("\n - ");
 							concatErrors.Append(err);
 						}
 
-						throw new ValidationException("New value '" + newValue.ToString() + "' for property '" + propertyName + "' violates rules:" + concatErrors.ToString());
+						errorMessage = String.Format("New value '{0}' for property '{1}' violates rules: {2}", newValue.ToString(), propertyName, concatErrors.ToString());
+
+						if (IsTransactionInProgress) mTransactionData.AddErrorMessage(errorMessage);
+
+						throw new ValidationException(errorMessage);
 					}
 
 					// Validation succeeded - store the existing value of the property
-					BackupProperty<T>(propertyName, oldValue);
+					if (IsTransactionInProgress) mTransactionData.BackupProperty<T>(propertyName, oldValue);
 
 					// Update the value
 					oldValue = newValue;
@@ -593,10 +494,16 @@ namespace ALite
 			bool valid = true;
 
 			// Validate new value against standard rules
-			if (!mRules.Validate<T>(propertyName, errorMessages, value)) valid = false;
+			lock (mRules)
+			{
+				if (!mRules.Validate<T>(propertyName, errorMessages, value)) valid = false;
+			}
 
 			// Validate new value against custom rules
-			if (!mDelegateRules.Validate<T>(propertyName, errorMessages, value)) valid = false;
+			lock (mDelegateRules)
+			{
+				if (!mDelegateRules.Validate<T>(propertyName, errorMessages, value)) valid = false;
+			}
 
 			return valid;
 		}
@@ -607,7 +514,10 @@ namespace ALite
 		/// <param name="rule">The IValidation object to add to the list.</param>
 		protected void AddRule(IValidationRule rule)
 		{
-			mRules.Add(rule);
+			lock (mRules)
+			{
+				mRules.Add(rule);
+			}
 		}
 
 		/// <summary>
@@ -617,99 +527,64 @@ namespace ALite
 		/// <param name="delegateFunction">The name of the property that the function validates</param>
 		protected void AddRule(Validator delegateFunction, string propertyName)
 		{
-			mDelegateRules.Add(delegateFunction, propertyName);
+			lock (mDelegateRules)
+			{
+				mDelegateRules.Add(delegateFunction, propertyName);
+			}
 		}
 
 		#endregion
 
 		#region Transactions
 
-		#region IEnlistmentNotification Members
-
-		public void Commit(Enlistment enlistment)
+		/// <summary>
+		/// Begin a new transaction.  If this is not called before the object is modified it will
+		/// not be possible to roll back the object to its initial state if any of the modifications
+		/// do not work.
+		/// </summary>
+		public void BeginTransaction()
 		{
-			lock (this)
-			{
-				ResetUndo();
-				mIsEnlisted = false;
-				mLock.ReleaseLock();
-				enlistment.Done();
-			}
-		}
+			mTransactionData = new TransactionData();
 
-		public void InDoubt(Enlistment enlistment)
-		{
-			mIsEnlisted = false;
-			mLock.ReleaseLock();
-			enlistment.Done();
+			// Store the current status
+			mTransactionData.BackupProperty<Status>("mStatus", mStatus);
 		}
-
-		public void Prepare(PreparingEnlistment preparingEnlistment)
-		{
-			preparingEnlistment.Prepared();
-		}
-
-		public void Rollback(Enlistment enlistment)
-		{
-			lock (this)
-			{
-				Undo();
-				mIsEnlisted = false;
-				mTransactionFailed = false;
-				mLock.ReleaseLock();
-				enlistment.Done();
-			}
-		}
-
-		#endregion
 
 		/// <summary>
-		/// Enlist the object in the transaction.  Resets the undo system to ensure that it will be rolled back
-		/// to the current state in the event of the transaction aborting.
+		/// Finish a transaction.
 		/// </summary>
-		private void Enlist()
+		public void EndTransaction()
+		{
+			mTransactionData = null;
+		}
+
+		/// <summary>
+		/// Commit the transaction.  Calls OnCommit(), which can contain user code, before it erases all
+		/// record of the previous state of the object.
+		/// </summary>
+		public void Commit()
 		{
 			lock (this)
 			{
-				// Add object to transaction
-				if (Transaction.Current != null)
-				{
-					if (!mIsEnlisted)
-					{
-						if (Transaction.Current.TransactionInformation.Status == TransactionStatus.Active)
-						{
-							mIsEnlisted = true;
-							mTransactionFailed = false;
-							ResetUndo();
-							Transaction.Current.EnlistVolatile(this, EnlistmentOptions.None);
-						}
-					}
-				}
+				OnCommit();
+				if (IsTransactionInProgress) mTransactionData.Reset();
 			}
 		}
 
 		/// <summary>
-		/// Get the value of the specified property.  Returns the latest value for the current transaction, or the last known
-		/// good value for other transactions.
+		/// Rollback the transaction.  Restores all changed public properties to their values
+		/// at the start of the transaction, and calls OnRollback() to run any user code.
 		/// </summary>
-		/// <typeparam name="T">The type of the property.</typeparam>
-		/// <param name="propertyName">The name of the property.</param>
-		/// <param name="value">The property's current value.</param>
-		/// <returns>The value of the property.</returns>
-		protected T GetProperty<T>(string propertyName, ref T value) {
+		public void Rollback()
+		{
 			lock (this)
 			{
-				// Return the current value if it has not been changed
-				if (!mMemento.ContainsKey(propertyName)) return value;
+				if (IsTransactionInProgress) mTransactionData.IsRollingBack = true;
 
-				// Return the memento value if not working within a transaction
-				if (Transaction.Current == null) return (T)mMemento[propertyName];
+				RestoreBackedUpState();
+				OnRollback();
 
-				// Return the memento value if the lock is held by another transaction
-				if (mLock.CurrentTransaction != Transaction.Current) return (T)mMemento[propertyName];
-
-				// Return the current value if the current transaction holds the lock
-				return value;
+				if (IsTransactionInProgress) mTransactionData.Reset();
 			}
 		}
 

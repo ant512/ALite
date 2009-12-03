@@ -35,6 +35,12 @@ namespace ALite
         /// </summary>
 		bool IsDeleted { get; }
 
+				/// <summary>
+		/// Returns true if a transaction is currently in progress.
+		/// </summary>
+		/// <returns></returns>
+		bool IsTransactionInProgress { get; }
+
         /// <summary>
         /// Save the object to the database
         /// </summary>
@@ -68,14 +74,23 @@ namespace ALite
 		void MarkDirty();
 
         /// <summary>
-		/// Should be called before properties are altered at the start of a group of property alterations that represent
-		/// a single change transaction.
+		/// Commit any changes made to the object.
         /// </summary>
-		void ResetUndo();
+		void Commit();
 
         /// <summary>
-		/// Restores the state of the object at the last call to "ResetUndo().
+		/// Rollback any changes made to the object.
         /// </summary>
-		void Undo();
+		void Rollback();
+
+		/// <summary>
+		/// Begin a transaction.
+		/// </summary>
+		void BeginTransaction();
+
+		/// <summary>
+		/// End a transaction.
+		/// </summary>
+		void EndTransaction();
 	}
 }

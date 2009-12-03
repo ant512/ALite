@@ -537,7 +537,7 @@ namespace ALite
 		{
 			foreach (IDBObject item in this)
 			{
-				item.ResetUndo();
+				item.Commit();
 			}
 
 			// Store status flags
@@ -553,7 +553,7 @@ namespace ALite
 		{
 			foreach (IDBObject item in this)
 			{
-				item.Undo();
+				item.Rollback();
 			}
 
 			// Restore previous status flags

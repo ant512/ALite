@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using ALite;
-using System.Transactions;
 using System.Threading;
 using System.Diagnostics;
 
@@ -11,39 +10,54 @@ namespace Tests
 	class Program
 	{
 		static ObjectTest mObj;
+		static int mNewId;
 
 		static void ThreadTest()
 		{
-			using (TransactionScope scope = new TransactionScope())
+			lock (mObj)
 			{
-				bool valid = true;
-
 				try
 				{
-					mObj.ID = 14;
+					mObj.BeginTransaction();
+
+					mObj.ID = mNewId++;
 					mObj.Name = "Joe";
-					mObj.ID = 12;
+					mObj.ID = mNewId - 10;
 				}
-				catch (ValidationException ex)
+				catch (ValidationException)
 				{
-					System.Console.WriteLine(ex.Message);
-					valid = false;
+					//System.Console.WriteLine(ex.Message);
 				}
 
-				if (valid) scope.Complete();
-			}
+				if (mObj.HasTransactionFailed)
+				{
+					foreach (string err in mObj.TransactionErrors)
+					{
+						System.Console.WriteLine(err);
+					}
 
-			System.Console.WriteLine(mObj.ID);
+					mObj.Rollback();
+				}
+				else
+				{
+					mObj.Commit();
+				}
+
+				mObj.EndTransaction();
+
+				System.Console.WriteLine(mObj.ID);
+			}
 		}
 
 		static void Main(string[] args)
 		{
 			mObj = new ObjectTest();
-			mObj.ID = 15;
+			mObj.ID = 20;
+			mNewId = 15;
 
 			//ThreadTest();
 
-			int threads = 6;
+			int threads = 2;
 
 			Thread[] t = new Thread[threads];
 			for (int i = 0; i < t.Length; ++i)
@@ -133,8 +147,7 @@ namespace Tests
 			ID = 19;
 			Date = new DateTime(2009, 5, 5);
 
-			// Must be called so that object is ready to be reset to this state
-			ResetUndo();
+			Commit();
 		}
 
 		private string mName;
@@ -143,19 +156,19 @@ namespace Tests
 
 		public string Name
 		{
-			get { return GetProperty<string>("Name", ref mName); }
+			get { return mName; }
 			set { SetProperty<string>("Name", ref mName, value); }
 		}
 
 		public int ID
 		{
-			get { return GetProperty<int>("ID", ref mId); }
+			get { return mId; }
 			set { SetProperty<int>("ID", ref mId, value); }
 		}
 
 		public DateTime Date
 		{
-			get { return GetProperty<DateTime>("Date", ref mDate); }
+			get { return mDate; }
 			set { SetProperty<DateTime>("Date", ref mDate, value); }
 		}
 

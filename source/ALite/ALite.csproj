@@ -54,7 +54,6 @@
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Transactions" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -72,7 +71,7 @@
     <Compile Include="IValidationRule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StringLengthValidationRule.cs" />
-    <Compile Include="TransactionLock.cs" />
+    <Compile Include="TransactionData.cs" />
     <Compile Include="UndoException.cs" />
     <Compile Include="ValidationException.cs" />
     <Compile Include="ValidationRule.cs" />
