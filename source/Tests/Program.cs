@@ -12,7 +12,7 @@ namespace Tests
 		static ObjectTest mObj = null;
 		static int mNewId = 0;
 
-		static void ThreadTest()
+		static void ThreadTestThread()
 		{
 			lock (mObj)
 			{
@@ -25,6 +25,8 @@ namespace Tests
 					mObj.ID = mNewId - 10;
 
 					mObj.EndTransaction();
+
+					mObj.Save();
 				}
 				catch (ValidationException)
 				{
@@ -43,32 +45,38 @@ namespace Tests
 			}
 		}
 
-		static void Main(string[] args)
+		static void ThreadTest()
 		{
-			/*
+			System.Console.WriteLine("\nThreadTest");
+
 			// Thread test
 			mObj = new ObjectTest();
 			mObj.ID = 20;
 			mNewId = 15;
-
-			//ThreadTest();
 
 			int threads = 4;
 
 			Thread[] t = new Thread[threads];
 			for (int i = 0; i < t.Length; ++i)
 			{
-				t[i] = new Thread(ThreadTest);
+				t[i] = new Thread(ThreadTestThread);
 			}
 
 			for (int i = 0; i < t.Length; ++i)
 			{
 				t[i].Start();
 			}
-			*/
 
+			for (int i = 0; i < t.Length; ++i)
+			{
+				t[i].Join();
+			}
+		}
 
-			
+		static void CollectionTest()
+		{
+			System.Console.WriteLine("\nCollectionTest");
+
 			// Collection test
 			DBObjectCollection<ObjectTest> collection = new DBObjectCollection<ObjectTest>();
 			ObjectTest obj = new ObjectTest();
@@ -121,9 +129,12 @@ namespace Tests
 					System.Console.WriteLine(String.Format("Name: {0}, ID: {1}", item.Name, item.ID));
 				}
 			}
-			
+		}
 
-			/*
+		static void DeleteTest()
+		{
+			System.Console.WriteLine("\nDeleteTest");
+
 			ITest test;
 			test = new ChildDeleteTest.ChildTest();
 			System.Console.Write(String.Format("{0}: ", test.Name));
@@ -163,12 +174,17 @@ namespace Tests
 
 			System.Console.WriteLine(myObject.Name);
 			System.Console.WriteLine(myObject.ID.ToString());
+		}
 
-			myObject.Undo();
 
-			System.Console.WriteLine(myObject.Name);
-			System.Console.WriteLine(myObject.ID.ToString());
-			 * */
+		static void Main(string[] args)
+		{
+			ThreadTest();
+			CollectionTest();
+			DeleteTest();
+			
+
+
 
 			System.Console.ReadLine();
 		}
