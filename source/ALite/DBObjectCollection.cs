@@ -13,6 +13,7 @@ namespace ALite
 	{
 		#region Enums
 
+		[Flags]
 		private enum Status
 		{
 			NewStatus = 0x1,
@@ -29,12 +30,7 @@ namespace ALite
 		/// <summary>
 		/// Status of the object as a bitmask; use the Status enum to unpack it
 		/// </summary>
-		private byte mStatus;
-
-		/// <summary>
-		/// Status of the object when ResetUndo() was last called
-		/// </summary>
-		private byte mOldStatus;
+		private Status mStatus;
 
 		#endregion
 
@@ -80,6 +76,11 @@ namespace ALite
 		public event ListClearedEventHandler ListCleared;
 
 		#endregion
+
+		/// <summary>
+		/// All data used by the current transaction.
+		/// </summary>
+		private TransactionData mTransactionData;
 
 		/// <summary>
 		/// Internal list of DBObjects
@@ -305,7 +306,13 @@ namespace ALite
 		/// </summary>
 		public bool IsNew
 		{
-			get { return ((mStatus & (byte)Status.NewStatus) != 0); }
+			get
+			{
+				lock (this)
+				{
+					return ((mStatus & Status.NewStatus) != 0);
+				}
+			}
 		}
 
 		/// <summary>
@@ -313,7 +320,13 @@ namespace ALite
 		/// </summary>
 		public bool IsDirty
 		{
-			get { return ((mStatus & (byte)Status.Dirty) != 0); }
+			get
+			{
+				lock (this)
+				{
+					return ((mStatus & Status.Dirty) != 0);
+				}
+			}
 		}
 
 		/// <summary>
@@ -321,7 +334,63 @@ namespace ALite
 		/// </summary>
 		public bool IsDeleted
 		{
-			get { return ((mStatus & (byte)Status.Deleted) != 0); }
+			get
+			{
+				lock (this)
+				{
+					return ((mStatus & Status.Deleted) != 0);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Get a list of transaction errors if the object is running a transaction.
+		/// </summary>
+		public List<string> TransactionErrors
+		{
+			get
+			{
+				if (IsTransactionInProgress)
+				{
+					return mTransactionData.ErrorMessages;
+				}
+				else
+				{
+					return null;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Returns true if a transaction is in progress and has encountered errors.
+		/// </summary>
+		public bool HasTransactionFailed
+		{
+			get
+			{
+				if (IsTransactionInProgress)
+				{
+					return mTransactionData.HasTransactionFailed;
+				}
+				else
+				{
+					return false;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Returns true if a transaction is in progress.
+		/// </summary>
+		public bool IsTransactionInProgress
+		{
+			get
+			{
+				lock (this)
+				{
+					return (mTransactionData != null);
+				}
+			}
 		}
 
 		#endregion
@@ -402,7 +471,7 @@ namespace ALite
 		/// </summary>
 		private void MarkListDirty()
 		{
-			mStatus |= (byte)Status.Dirty;
+			mStatus |= Status.Dirty;
 		}
 
 		/// <summary>
@@ -410,7 +479,7 @@ namespace ALite
 		/// </summary>
 		private void MarkListNew()
 		{
-			mStatus = (byte)Status.NewStatus | (byte)Status.Dirty;
+			mStatus = Status.NewStatus | Status.Dirty;
 		}
 
 		/// <summary>
@@ -418,7 +487,7 @@ namespace ALite
 		/// </summary>
 		private void MarkListOld()
 		{
-			mStatus = (byte)(mStatus & (byte)Status.Deleted);
+			mStatus = (mStatus & Status.Deleted);
 		}
 
 		/// <summary>
@@ -426,7 +495,7 @@ namespace ALite
 		/// </summary>
 		private void MarkListDeleted()
 		{
-			mStatus |= (byte)Status.Deleted | (byte)Status.Dirty;
+			mStatus |= Status.Deleted | Status.Dirty;
 		}
 
 		#endregion
@@ -539,27 +608,43 @@ namespace ALite
 			{
 				item.Commit();
 			}
-
-			// Store status flags
-			mOldStatus = mStatus;
-
-			OnResetUndo();
 		}
 
 		/// <summary>
 		/// Restores the state of the object at the last call to "ResetUndo().
 		/// </summary>
-		public void Undo()
+		public void RestoreBackedUpState()
 		{
-			foreach (IDBObject item in this)
+			if (IsTransactionInProgress)
 			{
-				item.Rollback();
+
+				// Retrieve the old status - this cannot be restored automatically as the property has no public setter
+				Status? oldStatus = null;
+				if (mTransactionData.ContainsProperty("mStatus")) oldStatus = mTransactionData.RetrieveProperty<Status>("mStatus");
+
+				// Restore all items to their previous state.  Also removes the items - this ensures that
+				// any items that should not be in this list (they were added during the transaction) are
+				// correctly removed (events, etc), and that items appear in their original order.
+				while (mInternalList.Count > 0)
+				{
+					mInternalList[0].Rollback();
+					mInternalList.RemoveAt(0);
+				}
+
+				// Restore the list to its previous state
+				List<T> originalList = mTransactionData.RetrieveProperty<List<T>>("mOriginalList");
+
+				// Ensure all items in this new list are rolled back to their previous state - this
+				// handles the situation in which objects deleted from the object do not appear in the first list
+				foreach (T item in originalList)
+				{
+					item.Rollback();
+					mInternalList.Add(item);
+				}
+
+				// Restore the old status
+				if (oldStatus != null) mStatus = (Status)oldStatus;
 			}
-
-			// Restore previous status flags
-			mStatus = mOldStatus;
-
-			OnUndo();
 		}
 
 		#endregion
@@ -567,14 +652,14 @@ namespace ALite
 		#region Stub Methods
 
 		/// <summary>
-		/// Stub method that should be overridden if extra functionality is needed when ResetUndo() is called.
+		/// Stub method that should be overridden if extra functionality is needed when Commit() is called.
 		/// </summary>
-		protected virtual void OnResetUndo() { }
+		protected virtual void OnCommit() { }
 
 		/// <summary>
-		/// Stub method that should be overridden if extra functionality is needed when Undo() is called.
+		/// Stub method that should be overridden if extra functionality is needed when Rollback() is called.
 		/// </summary>
-		protected virtual void OnUndo() { }
+		protected virtual void OnRollback() { }
 
 		#endregion
 
@@ -638,7 +723,6 @@ namespace ALite
 		private void HandleChildDeleted(object sender)
 		{
 			T child = (T)sender;
-			RemoveChildEvents(child);
 			Remove(child);
 		}
 
@@ -664,6 +748,76 @@ namespace ALite
 		{
 			child.DBObjectDeleted += this.ChildDeleted;
 			child.PropertyChanged += this.ChildPropertyChanged;
+		}
+
+		#endregion
+
+		#region Transactions
+
+		public void BeginTransaction()
+		{
+			mTransactionData = new TransactionData();
+
+			// Create an exact copy of the current list that we can restore to if items
+			// are added/deleted/reordered from the current list during this transaction
+			List<T> originalList = new List<T>();
+
+			foreach (T item in mInternalList)
+			{
+				// Inform the item that a transaction is beginning
+				item.BeginTransaction();
+				originalList.Add(item);
+			}
+
+			// Back up the list
+			mTransactionData.BackupProperty<List<T>>("mOriginalList", originalList);
+		}
+
+		public void EndTransaction()
+		{
+			foreach (T item in mInternalList)
+			{
+				// Inform the item that the transaction is ending
+				item.EndTransaction();
+			}
+
+			mTransactionData = null;
+		}
+
+		/// <summary>
+		/// Commit the transaction.  Calls OnCommit(), which can contain user code, before it erases all
+		/// record of the previous state of the object.
+		/// </summary>
+		public void Commit()
+		{
+			lock (this)
+			{
+				OnCommit();
+
+				foreach (T item in mInternalList)
+				{
+					item.Commit();
+				}
+
+				if (IsTransactionInProgress) mTransactionData.Reset();
+			}
+		}
+
+		/// <summary>
+		/// Rollback the transaction.  Restores all changed public properties to their values
+		/// at the start of the transaction, and calls OnRollback() to run any user code.
+		/// </summary>
+		public void Rollback()
+		{
+			lock (this)
+			{
+				if (IsTransactionInProgress) mTransactionData.IsRollingBack = true;
+
+				RestoreBackedUpState();
+				OnRollback();
+
+				if (IsTransactionInProgress) mTransactionData.Reset();
+			}
 		}
 
 		#endregion

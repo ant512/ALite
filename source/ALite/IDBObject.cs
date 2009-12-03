@@ -35,11 +35,20 @@ namespace ALite
         /// </summary>
 		bool IsDeleted { get; }
 
-				/// <summary>
+		/// <summary>
 		/// Returns true if a transaction is currently in progress.
 		/// </summary>
 		/// <returns></returns>
 		bool IsTransactionInProgress { get; }
+
+		/// <summary>
+		/// Returns true if a transaction is in progress and has encountered errors.
+		/// </summary>
+		bool HasTransactionFailed { get; }
+
+		/// Get a list of transaction errors if the object is running a transaction.
+		/// </summary>
+		List<string> TransactionErrors { get; }
 
         /// <summary>
         /// Save the object to the database

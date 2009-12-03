@@ -64,6 +64,9 @@ namespace ALite
 		/// </summary>
 		private DelegateRuleCollection mDelegateRules;
 
+		/// <summary>
+		/// All data used by the current transaction.
+		/// </summary>
 		TransactionData mTransactionData = null;
 
 		#endregion
@@ -153,7 +156,13 @@ namespace ALite
 		/// </summary>
 		public bool IsTransactionInProgress
 		{
-			get { return (mTransactionData != null); }
+			get
+			{
+				lock (this)
+				{
+					return (mTransactionData != null);
+				}
+			}
 		}
 
 		#endregion

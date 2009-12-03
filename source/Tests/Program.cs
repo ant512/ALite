@@ -9,8 +9,8 @@ namespace Tests
 {
 	class Program
 	{
-		static ObjectTest mObj;
-		static int mNewId;
+		static ObjectTest mObj = null;
+		static int mNewId = 0;
 
 		static void ThreadTest()
 		{
@@ -51,6 +51,8 @@ namespace Tests
 
 		static void Main(string[] args)
 		{
+			/*
+			// Thread test
 			mObj = new ObjectTest();
 			mObj.ID = 20;
 			mNewId = 15;
@@ -68,6 +70,34 @@ namespace Tests
 			for (int i = 0; i < t.Length; ++i)
 			{
 				t[i].Start();
+			}*/
+
+
+
+			// Collection test
+			DBObjectCollection<ObjectTest> collection = new DBObjectCollection<ObjectTest>();
+			ObjectTest obj = new ObjectTest();
+			obj.ID = 15;
+			obj.Name = "Bert";
+
+			collection.Add(obj);
+
+			obj = new ObjectTest();
+			obj.ID = 19;
+			obj.Name = "Fred";
+
+			collection.Add(obj);
+
+			collection.BeginTransaction();
+			collection.RemoveAt(0);
+			collection[0].ID = 20;
+
+			collection.Rollback();
+			collection.EndTransaction();
+
+			foreach (ObjectTest item in collection)
+			{
+				System.Console.WriteLine(String.Format("Name: {0}, ID: {1}", item.Name, item.ID));
 			}
 
 
