@@ -36,7 +36,7 @@ namespace Example
 		{
 			mId = Guid.NewGuid();
 
-			AddRule(ValidationRule.RuleType.MaxLength, 20, "Name");
+			AddRule(new StringLengthValidationRule("Name", 0, 20));
 		}
 
 		#endregion

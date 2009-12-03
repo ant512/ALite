@@ -92,10 +92,10 @@ namespace Example
 			Console.WriteLine(" - Id: " + test.Id.ToString());
 			Console.WriteLine(" - Name: " + test.Name.ToString());
 
-			Console.WriteLine("\nCreating restore point...");
+			Console.WriteLine("\nCreating transaction");
 
-			// Create a restore point
-			test.ResetUndo();
+			// Create a transaction
+			test.BeginTransaction();
 
 			Console.WriteLine("\nSetting new values...");
 
@@ -112,13 +112,15 @@ namespace Example
 			Console.WriteLine("\nUndoing changes...");
 
 			// Undo changes
-			test.Undo();
+			test.Rollback();
 
 			Console.WriteLine("\nCurrent object properties:");
 
 			// Print current values
 			Console.WriteLine(" - Id: " + test.Id.ToString());
 			Console.WriteLine(" - Name: " + test.Name.ToString());
+
+			test.EndTransaction();
 
 			WaitForUser();
 		}
