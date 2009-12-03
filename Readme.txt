@@ -40,7 +40,7 @@ Features
  - Reflection-based data rule system;
  - Delegate-based validation system;
  - Optional transactional database access;
- - Transactional undo to restore all properties to previous values;
+ - Transaction system to rollback the effects of a set of property changes;
  - Object new/dirty/etc status tracking enables objects to automatically choose
    the correct method for saving their data;
  - Does not enforce any design patterns on the developer.
