@@ -57,6 +57,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="TransactionInitialisationException.cs" />
     <Compile Include="DataAccess.cs" />
     <Compile Include="DataAccessException.cs" />
     <Compile Include="DateBoundsValidationRule.cs" />

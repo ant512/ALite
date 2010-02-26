@@ -80,7 +80,12 @@ namespace ALite
 		/// <summary>
 		/// All data used by the current transaction.
 		/// </summary>
-		TransactionData mTransactionData = null;
+		private TransactionData mTransactionData = null;
+
+		/// <summary>
+		/// Object used for locking.
+		/// </summary>
+		private object mLock = new object();
 
 		#endregion
 
@@ -93,10 +98,7 @@ namespace ALite
 		{
 			get
 			{
-				lock (this)
-				{
-					return ((mStatus & Status.NewStatus) != 0);
-				}
+				lock (mLock) return ((mStatus & Status.NewStatus) != 0);
 			}
 		}
 
@@ -107,7 +109,7 @@ namespace ALite
 		{
 			get
 			{
-				lock (this)
+				lock (mLock)
 				{
 					return ((mStatus & Status.Dirty) != 0);
 				}
@@ -121,7 +123,7 @@ namespace ALite
 		{
 			get
 			{
-				lock (this)
+				lock (mLock)
 				{
 					return ((mStatus & Status.Deleted) != 0);
 				}
@@ -135,13 +137,16 @@ namespace ALite
 		{
 			get
 			{
-				if (IsTransactionInProgress)
+				lock (mLock)
 				{
-					return mTransactionData.ErrorMessages;
-				}
-				else
-				{
-					return null;
+					if (IsTransactionInProgress)
+					{
+						return mTransactionData.ErrorMessages;
+					}
+					else
+					{
+						return null;
+					}
 				}
 			}
 		}
@@ -153,13 +158,16 @@ namespace ALite
 		{
 			get
 			{
-				if (IsTransactionInProgress)
+				lock (mLock)
 				{
-					return mTransactionData.HasTransactionFailed;
-				}
-				else
-				{
-					return false;
+					if (IsTransactionInProgress)
+					{
+						return mTransactionData.HasTransactionFailed;
+					}
+					else
+					{
+						return false;
+					}
 				}
 			}
 		}
@@ -171,7 +179,7 @@ namespace ALite
 		{
 			get
 			{
-				lock (this)
+				lock (mLock)
 				{
 					return (mTransactionData != null);
 				}
@@ -206,30 +214,33 @@ namespace ALite
 		/// <returns>Any errors returned during the save attempt</returns>
 		public virtual DBErrorCode Save()
 		{
-			if (IsDirty)
+			lock (mLock)
 			{
-				if (IsNew)
+				if (IsDirty)
 				{
-					if (!IsDeleted)
+					if (IsNew)
 					{
-						return Create();
+						if (!IsDeleted)
+						{
+							return Create();
+						}
+						else
+						{
+							// Object is new, so it has not been saved to the database,
+							// so we do not want to call the Delete() method.  However,
+							// we do want to fire the delete event to ensure that the
+							// object is correctly removed from any lists.
+							OnDBObjectDeleted();
+						}
+					}
+					else if (IsDeleted)
+					{
+						return Delete();
 					}
 					else
 					{
-						// Object is new, so it has not been saved to the database,
-						// so we do not want to call the Delete() method.  However,
-						// we do want to fire the delete event to ensure that the
-						// object is correctly removed from any lists.
-						OnDBObjectDeleted();
+						return Update();
 					}
-				}
-				else if (IsDeleted)
-				{
-					return Delete();
-				}
-				else
-				{
-					return Update();
 				}
 			}
 
@@ -303,8 +314,11 @@ namespace ALite
 		/// </summary>
 		public void MarkDirty()
 		{
-			OnMarkDirty();
-			mStatus |= Status.Dirty;
+			lock (mLock)
+			{
+				OnMarkDirty();
+				mStatus |= Status.Dirty;
+			}
 		}
 
 		/// <summary>
@@ -312,8 +326,11 @@ namespace ALite
 		/// </summary>
 		public void MarkNew()
 		{
-			OnMarkNew();
-			mStatus = Status.NewStatus | Status.Dirty;
+			lock (mLock)
+			{
+				OnMarkNew();
+				mStatus = Status.NewStatus | Status.Dirty;
+			}
 		}
 
 		/// <summary>
@@ -321,8 +338,11 @@ namespace ALite
 		/// </summary>
 		public void MarkOld()
 		{
-			OnMarkOld();
-			mStatus = (mStatus & Status.Deleted);
+			lock (mLock)
+			{
+				OnMarkOld();
+				mStatus = (mStatus & Status.Deleted);
+			}
 		}
 
 		/// <summary>
@@ -330,8 +350,11 @@ namespace ALite
 		/// </summary>
 		public void MarkDeleted()
 		{
-			OnMarkDeleted();
-			mStatus |= Status.Deleted | Status.Dirty;
+			lock (mLock)
+			{
+				OnMarkDeleted();
+				mStatus |= Status.Deleted | Status.Dirty;
+			}
 		}
 
 		#endregion
@@ -380,7 +403,7 @@ namespace ALite
 		/// </summary>
 		protected void RestoreBackedUpState()
 		{
-			lock (this)
+			lock (mLock)
 			{
 				if (IsTransactionInProgress)
 				{
@@ -426,7 +449,7 @@ namespace ALite
 		/// <param name="newValue">New value</param>
 		protected void SetProperty<T>(string propertyName, ref T oldValue, T newValue)
 		{
-			lock (this)
+			lock (mLock)
 			{
 				// Use shortcut and bypass rules if the object is rolling back to a previous state
 				if (IsTransactionInProgress)
@@ -444,39 +467,39 @@ namespace ALite
 					return;
 				}
 
+				// Prepare a list in which to store validation error messages
+				List<string> errorMessages = new List<string>();
+
+				if (!Validate(propertyName, errorMessages, newValue))
+				{
+					// Remember that the transaction failed
+					if (IsTransactionInProgress) mTransactionData.HasTransactionFailed = true;
+
+					// Rollback all changes so far
+					Rollback();
+
+					// Validation failed - combine all error messages and throw an exception
+					StringBuilder concatErrors = new StringBuilder();
+					string errorMessage = "";
+					foreach (string err in errorMessages)
+					{
+						concatErrors.Append("\n - ");
+						concatErrors.Append(err);
+					}
+
+					errorMessage = String.Format("New value '{0}' for property '{1}' violates rules: {2}", newValue.ToString(), propertyName, concatErrors.ToString());
+
+					if (IsTransactionInProgress) mTransactionData.AddErrorMessage(errorMessage);
+
+					// Raise the event to the list
+					OnPropertyValidationFailed(propertyName);
+
+					throw new ValidationException(errorMessage);
+				}
+
 				// Is the value different to the old value?
 				if ((oldValue == null) || (!oldValue.Equals((T)newValue)))
 				{
-					// Prepare a list in which to store validation error messages
-					List<string> errorMessages = new List<string>();
-
-					if (!Validate(propertyName, errorMessages, newValue))
-					{
-						// Remember that the transaction failed
-						if (IsTransactionInProgress) mTransactionData.HasTransactionFailed = true;
-
-						// Rollback all changes so far
-						Rollback();
-
-						// Validation failed - combine all error messages and throw an exception
-						StringBuilder concatErrors = new StringBuilder();
-						string errorMessage = "";
-						foreach (string err in errorMessages)
-						{
-							concatErrors.Append("\n - ");
-							concatErrors.Append(err);
-						}
-
-						errorMessage = String.Format("New value '{0}' for property '{1}' violates rules: {2}", newValue.ToString(), propertyName, concatErrors.ToString());
-
-						if (IsTransactionInProgress) mTransactionData.AddErrorMessage(errorMessage);
-
-						// Raise the event to the list
-						OnPropertyValidationFailed(propertyName);
-
-						throw new ValidationException(errorMessage);
-					}
-
 					// Validation succeeded - store the existing value of the property
 					if (IsTransactionInProgress) mTransactionData.BackupProperty<T>(propertyName, oldValue);
 
@@ -495,12 +518,15 @@ namespace ALite
 		/// <param name="name">Name of the property that changed</param>
 		protected void OnPropertyChanged(string name)
 		{
-			MarkDirty();
-
-			PropertyChangedEventHandler handler = PropertyChanged;
-			if (handler != null)
+			lock (mLock)
 			{
-				handler(this, new PropertyChangedEventArgs(name));
+				MarkDirty();
+
+				PropertyChangedEventHandler handler = PropertyChanged;
+				if (handler != null)
+				{
+					handler(this, new PropertyChangedEventArgs(name));
+				}
 			}
 		}
 
@@ -510,10 +536,13 @@ namespace ALite
 		/// <param name="name">Name of the property that changed</param>
 		protected void OnPropertyValidationFailed(string name)
 		{
-			PropertyValidationFailedEventHandler handler = PropertyValidationFailed;
-			if (handler != null)
+			lock (mLock)
 			{
-				handler(this);
+				PropertyValidationFailedEventHandler handler = PropertyValidationFailed;
+				if (handler != null)
+				{
+					handler(this);
+				}
 			}
 		}
 
@@ -534,15 +563,12 @@ namespace ALite
 		{
 			bool valid = true;
 
-			// Validate new value against standard rules
-			lock (mRules)
+			lock (mLock)
 			{
+				// Validate new value against standard rules
 				if (!mRules.Validate<T>(propertyName, errorMessages, value)) valid = false;
-			}
 
-			// Validate new value against custom rules
-			lock (mDelegateRules)
-			{
+				// Validate new value against custom rules
 				if (!mDelegateRules.Validate<T>(propertyName, errorMessages, value)) valid = false;
 			}
 
@@ -555,7 +581,7 @@ namespace ALite
 		/// <param name="rule">The IValidation object to add to the list.</param>
 		protected void AddRule(IValidationRule rule)
 		{
-			lock (mRules)
+			lock (mLock)
 			{
 				mRules.Add(rule);
 			}
@@ -568,7 +594,7 @@ namespace ALite
 		/// <param name="delegateFunction">The name of the property that the function validates</param>
 		protected void AddRule(Validator delegateFunction, string propertyName)
 		{
-			lock (mDelegateRules)
+			lock (mLock)
 			{
 				mDelegateRules.Add(delegateFunction, propertyName);
 			}
@@ -585,10 +611,20 @@ namespace ALite
 		/// </summary>
 		public void BeginTransaction()
 		{
-			mTransactionData = new TransactionData();
+			lock (mLock)
+			{
+				if (!IsTransactionInProgress)
+				{
+					mTransactionData = new TransactionData();
 
-			// Store the current status
-			mTransactionData.BackupProperty<Status>("mStatus", mStatus);
+					// Store the current status
+					mTransactionData.BackupProperty<Status>("mStatus", mStatus);
+				}
+				else
+				{
+					throw new TransactionInitialisationException("Transaction is already running!  Ensure the object is correctly locked before calling BeginTransaction().");
+				}
+			}
 		}
 
 		/// <summary>
@@ -596,10 +632,13 @@ namespace ALite
 		/// </summary>
 		public void EndTransaction()
 		{
-			if (IsTransactionInProgress)
+			lock (mLock)
 			{
-				Commit();
-				mTransactionData = null;
+				if (IsTransactionInProgress)
+				{
+					Commit();
+					mTransactionData = null;
+				}
 			}
 		}
 
@@ -609,7 +648,7 @@ namespace ALite
 		/// </summary>
 		public void Commit()
 		{
-			lock (this)
+			lock (mLock)
 			{
 				if (IsTransactionInProgress)
 				{

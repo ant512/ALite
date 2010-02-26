@@ -26,6 +26,9 @@ V3.0
      OnX() stub methods are called before changes are made to the class,
      allowing user code to work with the current state of the object and any
      backup data.
+   - Validation system runs even if a property is being set to its current value
+     to ensure that newly-created objects work correctly despite their default
+     values not necessarily being "correct".
  
  - New Features:
    - Added Tests project.
