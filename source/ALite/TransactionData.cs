@@ -189,7 +189,7 @@ namespace ALite
 		{
 			lock (mMemento)
 			{
-				return (mMemento.ContainsKey("propertyName"));
+				return (mMemento.ContainsKey(propertyName));
 			}
 		}
 
