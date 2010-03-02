@@ -20,11 +20,6 @@ namespace ALite
 		/// </summary>
 		event DBObjectDeletedEventHandler DBObjectDeleted;
 
-		/// <summary>
-		/// Property change attempt failed due to validation error.
-		/// </summary>
-		event PropertyValidationFailedEventHandler PropertyValidationFailed;
-
         /// <summary>
         /// Is the object dirty?
         /// </summary>
@@ -40,72 +35,29 @@ namespace ALite
         /// </summary>
 		bool IsDeleted { get; }
 
-		/// <summary>
-		/// Returns true if a transaction is currently in progress.
-		/// </summary>
-		/// <returns></returns>
-		bool IsTransactionInProgress { get; }
-
-		/// <summary>
-		/// Returns true if a transaction is in progress and has encountered errors.
-		/// </summary>
-		bool HasTransactionFailed { get; }
-
-		/// <summary>
-		/// Get a list of transaction errors if the object is running a transaction.
-		/// </summary>
-		List<string> TransactionErrors { get; }
+        /// <summary>
+        /// Save the object to the database.
+        /// </summary>
+		void Save();
 
         /// <summary>
-        /// Save the object to the database
+        /// Fetch the object from the database.
         /// </summary>
-        /// <returns>The outcome of the save attempt</returns>
-		DBErrorCode Save();
-
-        /// <summary>
-        /// Fetch the object from the database
-        /// </summary>
-        /// <returns>The outcome of the fetch attempt</returns>
-		DBErrorCode Fetch();
-
-        /// <summary>
-        /// Mark the object as old
-        /// </summary>
-		void MarkOld();
-
-        /// <summary>
-        /// Mark the object as new
-        /// </summary>
-		void MarkNew();
-
-        /// <summary>
-        /// Mark the object as deleted
-        /// </summary>
-		void MarkDeleted();
-
-        /// <summary>
-        /// Mark the object as dirty
-        /// </summary>
-		void MarkDirty();
-
-        /// <summary>
-		/// Commit any changes made to the object.
-        /// </summary>
-		void Commit();
-
-        /// <summary>
-		/// Rollback any changes made to the object.
-        /// </summary>
-		void Rollback();
+		void Fetch();
 
 		/// <summary>
-		/// Begin a transaction.
+		/// Deletes the object from the database.
 		/// </summary>
-		void BeginTransaction();
+		void Delete();
 
 		/// <summary>
-		/// End a transaction.
+		/// Stores the current state of the object for future restoral.
 		/// </summary>
-		void EndTransaction();
+		void SetRestorePoint();
+
+		/// <summary>
+		/// Reverts to the last saved restore point.
+		/// </summary>
+		void RevertToRestorePoint();
 	}
 }

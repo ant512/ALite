@@ -18,27 +18,15 @@ namespace Tests
 			{
 				try
 				{
-					mObj.BeginTransaction();
-
 					mObj.ID = mNewId++;
 					mObj.Name = "Joe";
 					mObj.ID = mNewId - 10;
 
-					mObj.EndTransaction();
-
 					mObj.Save();
 				}
-				catch (ValidationException)
+				catch (ValidationException ex)
 				{
-					//System.Console.WriteLine(ex.Message);
-
-					if (mObj.HasTransactionFailed)
-					{
-						foreach (string err in mObj.TransactionErrors)
-						{
-							System.Console.WriteLine(err);
-						}
-					}
+					System.Console.WriteLine(ex.Message);
 				}
 
 				System.Console.WriteLine(mObj.ID);
@@ -100,7 +88,6 @@ namespace Tests
 					System.Console.WriteLine(String.Format("Name: {0}, ID: {1}", item.Name, item.ID));
 				}
 
-				collection.BeginTransaction();
 				collection.RemoveAt(0);
 				collection[0].ID = 12;
 
@@ -109,9 +96,6 @@ namespace Tests
 				{
 					System.Console.WriteLine(String.Format("Name: {0}, ID: {1}", item.Name, item.ID));
 				}
-
-				collection.Rollback();
-				collection.EndTransaction();
 
 				System.Console.WriteLine("\nPost transaction");
 				foreach (ObjectTest item in collection)
@@ -216,26 +200,22 @@ namespace Tests
 			Date = new DateTime(2009, 5, 5);
 		}
 
-		private string mName;
-		private int mId;
-		private DateTime mDate;
-
 		public string Name
 		{
-			get { return mName; }
-			set { SetProperty<string>("Name", ref mName, value); }
+			get { return GetProperty<string>("Name"); }
+			set { SetProperty<string>("Name", value); }
 		}
 
 		public int ID
 		{
-			get { return mId; }
-			set { SetProperty<int>("ID", ref mId, value); }
+			get { return GetProperty<int>("ID"); }
+			set { SetProperty<int>("ID", value); }
 		}
 
 		public DateTime Date
 		{
-			get { return mDate; }
-			set { SetProperty<DateTime>("Date", ref mDate, value); }
+			get { return GetProperty<DateTime>("Date"); }
+			set { SetProperty<DateTime>("Date", value); }
 		}
 
 		public bool ValidateID(List<string> errorMessages, object value)

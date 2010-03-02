@@ -26,20 +26,6 @@ namespace ALite
 
 		#endregion
 
-		#region Members
-
-		/// <summary>
-		/// The minimum valid value of the integer.
-		/// </summary>
-		private int mMinValue;
-
-		/// <summary>
-		/// The maximum valid value of the integer.
-		/// </summary>
-		private int mMaxValue;
-
-		#endregion
-
 		#region Properties
 
 		/// <summary>
@@ -47,10 +33,8 @@ namespace ALite
 		/// </summary>
 		public int MinValue
 		{
-			get
-			{
-				return mMinValue;
-			}
+			get;
+			private set;
 		}
 		
 		/// <summary>
@@ -58,10 +42,8 @@ namespace ALite
 		/// </summary>
 		public int MaxValue
 		{
-			get
-			{
-				return mMaxValue;
-			}
+			get;
+			private set;
 		}
 		
 		#endregion
@@ -76,8 +58,8 @@ namespace ALite
 		/// <param name="maxValue">The maximum value of the integer.</param>
 		public IntegerBoundsValidationRule(string propertyName, int minValue, int maxValue) : base(propertyName)
 		{
-			mMaxValue = maxValue;
-			mMinValue = minValue;
+			MaxValue = maxValue;
+			MinValue = minValue;
 		}
 
 		#endregion
@@ -96,13 +78,13 @@ namespace ALite
 
 			if (!ValidateMaxValue((int)value))
 			{
-				errorMessages.Add(String.Format(IntegerTooLargeMessage, mMaxValue));
+				errorMessages.Add(String.Format(IntegerTooLargeMessage, MaxValue));
 				valid = false;
 			}
 
 			if (!ValidateMinValue((int)value))
 			{
-				errorMessages.Add(String.Format(IntegerTooSmallMessage, mMinValue));
+				errorMessages.Add(String.Format(IntegerTooSmallMessage, MinValue));
 				valid = false;
 			}
 
@@ -116,7 +98,7 @@ namespace ALite
 		/// <returns>True if the integer is valid; false if not.</returns>
 		private bool ValidateMaxValue(int value)
 		{
-			return (mMaxValue >= value);
+			return (MaxValue >= value);
 		}
 
 		/// <summary>
@@ -126,7 +108,7 @@ namespace ALite
 		/// <returns>True if the integer is valid; false if not.</returns>
 		private bool ValidateMinValue(int value)
 		{
-			return (mMinValue <= value);
+			return (MinValue <= value);
 		}
 
 		#endregion

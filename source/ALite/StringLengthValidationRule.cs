@@ -26,20 +26,6 @@ namespace ALite
 
 		#endregion
 
-		#region Members
-
-		/// <summary>
-		/// Maximum length of a valid string.
-		/// </summary>
-		private int mMaxLength;
-
-		/// <summary>
-		/// Minimum length of a valid string.
-		/// </summary>
-		private int mMinLength;
-
-		#endregion
-
 		#region Properties
 
 		/// <summary>
@@ -47,10 +33,8 @@ namespace ALite
 		/// </summary>
 		public int MaxLength
 		{
-			get
-			{
-				return mMaxLength;
-			}
+			get;
+			private set;
 		}
 		
 		/// <summary>
@@ -58,10 +42,8 @@ namespace ALite
 		/// </summary>
 		public int MinLength
 		{
-			get
-			{
-				return mMinLength;
-			}
+			get;
+			private set;
 		}
 		
 		#endregion
@@ -76,8 +58,8 @@ namespace ALite
 		/// <param name="maxLength">The maximum valid length of the string.</param>
 		public StringLengthValidationRule(string propertyName, int minLength, int maxLength) : base(propertyName)
 		{
-			mMaxLength = maxLength;
-			mMinLength = minLength;
+			MaxLength = maxLength;
+			MinLength = minLength;
 		}
 
 		#endregion
@@ -96,13 +78,13 @@ namespace ALite
 
 			if (!ValidateMaxLength((string)value))
 			{
-				errorMessages.Add(String.Format(StringTooLongMessage, mMaxLength));
+				errorMessages.Add(String.Format(StringTooLongMessage, MaxLength));
 				valid = false;
 			}
 
 			if (!ValidateMinLength((string)value))
 			{
-				errorMessages.Add(String.Format(StringTooShortMessage, mMinLength));
+				errorMessages.Add(String.Format(StringTooShortMessage, MinLength));
 				valid = false;
 			}
 			
@@ -116,7 +98,7 @@ namespace ALite
 		/// <returns>True if the string is valid; false if not.</returns>
 		private bool ValidateMaxLength(string text)
 		{
-			return (mMaxLength >= text.Length);
+			return (MaxLength >= text.Length);
 		}
 
 		/// <summary>
@@ -126,7 +108,7 @@ namespace ALite
 		/// <returns>True if the string is valid; false if not.</returns>
 		private bool ValidateMinLength(string text)
 		{
-			return (mMinLength <= text.Length);
+			return (MinLength <= text.Length);
 		}
 
 		#endregion

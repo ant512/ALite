@@ -26,20 +26,6 @@ namespace ALite
 
 		#endregion
 
-		#region Members
-
-		/// <summary>
-		/// The minimum valid value of the date.
-		/// </summary>
-		private DateTime mMinValue;
-
-		/// <summary>
-		/// The maximum valid value of the date.
-		/// </summary>
-		private DateTime mMaxValue;
-
-		#endregion
-
 		#region Properties
 
 		/// <summary>
@@ -47,10 +33,8 @@ namespace ALite
 		/// </summary>
 		public DateTime MinValue
 		{
-			get
-			{
-				return mMinValue;
-			}
+			get;
+			private set;
 		}
 
 		/// <summary>
@@ -58,10 +42,8 @@ namespace ALite
 		/// </summary>
 		public DateTime MaxValue
 		{
-			get
-			{
-				return mMaxValue;
-			}
+			get;
+			private set;
 		}
 
 		#endregion
@@ -77,8 +59,8 @@ namespace ALite
 		public DateBoundsValidationRule(string propertyName, DateTime minValue, DateTime maxValue)
 			: base(propertyName)
 		{
-			mMaxValue = maxValue;
-			mMinValue = minValue;
+			MaxValue = maxValue;
+			MinValue = minValue;
 		}
 
 		#endregion
@@ -97,13 +79,13 @@ namespace ALite
 
 			if (!ValidateMaxValue((DateTime)value))
 			{
-				errorMessages.Add(String.Format(DateTooLargeMessage, mMaxValue));
+				errorMessages.Add(String.Format(DateTooLargeMessage, MaxValue));
 				valid = false;
 			}
 
 			if (!ValidateMinValue((DateTime)value))
 			{
-				errorMessages.Add(String.Format(DateTooSmallMessage, mMinValue));
+				errorMessages.Add(String.Format(DateTooSmallMessage, MinValue));
 				valid = false;
 			}
 
@@ -117,7 +99,7 @@ namespace ALite
 		/// <returns>True if the date is valid; false if not.</returns>
 		private bool ValidateMaxValue(DateTime value)
 		{
-			return (mMaxValue >= value);
+			return (MaxValue >= value);
 		}
 
 		/// <summary>
@@ -127,7 +109,7 @@ namespace ALite
 		/// <returns>True if the date is valid; false if not.</returns>
 		private bool ValidateMinValue(DateTime value)
 		{
-			return (mMinValue <= value);
+			return (MinValue <= value);
 		}
 
 		#endregion

@@ -15,16 +15,27 @@ namespace ALite
 	public delegate void DBObjectDeletedEventHandler(object sender);
 
 	/// <summary>
-	/// Event raised when a DBObject's property is set but the set fails
-	/// to validate.
+	/// Event raised when a DBObject is created.
 	/// </summary>
 	/// <param name="sender">The object that raised the event.</param>
-	public delegate void PropertyValidationFailedEventHandler(object sender);
+	public delegate void DBObjectCreatedEventHandler(object sender);
+
+	/// <summary>
+	/// Event raised when a DBObject is updated.
+	/// </summary>
+	/// <param name="sender">The object that raised the event.</param>
+	public delegate void DBObjectUpdatedEventHandler(object sender);
+
+	/// <summary>
+	/// Event raised when a DBObject is fetched.
+	/// </summary>
+	/// <param name="sender">The object that raised the event.</param>
+	public delegate void DBObjectFetchedEventHandler(object sender);
 
 	#endregion
 
 	/// <summary>
-	/// Base class for objects that interact with the database
+	/// Base class for objects that interact with the database.
 	/// </summary>
 	[Serializable] public abstract class DBObject : IDBObject, INotifyPropertyChanged
 	{
@@ -33,9 +44,9 @@ namespace ALite
 		[Flags]
 		private enum Status : byte
 		{
-			NewStatus = 0x1,
-			Dirty = 0x2,
-			Deleted = 0x4
+			IsNew = 0x1,
+			IsDirty = 0x2,
+			IsDeleted = 0x4
 		}
 
 		#endregion
@@ -55,37 +66,46 @@ namespace ALite
 		public event DBObjectDeletedEventHandler DBObjectDeleted;
 
 		/// <summary>
-		/// Event fired when a DBObject's property is set but the set fails
-		/// to validate.
+		/// Object created event.
 		/// </summary>
-		public event PropertyValidationFailedEventHandler PropertyValidationFailed;
+		public event DBObjectCreatedEventHandler DBObjectCreated;
+
+		/// <summary>
+		/// Object updated event.
+		/// </summary>
+		public event DBObjectUpdatedEventHandler DBObjectUpdated;
+
+		/// <summary>
+		/// Object fetched event.
+		/// </summary>
+		public event DBObjectFetchedEventHandler DBObjectFetched;
 
 		#endregion
 
 		/// <summary>
-        /// Status of the object as a bitmask; use the Status enum to unpack it
+        /// Status of the object as a bitmask; use the Status enum to unpack it.
         /// </summary>
-		private Status mStatus;
+		private Status mStatus = Status.IsNew | Status.IsDirty;
 
 		/// <summary>
-		/// List of rules that properties are checked against before they are set
+		/// List of rules that properties are checked against before they are set.
 		/// </summary>
-		private ValidationRuleCollection mRules;
+		private ValidationRuleCollection mRules = new ValidationRuleCollection();
 
 		/// <summary>
 		/// List of delegates that function as custom rules
 		/// </summary>
-		private DelegateRuleCollection mDelegateRules;
+		private DelegateRuleCollection mDelegateRules = new DelegateRuleCollection();
 
 		/// <summary>
-		/// All data used by the current transaction.
+		/// Stores all data accessed via the GetProperty() and SetProperty() methods.
 		/// </summary>
-		private TransactionData mTransactionData = null;
+		private Document mDocument = new Document();
 
 		/// <summary>
-		/// Object used for locking.
+		/// Stores the state of the object after a call to SetRestorePoint().
 		/// </summary>
-		private object mLock = new object();
+		private Document mRestorePoint;
 
 		#endregion
 
@@ -96,10 +116,7 @@ namespace ALite
         /// </summary>
 		public bool IsNew
 		{
-			get
-			{
-				lock (mLock) return ((mStatus & Status.NewStatus) != 0);
-			}
+			get { return ((mStatus & Status.IsNew) != 0); }
 		}
 
         /// <summary>
@@ -107,13 +124,7 @@ namespace ALite
         /// </summary>
 		public bool IsDirty
 		{
-			get
-			{
-				lock (mLock)
-				{
-					return ((mStatus & Status.Dirty) != 0);
-				}
-			}
+			get { return ((mStatus & Status.IsDirty) != 0); }
 		}
 
         /// <summary>
@@ -121,69 +132,7 @@ namespace ALite
         /// </summary>
 		public bool IsDeleted
 		{
-			get
-			{
-				lock (mLock)
-				{
-					return ((mStatus & Status.Deleted) != 0);
-				}
-			}
-		}
-
-		/// <summary>
-		/// Get a list of transaction errors if the object is running a transaction.
-		/// </summary>
-		public List<string> TransactionErrors
-		{
-			get
-			{
-				lock (mLock)
-				{
-					if (IsTransactionInProgress)
-					{
-						return mTransactionData.ErrorMessages;
-					}
-					else
-					{
-						return null;
-					}
-				}
-			}
-		}
-
-		/// <summary>
-		/// Returns true if a transaction is in progress and has encountered errors.
-		/// </summary>
-		public bool HasTransactionFailed
-		{
-			get
-			{
-				lock (mLock)
-				{
-					if (IsTransactionInProgress)
-					{
-						return mTransactionData.HasTransactionFailed;
-					}
-					else
-					{
-						return false;
-					}
-				}
-			}
-		}
-
-		/// <summary>
-		/// Returns true if a transaction is in progress.
-		/// </summary>
-		public bool IsTransactionInProgress
-		{
-			get
-			{
-				lock (mLock)
-				{
-					return (mTransactionData != null);
-				}
-			}
+			get { return ((mStatus & Status.IsDeleted) != 0); }
 		}
 
 		#endregion
@@ -191,16 +140,9 @@ namespace ALite
 		#region Constructors
 
         /// <summary>
-        /// Constructor for the DBObject class
+        /// Constructor.
         /// </summary>
-		protected DBObject()
-		{
-			mRules = new ValidationRuleCollection();
-			mDelegateRules = new DelegateRuleCollection();
-
-			// Mark the object as new
-			mStatus = Status.NewStatus | Status.Dirty;
-		}
+		protected DBObject() { }
 
 		#endregion
 
@@ -209,94 +151,106 @@ namespace ALite
 		#region Data Access
 
 		/// <summary>
-		/// Based on the current status of the object, chooses whether to create, update or delete
+		/// Based on the current status of the object, chooses whether to create or update.
 		/// </summary>
-		/// <returns>Any errors returned during the save attempt</returns>
-		public virtual DBErrorCode Save()
+		public void Save()
 		{
-			lock (mLock)
+			if (IsDirty)
 			{
-				if (IsDirty)
+				if (IsNew)
 				{
-					if (IsNew)
-					{
-						if (!IsDeleted)
-						{
-							return Create();
-						}
-						else
-						{
-							// Object is new, so it has not been saved to the database,
-							// so we do not want to call the Delete() method.  However,
-							// we do want to fire the delete event to ensure that the
-							// object is correctly removed from any lists.
-							OnDBObjectDeleted();
-						}
-					}
-					else if (IsDeleted)
-					{
-						return Delete();
-					}
-					else
-					{
-						return Update();
-					}
+					Create();
+				}
+				else
+				{
+					Update();
 				}
 			}
+		}
 
-			return DBErrorCode.Ok;
+		protected virtual void CreateData() { }
+		protected virtual void UpdateData() { }
+		protected virtual void FetchData() { }
+		protected virtual void DeleteData() { }
+
+		protected void Create()
+		{
+			CreateData();
+			MarkOld();
+			OnCreated();
+		}
+
+		protected void Update()
+		{
+			UpdateData();
+			MarkOld();
+			OnUpdated();
 		}
 
 		/// <summary>
-		/// Marks the object as old; intended to be overriden
+		/// Marks the object as old; intended to be overriden.
 		/// </summary>
 		/// <returns></returns>
-		protected virtual DBErrorCode Create()
+		public void Fetch()
 		{
+			FetchData();
 			MarkOld();
-			return DBErrorCode.Ok;
+			OnFetched();
 		}
 
 		/// <summary>
-		/// Marks the object as old; intended to be overriden
+		/// Marks the object as old; intended to be overriden.
 		/// </summary>
 		/// <returns></returns>
-		protected virtual DBErrorCode Update()
+		public void Delete()
 		{
-			MarkOld();
-			return DBErrorCode.Ok;
+			DeleteData();
+			MarkDeleted();
+			OnDeleted();
 		}
 
 		/// <summary>
-		/// Marks the object as old; intended to be overriden
+		/// Called when the object is created.
 		/// </summary>
-		/// <returns></returns>
-		public virtual DBErrorCode Fetch()
+		private void OnCreated()
 		{
-			MarkOld();
-			return DBErrorCode.Ok;
+			DBObjectCreatedEventHandler handler = DBObjectCreated;
+			if (handler != null)
+			{
+				handler(this);
+			}
 		}
 
 		/// <summary>
-		/// Marks the object as old; intended to be overriden
+		/// Called when the object is updated.
 		/// </summary>
-		/// <returns></returns>
-		protected virtual DBErrorCode Delete()
+		private void OnUpdated()
 		{
-			MarkOld();
-
-			// Raise delete event
-			OnDBObjectDeleted();
-
-			return DBErrorCode.Ok;
+			DBObjectUpdatedEventHandler handler = DBObjectUpdated;
+			if (handler != null)
+			{
+				handler(this);
+			}
 		}
 
 		/// <summary>
-		/// Called when the object is deleted
+		/// Called when the object is deleted.
 		/// </summary>
-		protected void OnDBObjectDeleted()
+		private void OnDeleted()
 		{
 			DBObjectDeletedEventHandler handler = DBObjectDeleted;
+			if (handler != null)
+			{
+				handler(this);
+			}
+		}
+
+		/// <summary>
+		/// Called when the object is fetched.
+		/// </summary>
+		private void OnFetched()
+		{
+			DBObjectFetchedEventHandler handler = DBObjectFetched;
 			if (handler != null)
 			{
 				handler(this);
@@ -307,159 +261,95 @@ namespace ALite
 
 		#region Status
 
-		#region Framework Methods
-
 		/// <summary>
-		/// Marks the object as dirty
+		/// Marks the object as dirty.
 		/// </summary>
-		public void MarkDirty()
+		protected void MarkDirty()
 		{
-			lock (mLock)
-			{
-				OnMarkDirty();
-				mStatus |= Status.Dirty;
-			}
+			mStatus |= Status.IsDirty;
 		}
 
 		/// <summary>
-		/// Marks the object as new
+		/// Marks the object as new.
 		/// </summary>
-		public void MarkNew()
+		protected void MarkNew()
 		{
-			lock (mLock)
-			{
-				OnMarkNew();
-				mStatus = Status.NewStatus | Status.Dirty;
-			}
+			mStatus = Status.IsNew | Status.IsDirty;
 		}
 
 		/// <summary>
-		/// Marks the object as old
+		/// Marks the object as old.
 		/// </summary>
-		public void MarkOld()
+		protected void MarkOld()
 		{
-			lock (mLock)
-			{
-				OnMarkOld();
-				mStatus = (mStatus & Status.Deleted);
-			}
+			mStatus = (mStatus & Status.IsDeleted);
 		}
 
 		/// <summary>
-		/// Marks the object as deleted
+		/// Marks the object as deleted.
 		/// </summary>
-		public void MarkDeleted()
+		protected void MarkDeleted()
 		{
-			lock (mLock)
-			{
-				OnMarkDeleted();
-				mStatus |= Status.Deleted | Status.Dirty;
-			}
+			mStatus = Status.IsDeleted;
 		}
 
 		#endregion
 
-		#region Stub Methods
+		#region Restore Point
 
 		/// <summary>
-		/// Stub method that should be overridden if extra functionality is needed when MarkDirty() is called.
+		/// Stores the current state of the object for future restoral.
 		/// </summary>
-		protected virtual void OnMarkDirty() { }
-
-		/// <summary>
-		/// Stub method that should be overridden if extra functionality is needed when MarkNew() is called.
-		/// </summary>
-		protected virtual void OnMarkNew() { }
-
-		/// <summary>
-		/// Stub method that should be overridden if extra functionality is needed when MarkOld() is called.
-		/// </summary>
-		protected virtual void OnMarkOld() { }
-
-		/// <summary>
-		/// Stub method that should be overridden if extra functionality is needed when MarkDeleted() is called.
-		/// </summary>
-		protected virtual void OnMarkDeleted() { }
-
-		#endregion
-
-		#endregion
-
-		#region Memento Functions
-
-		#region Framework Methods
-
-		/// <summary>
-		/// Restores the object to its state at the start of the current transaction.
-		/// 
-		/// This can throw a TargetInvocationException error at the line containing "info.SetValue".
-		/// This occurs if the attempt at resetting the property failed because the setter threw
-		/// an exception.  If this happens, check:
-		///  - That the value being restored is valid for the given datatype (this can occur if
-		///    Commit() was not called in the object's constructor, meaning non-nullable values
-		///    are being restored to the default value, ie. null).
-		/// 
-		/// The TargetInvocationException is caught and wrapped in an UndoException.
-		/// </summary>
-		protected void RestoreBackedUpState()
+		public void SetRestorePoint()
 		{
-			lock (mLock)
+			mRestorePoint = new Document();
+
+			foreach (string key in mDocument.Keys)
 			{
-				if (IsTransactionInProgress)
-				{
-					// Retrieve the old status - this cannot be restored automatically as the property has no public setter
-					Status? oldStatus = null;
-					if (mTransactionData.ContainsProperty("mStatus")) oldStatus = mTransactionData.RetrieveProperty<Status>("mStatus");
-
-					// Restore all of the old properties that have public setters
-					mTransactionData.Restore(this);
-
-					// Restore the old status
-					if (oldStatus != null) mStatus = (Status)oldStatus;
-				}
+				mRestorePoint.Add(key, mDocument[key]);
 			}
+		}
+
+		/// <summary>
+		/// Reverts to the last saved restore point.
+		/// </summary>
+		public void RevertToRestorePoint()
+		{
+			mDocument = mRestorePoint;
+			mRestorePoint = null;
 		}
 
 		#endregion
 
-		#region Stub Methods
+		#region Properties
 
 		/// <summary>
-		/// Stub method that should be overridden if extra functionality is needed when Commit() is called.
+		/// Get a property.  Returns the default value for T if no property is currently set.
 		/// </summary>
-		protected virtual void OnCommit() { }
-
-		/// <summary>
-		/// Stub method that should be overridden if extra functionality is needed when Rollback() is called.
-		/// </summary>
-		protected virtual void OnRollback() { }
-
-		#endregion
-
-		#endregion
-
-		#region Property Changed
+		/// <typeparam name="T">Type of the property to retrieve.</typeparam>
+		/// <param name="propertyName">Name of the property to retrieve</param>
+		/// <returns>The current value of the property.</returns>
+		protected T GetProperty<T>(string propertyName)
+		{
+			lock (mDocument)
+			{
+				if (mDocument.Contains(propertyName)) return (T)mDocument[propertyName];
+				return default(T);
+			}
+		}
 
 		/// <summary>
 		/// Set a property and fire a change event.  Throws an exception if any validation rules are violated.
 		/// </summary>
 		/// <typeparam name="T">Type of the object</typeparam>
 		/// <param name="propertyName">Name of the property being changed</param>
-		/// <param name="oldValue">Reference to the value being updated</param>
 		/// <param name="newValue">New value</param>
-		protected void SetProperty<T>(string propertyName, ref T oldValue, T newValue)
+		protected void SetProperty<T>(string propertyName, T newValue)
 		{
-			lock (mLock)
+			lock (mDocument)
 			{
-				// Use shortcut and bypass rules if the object is rolling back to a previous state
-				if (IsTransactionInProgress)
-				{
-					if (mTransactionData.IsRollingBack)
-					{
-						oldValue = newValue;
-						return;
-					}
-				}
+				// Get the existing value from the document
+				T oldValue = GetProperty<T>(propertyName);
 
 				// Are we trying to set a null value to null?
 				if ((oldValue == null) && (newValue == null))
@@ -472,39 +362,17 @@ namespace ALite
 
 				if (!Validate(propertyName, errorMessages, newValue))
 				{
-					// Remember that the transaction failed
-					if (IsTransactionInProgress) mTransactionData.HasTransactionFailed = true;
+					// Validation failed - combine all error messages
+					string errorMessage = ConcatenateValidationErrorMessages<T>(errorMessages, propertyName, newValue);
 
-					// Rollback all changes so far
-					Rollback();
-
-					// Validation failed - combine all error messages and throw an exception
-					StringBuilder concatErrors = new StringBuilder();
-					string errorMessage = "";
-					foreach (string err in errorMessages)
-					{
-						concatErrors.Append("\n - ");
-						concatErrors.Append(err);
-					}
-
-					errorMessage = String.Format("New value '{0}' for property '{1}' violates rules: {2}", newValue.ToString(), propertyName, concatErrors.ToString());
-
-					if (IsTransactionInProgress) mTransactionData.AddErrorMessage(errorMessage);
-
-					// Raise the event to the list
-					OnPropertyValidationFailed(propertyName);
-
+					// Indicate the error by throwing an exception
 					throw new ValidationException(errorMessage);
 				}
 
 				// Is the value different to the old value?
 				if ((oldValue == null) || (!oldValue.Equals((T)newValue)))
 				{
-					// Validation succeeded - store the existing value of the property
-					if (IsTransactionInProgress) mTransactionData.BackupProperty<T>(propertyName, oldValue);
-
-					// Update the value
-					oldValue = newValue;
+					mDocument[propertyName] = newValue;
 
 					// Handle change event
 					OnPropertyChanged(propertyName);
@@ -518,32 +386,33 @@ namespace ALite
 		/// <param name="name">Name of the property that changed</param>
 		protected void OnPropertyChanged(string name)
 		{
-			lock (mLock)
-			{
-				MarkDirty();
+			MarkDirty();
 
-				PropertyChangedEventHandler handler = PropertyChanged;
-				if (handler != null)
-				{
-					handler(this, new PropertyChangedEventArgs(name));
-				}
+			PropertyChangedEventHandler handler = PropertyChanged;
+			if (handler != null)
+			{
+				handler(this, new PropertyChangedEventArgs(name));
 			}
 		}
 
 		/// <summary>
-		/// Called when a property is changed
+		/// Combines a list of error messages into a single string.
 		/// </summary>
-		/// <param name="name">Name of the property that changed</param>
-		protected void OnPropertyValidationFailed(string name)
+		/// <typeparam name="T">The type of the property being changed that caused the errors.</typeparam>
+		/// <param name="errorMessages">The list of error messages.</param>
+		/// <param name="propertyName">The name of the property being changed.</param>
+		/// <param name="newValue">The new value being applied to the property.</param>
+		/// <returns>A string containing all error messages in a user-friendly format.</returns>
+		private string ConcatenateValidationErrorMessages<T>(List<string> errorMessages, string propertyName, T newValue)
 		{
-			lock (mLock)
+			StringBuilder concatErrors = new StringBuilder();
+			foreach (string err in errorMessages)
 			{
-				PropertyValidationFailedEventHandler handler = PropertyValidationFailed;
-				if (handler != null)
-				{
-					handler(this);
-				}
+				concatErrors.Append("\n - ");
+				concatErrors.Append(err);
 			}
+
+			return String.Format("New value '{0}' for property '{1}' violates rules: {2}", newValue.ToString(), propertyName, concatErrors.ToString());
 		}
 
 		#endregion
@@ -563,14 +432,11 @@ namespace ALite
 		{
 			bool valid = true;
 
-			lock (mLock)
-			{
-				// Validate new value against standard rules
-				if (!mRules.Validate<T>(propertyName, errorMessages, value)) valid = false;
+			// Validate new value against standard rules
+			if (!mRules.Validate<T>(propertyName, errorMessages, value)) valid = false;
 
-				// Validate new value against custom rules
-				if (!mDelegateRules.Validate<T>(propertyName, errorMessages, value)) valid = false;
-			}
+			// Validate new value against custom rules
+			if (!mDelegateRules.Validate<T>(propertyName, errorMessages, value)) valid = false;
 
 			return valid;
 		}
@@ -581,10 +447,7 @@ namespace ALite
 		/// <param name="rule">The IValidation object to add to the list.</param>
 		protected void AddRule(IValidationRule rule)
 		{
-			lock (mLock)
-			{
-				mRules.Add(rule);
-			}
+			mRules.Add(rule);
 		}
 
 		/// <summary>
@@ -594,132 +457,11 @@ namespace ALite
 		/// <param name="delegateFunction">The name of the property that the function validates</param>
 		protected void AddRule(Validator delegateFunction, string propertyName)
 		{
-			lock (mLock)
-			{
-				mDelegateRules.Add(delegateFunction, propertyName);
-			}
-		}
-
-		#endregion
-
-		#region Transactions
-
-		/// <summary>
-		/// Begin a new transaction.  If this is not called before the object is modified it will
-		/// not be possible to roll back the object to its initial state if any of the modifications
-		/// do not work.
-		/// </summary>
-		public void BeginTransaction()
-		{
-			lock (mLock)
-			{
-				if (!IsTransactionInProgress)
-				{
-					mTransactionData = new TransactionData();
-
-					// Store the current status
-					mTransactionData.BackupProperty<Status>("mStatus", mStatus);
-				}
-				else
-				{
-					throw new TransactionInitialisationException("Transaction is already running!  Ensure the object is correctly locked before calling BeginTransaction().");
-				}
-			}
-		}
-
-		/// <summary>
-		/// Finish a transaction.
-		/// </summary>
-		public void EndTransaction()
-		{
-			lock (mLock)
-			{
-				if (IsTransactionInProgress)
-				{
-					Commit();
-					mTransactionData = null;
-				}
-			}
-		}
-
-		/// <summary>
-		/// Commit the transaction.  Calls OnCommit(), which can contain user code, before it erases all
-		/// record of the previous state of the object.
-		/// </summary>
-		public void Commit()
-		{
-			lock (mLock)
-			{
-				if (IsTransactionInProgress)
-				{
-					OnCommit();
-					mTransactionData.Reset();
-				}
-			}
-		}
-
-		/// <summary>
-		/// Rollback the transaction.  Restores all changed public properties to their values
-		/// at the start of the transaction, and calls OnRollback() to run any user code.
-		/// </summary>
-		public void Rollback()
-		{
-			lock (this)
-			{
-				if (IsTransactionInProgress)
-				{
-					mTransactionData.IsRollingBack = true;
-
-					RestoreBackedUpState();
-					OnRollback();
-
-					mTransactionData.IsRollingBack = false;
-				}
-			}
+			mDelegateRules.Add(delegateFunction, propertyName);
 		}
 
 		#endregion
 
 		#endregion
 	}
-
-	#region Enums
-
-    /// <summary>
-    /// List of possible database errors
-    /// </summary>
-	public enum DBErrorCode
-	{
-        /// <summary>
-        /// No problems encountered during DB access
-        /// </summary>
-		Ok = 0,
-
-        /// <summary>
-        /// Record already exists
-        /// </summary>
-		AlreadyExists = 1,
-
-        /// <summary>
-        /// DB access failed for a non-specific reason
-        /// </summary>
-        Failed = 2,
-
-        /// <summary>
-        /// Object was not saved to the database
-        /// </summary>
-        NotSaved = 3,
-
-        /// <summary>
-        /// Record does not exist
-        /// </summary>
-        DoesNotExist = 4,
-
-        /// <summary>
-        /// Requested DB operation was not permitted
-        /// </summary>
-        NotPermitted = 5
-	}
-
-	#endregion
 }
