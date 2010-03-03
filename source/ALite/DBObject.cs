@@ -308,6 +308,9 @@ namespace ALite
 			{
 				mRestorePoint.Add(key, mDocument[key]);
 			}
+
+			// Ensure that the restore point contains the current state of the object
+			mRestorePoint.Add("mStatus", mStatus);
 		}
 
 		/// <summary>
@@ -317,6 +320,12 @@ namespace ALite
 		{
 			mDocument = mRestorePoint;
 			mRestorePoint = null;
+
+			// Extract the status from the document
+			mStatus = (Status)mDocument["mStatus"];
+
+			// Remove the status from the document
+			mDocument.Remove("mStatus");
 		}
 
 		#endregion
