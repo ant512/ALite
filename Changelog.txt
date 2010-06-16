@@ -48,7 +48,7 @@ V3.0
    - Saving a deleted DBObject raises a DBObjectDeleted event, to which the
      DBObjectCollection subscribes.  The collection automatically removes the
      deleted object from its list.
-   - Upgraded to VS2008.
+   - Upgraded to VS2010.
    - Changed DBObject to use a transactional-based paradigm for managing its
      properties.
 
