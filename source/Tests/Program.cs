@@ -4,6 +4,7 @@ using System.Text;
 using ALite;
 using System.Threading;
 using System.Diagnostics;
+using ObjectValidator;
 
 namespace Tests
 {

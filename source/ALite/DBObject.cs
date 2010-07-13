@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using ObjectValidator;
 
 namespace ALite
 {
@@ -90,12 +91,7 @@ namespace ALite
 		/// <summary>
 		/// List of rules that properties are checked against before they are set.
 		/// </summary>
-		private ValidationRuleCollection mRules = new ValidationRuleCollection();
-
-		/// <summary>
-		/// List of delegates that function as custom rules
-		/// </summary>
-		private DelegateRuleCollection mDelegateRules = new DelegateRuleCollection();
+		private Validator mValidator = new Validator();
 
 		/// <summary>
 		/// Stores all data accessed via the GetProperty() and SetProperty() methods.
@@ -375,7 +371,7 @@ namespace ALite
 					string errorMessage = ConcatenateValidationErrorMessages<T>(errorMessages, propertyName, newValue);
 
 					// Indicate the error by throwing an exception
-					throw new ValidationException(errorMessage);
+					throw new ObjectValidator.ValidationException(errorMessage);
 				}
 
 				// Is the value different to the old value?
@@ -439,15 +435,7 @@ namespace ALite
 		/// <returns>True if the value is valid; false if not.</returns>
 		protected bool Validate<T>(string propertyName, List<string> errorMessages, T value)
 		{
-			bool valid = true;
-
-			// Validate new value against standard rules
-			if (!mRules.Validate<T>(propertyName, errorMessages, value)) valid = false;
-
-			// Validate new value against custom rules
-			if (!mDelegateRules.Validate<T>(propertyName, errorMessages, value)) valid = false;
-
-			return valid;
+			return mValidator.Validate<T>(propertyName, errorMessages, value);
 		}
 
 		/// <summary>
@@ -456,7 +444,7 @@ namespace ALite
 		/// <param name="rule">The IValidation object to add to the list.</param>
 		protected void AddRule(IValidationRule rule)
 		{
-			mRules.Add(rule);
+			mValidator.AddRule(rule);
 		}
 
 		/// <summary>
@@ -464,9 +452,9 @@ namespace ALite
 		/// </summary>
 		/// <param name="propertyName">The function that will validate the property</param>
 		/// <param name="delegateFunction">The name of the property that the function validates</param>
-		protected void AddRule(Validator delegateFunction, string propertyName)
+		protected void AddRule(ValidatorDelegate delegateFunction, string propertyName)
 		{
-			mDelegateRules.Add(delegateFunction, propertyName);
+			mValidator.AddRule(delegateFunction, propertyName);
 		}
 
 		#endregion
