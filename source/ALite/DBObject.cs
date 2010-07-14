@@ -451,8 +451,8 @@ namespace ALite
 		/// <summary>
 		/// Add a function delegate as a custom rule
 		/// </summary>
-		/// <param name="propertyName">The function that will validate the property</param>
-		/// <param name="delegateFunction">The name of the property that the function validates</param>
+		/// <param name="propertyName">The name of the property that the function validates.</param>
+		/// <param name="delegateFunction">The function that will validate the property.</param>
 		protected void AddRule(string propertyName, ValidatorDelegate delegateFunction)
 		{
 			mValidator.AddRule(propertyName, delegateFunction);
