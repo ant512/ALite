@@ -179,14 +179,14 @@ namespace Tests
 	{
 		public ObjectTest()
 		{
-			AddRule(new StringLengthValidationRule("Name", 2, 10));
-			AddRule(new IntegerBoundsValidationRule("ID", 13, 60));
-			AddRule(new DateBoundsValidationRule("Date", new DateTime(2009, 1, 1), new DateTime(2009, 11, 30)));
-			AddRule(new DateBoundsValidationRule("Date", new DateTime(2009, 4, 4), new DateTime(2009, 10, 30)));
-			AddRule(ValidateID, "ID");
+			AddRule("Name", new StringLengthValidationRule(2, 10));
+			AddRule("ID", new IntegerBoundsValidationRule(13, 60));
+			AddRule("Date", new DateBoundsValidationRule(new DateTime(2009, 1, 1), new DateTime(2009, 11, 30)));
+			AddRule("Date", new DateBoundsValidationRule(new DateTime(2009, 4, 4), new DateTime(2009, 10, 30)));
+			AddRule("ID", ValidateID);
 
 			// Anonymous method for validating ID
-			AddRule(delegate(List<string> errorMessages, object value)
+			AddRule("ID", delegate(List<string> errorMessages, object value)
 			{
 				if ((int)value == 12)
 				{
@@ -194,7 +194,7 @@ namespace Tests
 					return false;
 				}
 				return true;
-			}, "ID");
+			});
 
 			Name = "bob";
 			ID = 19;

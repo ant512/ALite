@@ -441,10 +441,11 @@ namespace ALite
 		/// <summary>
 		/// Add an IValidationRule object to the rule list.
 		/// </summary>
+		/// <param name="propertyName">Name of the property to validate.</param>
 		/// <param name="rule">The IValidation object to add to the list.</param>
-		protected void AddRule(IValidationRule rule)
+		protected void AddRule(string propertyName, IValidationRule rule)
 		{
-			mValidator.AddRule(rule);
+			mValidator.AddRule(propertyName, rule);
 		}
 
 		/// <summary>
@@ -452,9 +453,9 @@ namespace ALite
 		/// </summary>
 		/// <param name="propertyName">The function that will validate the property</param>
 		/// <param name="delegateFunction">The name of the property that the function validates</param>
-		protected void AddRule(ValidatorDelegate delegateFunction, string propertyName)
+		protected void AddRule(string propertyName, ValidatorDelegate delegateFunction)
 		{
-			mValidator.AddRule(delegateFunction, propertyName);
+			mValidator.AddRule(propertyName, delegateFunction);
 		}
 
 		#endregion
