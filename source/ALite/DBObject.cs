@@ -42,6 +42,10 @@ namespace ALite
 	{
 		#region Enums
 
+		/// <summary>
+		/// Lists all possible statuses for the object.  Primarily used to determine what
+		/// to do when Save() is called.
+		/// </summary>
 		[Flags]
 		private enum Status : byte
 		{
@@ -164,11 +168,29 @@ namespace ALite
 			}
 		}
 
+		/// <summary>
+		/// Called by Create().  Should be overridden in subclasses to provide database insertion code.
+		/// </summary>
 		protected virtual void CreateData() { }
+
+		/// <summary>
+		/// Called by Update().  Should be overridden in subclasses to provide database update code.
+		/// </summary>
 		protected virtual void UpdateData() { }
+
+		/// <summary>
+		/// Called by Fetch().  Should be overridden in subclasses to provide database retrieval code.
+		/// </summary>
 		protected virtual void FetchData() { }
+
+		/// <summary>
+		/// Called by Delete().  Should be overridden in subclasses to provide database deletion code.
+		/// </summary>
 		protected virtual void DeleteData() { }
 
+		/// <summary>
+		/// Inserts object into the database.
+		/// </summary>
 		protected void Create()
 		{
 			CreateData();
@@ -176,6 +198,9 @@ namespace ALite
 			OnCreated();
 		}
 
+		/// <summary>
+		/// Updates the object's database representation with the values stored in this object.
+		/// </summary>
 		protected void Update()
 		{
 			UpdateData();
@@ -184,9 +209,8 @@ namespace ALite
 		}
 
 		/// <summary>
-		/// Marks the object as old; intended to be overriden.
+		/// Fetches the object from the database.
 		/// </summary>
-		/// <returns></returns>
 		public void Fetch()
 		{
 			FetchData();
@@ -195,9 +219,8 @@ namespace ALite
 		}
 
 		/// <summary>
-		/// Marks the object as old; intended to be overriden.
+		/// Deletes the object from the database.
 		/// </summary>
-		/// <returns></returns>
 		public void Delete()
 		{
 			DeleteData();
