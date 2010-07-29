@@ -457,19 +457,19 @@ namespace ALite
 		#region Data Navigation
 
 		/// <summary>
-        /// Move to the next recordset
+        /// Move to the next record set.
         /// </summary>
-        /// <returns>Whether or not the next recordset was retrieved successfully</returns>
-		public bool NextResult()
+        /// <returns>Whether or not the next recordset was retrieved successfully.</returns>
+		public bool MoveToNextRecordSet()
 		{
 			return mDataReader.NextResult();
 		}
 
         /// <summary>
-        /// Move to the next row
+        /// Move to the next row in the record set.
         /// </summary>
-        /// <returns>Whether or not the next row was retrieved successfully</returns>
-		public bool Read()
+        /// <returns>Whether or not the next row was retrieved successfully.</returns>
+		public bool MoveToNextRecord()
 		{
 			return mDataReader.Read();
 		}
