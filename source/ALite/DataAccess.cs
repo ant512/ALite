@@ -234,6 +234,16 @@ namespace ALite
 		#region Data Retrieval
 
 		/// <summary>
+		/// Check if the results set contains a column with the supplied name.
+		/// </summary>
+		/// <param name="name">Name of the column to find.</param>
+		/// <returns>True if the results set contains the specified column.</returns>
+		public bool ContainsColumn(string name)
+		{
+			return mDataReader.GetSchemaTable().Columns.Contains(name);
+		}
+
+		/// <summary>
 		/// Gets a guid from the results
 		/// </summary>
 		/// <param name="ordinal">The name of the field to return</param>
