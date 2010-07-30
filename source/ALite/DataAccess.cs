@@ -238,7 +238,15 @@ namespace ALite
 		/// <returns>True if the results set contains the specified column.</returns>
 		public bool ContainsColumn(string name)
 		{
-			return mDataReader.GetSchemaTable().Columns.Contains(name);
+			for (int i = 0; i < mDataReader.VisibleFieldCount; ++i)
+			{
+				if (mDataReader.GetName(i).Equals(name))
+				{
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		/// <summary>
