@@ -75,30 +75,28 @@ namespace ALite
 
 		#region Constructors
 
-        /// <summary>
-        /// Constructor for the DataAccess class
-        /// </summary>
-		public DataAccess()
+		/// <summary>
+		/// Constructor for the DataAccess class
+		/// </summary>
+		/// <param name="connection">The name of the connection in the connection strings section of the config file,
+		/// or the string itself.</param>
+		/// <param name="isConnectionName">Should be true if the connection parameter contains the name of the connection
+		/// string, or false if the parameter contains the connection string itself.</param>
+		public DataAccess(string connection, bool isConnectionName)
 		{
-			this.mConnection = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["db"].ToString());
+			if (isConnectionName)
+			{
+				this.mConnection = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings[connection].ToString());
+			}
+			else
+			{
+				this.mConnection = new SqlConnection(connection);
+			}
 			this.mCommand = mConnection.CreateCommand();
 			this.mParameters = new List<SqlParameter>();
 			this.mProcedure = "";
 			this.mInlineCode = "";
 		}
-
-        /// <summary>
-        /// Constructor for the DataAccess class
-        /// </summary>
-        /// <param name="connection">SQL connection string</param>
-        public DataAccess(string connection)
-        {
-            this.mConnection = new SqlConnection(connection);
-			this.mCommand = mConnection.CreateCommand();
-			this.mParameters = new List<SqlParameter>();
-			this.mProcedure = "";
-			this.mInlineCode = "";
-        }
 
 		#endregion
 
