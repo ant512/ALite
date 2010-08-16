@@ -5,6 +5,7 @@ using ALite;
 using System.Threading;
 using System.Diagnostics;
 using ObjectValidator;
+using ObjectValidator.StandardRules;
 
 namespace Tests
 {
