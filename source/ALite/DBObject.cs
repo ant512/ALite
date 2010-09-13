@@ -330,6 +330,8 @@ namespace ALite
 
 			// Ensure that the restore point contains the current state of the object
 			mRestorePoint.Add("mStatus", mStatus);
+
+			OnSetRestorePoint();
 		}
 
 		/// <summary>
@@ -337,6 +339,8 @@ namespace ALite
 		/// </summary>
 		public void RevertToRestorePoint()
 		{
+			OnRevertToRestorePoint();
+
 			mDocument = mRestorePoint;
 			mRestorePoint = null;
 
@@ -345,6 +349,30 @@ namespace ALite
 
 			// Remove the status from the document
 			mDocument.Remove("mStatus");
+		}
+
+		/// <summary>
+		/// Called when SetRestorePoint() runs.
+		/// </summary>
+		protected virtual void OnSetRestorePoint() { }
+
+		/// <summary>
+		/// Called when RevertToRestorePoint() runs.
+		/// </summary>
+		protected virtual void OnRevertToRestorePoint() { }
+
+		/// <summary>
+		/// Get a value from the restore point data.
+		/// </summary>
+		/// <typeparam name="T">Type of the value to return.</typeparam>
+		/// <param name="propertyName">Name of the property to return.</param>
+		/// <returns>The value of the property in the restore point, if available.</returns>
+		protected T GetRestorePointValue<T>(string propertyName)
+		{
+			// Give up if we don't have a restore point to get a value from
+			if (mRestorePoint == null) return default(T);
+
+			return (T)mRestorePoint[propertyName];
 		}
 
 		#endregion
