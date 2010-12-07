@@ -383,6 +383,29 @@ namespace ALite
 		}
 
 		/// <summary>
+		/// Read a stream of bytes from the results into buffer.
+		/// </summary>
+		/// <param name="ordinal">The name of the field.</param>
+		/// <param name="dataIndex">The index within the field from which to begin the read operation.</param>
+		/// <param name="buffer">The buffer into which to read the stream of bytes.</param>
+		/// <param name="bufferIndex">The index within the buffer where the write operation is to start.</param>
+		/// <param name="length">The maximum length to copy into the buffer.</param>
+		/// <returns>The number of bytes read.</returns>
+		public long GetBytes(string ordinal, long dataIndex, byte[] buffer, int bufferIndex, int length)
+		{
+			int index = mDataReader.GetOrdinal(ordinal);
+
+			if (mDataReader.IsDBNull(index))
+			{
+				return 0;
+			}
+			else
+			{
+				return mDataReader.GetBytes(index, dataIndex, buffer, bufferIndex, length);
+			}
+		}
+
+		/// <summary>
 		/// Gets a bool from the results
 		/// </summary>
 		/// <param name="ordinal">The name of the field to return</param>
