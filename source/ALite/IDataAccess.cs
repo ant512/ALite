@@ -147,13 +147,13 @@ namespace ALite
 		/// Move to the next record set.
 		/// </summary>
 		/// <returns>True if the next record set was successfully retrieved.</returns>
-		bool NextResult();
+		bool MoveToNextRecordSet();
 
 		/// <summary>
-		/// Move to the next result within the current record set.
+		/// Move to the next record within the current record set.
 		/// </summary>
-		/// <returns>True if the next result was successfully retrieved.</returns>
-		bool Read();
+		/// <returns>True if the next record was successfully retrieved.</returns>
+		bool MoveToNextRecord();
 
 		#endregion
 	}

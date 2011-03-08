@@ -31,8 +31,7 @@ namespace Tests.ChildDeleteTest
 			}
 
 			Child child = collection[5];
-			child.MarkDeleted();
-			child.Save();
+			child.Delete();
 
 			return (collection.Count == 9);
 		}

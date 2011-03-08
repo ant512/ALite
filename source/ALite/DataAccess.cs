@@ -75,30 +75,28 @@ namespace ALite
 
 		#region Constructors
 
-        /// <summary>
-        /// Constructor for the DataAccess class
-        /// </summary>
-		public DataAccess()
+		/// <summary>
+		/// Constructor for the DataAccess class
+		/// </summary>
+		/// <param name="connection">The name of the connection in the connection strings section of the config file,
+		/// or the string itself.</param>
+		/// <param name="isConnectionName">Should be true if the connection parameter contains the name of the connection
+		/// string, or false if the parameter contains the connection string itself.</param>
+		public DataAccess(string connection, bool isConnectionName)
 		{
-			this.mConnection = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["db"].ToString());
+			if (isConnectionName)
+			{
+				this.mConnection = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings[connection].ToString());
+			}
+			else
+			{
+				this.mConnection = new SqlConnection(connection);
+			}
 			this.mCommand = mConnection.CreateCommand();
 			this.mParameters = new List<SqlParameter>();
 			this.mProcedure = "";
 			this.mInlineCode = "";
 		}
-
-        /// <summary>
-        /// Constructor for the DataAccess class
-        /// </summary>
-        /// <param name="connection">SQL connection string</param>
-        public DataAccess(string connection)
-        {
-            this.mConnection = new SqlConnection(connection);
-			this.mCommand = mConnection.CreateCommand();
-			this.mParameters = new List<SqlParameter>();
-			this.mProcedure = "";
-			this.mInlineCode = "";
-        }
 
 		#endregion
 
@@ -234,6 +232,24 @@ namespace ALite
 		#region Data Retrieval
 
 		/// <summary>
+		/// Check if the results set contains a column with the supplied name.
+		/// </summary>
+		/// <param name="name">Name of the column to find.</param>
+		/// <returns>True if the results set contains the specified column.</returns>
+		public bool ContainsColumn(string name)
+		{
+			for (int i = 0; i < mDataReader.VisibleFieldCount; ++i)
+			{
+				if (mDataReader.GetName(i).Equals(name))
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		/// <summary>
 		/// Gets a guid from the results
 		/// </summary>
 		/// <param name="ordinal">The name of the field to return</param>
@@ -367,6 +383,29 @@ namespace ALite
 		}
 
 		/// <summary>
+		/// Read a stream of bytes from the results into buffer.
+		/// </summary>
+		/// <param name="ordinal">The name of the field.</param>
+		/// <param name="dataIndex">The index within the field from which to begin the read operation.</param>
+		/// <param name="buffer">The buffer into which to read the stream of bytes.</param>
+		/// <param name="bufferIndex">The index within the buffer where the write operation is to start.</param>
+		/// <param name="length">The maximum length to copy into the buffer.</param>
+		/// <returns>The number of bytes read.</returns>
+		public long GetBytes(string ordinal, long dataIndex, byte[] buffer, int bufferIndex, int length)
+		{
+			int index = mDataReader.GetOrdinal(ordinal);
+
+			if (mDataReader.IsDBNull(index))
+			{
+				return 0;
+			}
+			else
+			{
+				return mDataReader.GetBytes(index, dataIndex, buffer, bufferIndex, length);
+			}
+		}
+
+		/// <summary>
 		/// Gets a bool from the results
 		/// </summary>
 		/// <param name="ordinal">The name of the field to return</param>
@@ -447,19 +486,19 @@ namespace ALite
 		#region Data Navigation
 
 		/// <summary>
-        /// Move to the next recordset
+        /// Move to the next record set.
         /// </summary>
-        /// <returns>Whether or not the next recordset was retrieved successfully</returns>
-		public bool NextResult()
+        /// <returns>Whether or not the next recordset was retrieved successfully.</returns>
+		public bool MoveToNextRecordSet()
 		{
 			return mDataReader.NextResult();
 		}
 
         /// <summary>
-        /// Move to the next row
+        /// Move to the next row in the record set.
         /// </summary>
-        /// <returns>Whether or not the next row was retrieved successfully</returns>
-		public bool Read()
+        /// <returns>Whether or not the next row was retrieved successfully.</returns>
+		public bool MoveToNextRecord()
 		{
 			return mDataReader.Read();
 		}
