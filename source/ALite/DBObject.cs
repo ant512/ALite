@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Collections.Generic;
-using System.Reflection;
+using System.Dynamic;
 using System.Text;
 using ObjectValidator;
 
@@ -100,12 +100,12 @@ namespace ALite
 		/// <summary>
 		/// Stores all data accessed via the GetProperty() and SetProperty() methods.
 		/// </summary>
-		private Document mDocument = new Document();
+		private ExpandoObject mDocument = new ExpandoObject();
 
 		/// <summary>
 		/// Stores the state of the object after a call to SetRestorePoint().
 		/// </summary>
-		private Document mRestorePoint;
+		private ExpandoObject mRestorePoint;
 
 		#endregion
 
@@ -321,15 +321,18 @@ namespace ALite
 		/// </summary>
 		public void SetRestorePoint()
 		{
-			mRestorePoint = new Document();
+			mRestorePoint = new ExpandoObject();
 
-			foreach (string key in mDocument.Keys)
+			var source = mDocument as IDictionary<string, object>;
+			var dest = mRestorePoint as IDictionary<string, object>;
+
+			foreach (string key in source.Keys)
 			{
-				mRestorePoint.Add(key, mDocument[key]);
+				dest.Add(key, source[key]);
 			}
 
 			// Ensure that the restore point contains the current state of the object
-			mRestorePoint.Add("mStatus", mStatus);
+			dest.Add("mStatus", mStatus);
 
 			OnSetRestorePoint();
 		}
@@ -344,11 +347,13 @@ namespace ALite
 			mDocument = mRestorePoint;
 			mRestorePoint = null;
 
+			var dictionary = mDocument as IDictionary<string, object>;
+
 			// Extract the status from the document
-			mStatus = (Status)mDocument["mStatus"];
+			mStatus = (Status)dictionary["mStatus"];
 
 			// Remove the status from the document
-			mDocument.Remove("mStatus");
+			dictionary.Remove("mStatus");
 		}
 
 		/// <summary>
@@ -372,7 +377,9 @@ namespace ALite
 			// Give up if we don't have a restore point to get a value from
 			if (mRestorePoint == null) return default(T);
 
-			return (T)mRestorePoint[propertyName];
+			var dictionary = mRestorePoint as IDictionary<string, object>;
+
+			return (T)dictionary[propertyName];
 		}
 
 		#endregion
@@ -389,7 +396,8 @@ namespace ALite
 		{
 			lock (mDocument)
 			{
-				if (mDocument.Contains(propertyName)) return (T)mDocument[propertyName];
+				var dictionary = mDocument as IDictionary<string, object>;
+				if (dictionary.Keys.Contains(propertyName)) return (T)dictionary[propertyName];
 				return default(T);
 			}
 		}
@@ -428,7 +436,9 @@ namespace ALite
 				// Is the value different to the old value?
 				if ((oldValue == null) || (!oldValue.Equals((T)newValue)))
 				{
-					mDocument[propertyName] = newValue;
+					var dictionary = mDocument as IDictionary<string, object>;
+
+					dictionary[propertyName] = newValue;
 
 					// Handle change event
 					OnPropertyChanged(propertyName);

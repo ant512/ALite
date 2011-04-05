@@ -32,15 +32,6 @@ namespace ALite
 			set;
 		}
 
-		/// <summary>
-		/// Use transactions (or not) if the data source supports them.
-		/// </summary>
-		bool UseTransactions
-		{
-			get;
-			set;
-		}
-
 		#endregion
 
 		#region Methods

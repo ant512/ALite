@@ -28,10 +28,6 @@ namespace ALite
 		[NonSerialized]
 		private SqlDataReader mDataReader;
 
-		[NonSerialized]
-		private SqlTransaction mTransaction;
-		private bool mUseTransactions;
-
 		#endregion
 
 		#region Properties
@@ -60,15 +56,6 @@ namespace ALite
 				mInlineCode = value;
 				mProcedure = "";
 			}
-		}
-
-		/// <summary>
-		/// Specify whether or not the object uses transactions when interacting with the DB
-		/// </summary>
-		public bool UseTransactions
-		{
-			get { return mUseTransactions; }
-			set { mUseTransactions = value; }
 		}
 
 		#endregion
@@ -134,12 +121,7 @@ namespace ALite
 		private void Open() 
 		{
 			mConnection.Open();
-
-			if (mUseTransactions) mTransaction = mConnection.BeginTransaction();
-
 			mCommand.Connection = mConnection;
-
-			if (mUseTransactions) mCommand.Transaction = mTransaction;
 
 			// Choose type of command to run - sproc or SQL code
 			if (!String.IsNullOrEmpty(mProcedure))
@@ -169,33 +151,9 @@ namespace ALite
 		/// <returns>True if successful; false otherwise</returns>
 		public bool Fetch()
 		{
-			bool success;
-
 			Open();
-
-			try
-			{
-				mDataReader = mCommand.ExecuteReader();
-				success = mDataReader.Read();
-			}
-			catch
-			{
-				if (mUseTransactions)
-				{
-					try
-					{
-						mTransaction.Rollback();
-					}
-					catch
-					{
-						throw;
-					}
-				}
-
-				throw;
-			}
-
-			return success;
+			mDataReader = mCommand.ExecuteReader();
+			return mDataReader.Read();
 		}
 
 		/// <summary>
@@ -204,27 +162,7 @@ namespace ALite
 		public void Save()
 		{
 			Open();
-
-			try
-			{
-				mCommand.ExecuteNonQuery();
-			}
-			catch
-			{
-				if (mUseTransactions)
-				{
-					try
-					{
-						mTransaction.Rollback();
-					}
-					catch
-					{
-						throw;
-					}
-				}
-
-				throw;
-			}
+			mCommand.ExecuteNonQuery();
 		}
 
 		#endregion
@@ -527,20 +465,6 @@ namespace ALite
 			// Ensure that the data reader is shut down
 			if (mDataReader != null) mDataReader.Close();
 
-			// Ensure that the transaction is committed to the DB
-			if (mUseTransactions)
-			{
-				try
-				{
-					mTransaction.Commit();
-				}
-				catch
-				{
-					// Major problem - could not commit!
-					throw;
-				}
-			}
-
 			// Clean up all Sql/etc objects
 			try
 			{
@@ -548,7 +472,6 @@ namespace ALite
 				{
 					if (mCommand != null) mCommand.Dispose();
 					if (mConnection != null) mConnection.Dispose();
-					if (mTransaction != null) mTransaction.Dispose();
 					if (mDataReader != null) mDataReader.Dispose();
 				}
 			}
@@ -556,7 +479,6 @@ namespace ALite
 			{
 				mCommand = null;
 				mConnection = null;
-				mTransaction = null;
 				mDataReader = null;
 				mParameters = null;
 			}

@@ -65,9 +65,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Document.cs" />
     <Compile Include="DataAccess.cs" />
-    <Compile Include="DataAccessException.cs" />
     <Compile Include="DBObject.cs" />
     <Compile Include="DBObjectCollection.cs" />
     <Compile Include="IDataAccess.cs" />
