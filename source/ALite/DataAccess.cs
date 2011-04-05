@@ -3,6 +3,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Dynamic;
 
 [assembly: CLSCompliant(true)]
 
@@ -11,21 +12,15 @@ namespace ALite
 	/// <summary>
 	/// Abstraction layer for SQL Server data access.
 	/// </summary>
-	[Serializable]
 	public class DataAccess : IDisposable, IDataAccess
 	{
 		#region Members
 
-		[NonSerialized]
 		private SqlConnection mConnection;
-
-		[NonSerialized]
 		private SqlCommand mCommand;
 		private string mProcedure;
 		private string mInlineCode;
 		private List<SqlParameter> mParameters;
-
-		[NonSerialized]
 		private SqlDataReader mDataReader;
 
 		#endregion
@@ -145,15 +140,36 @@ namespace ALite
 		}
 
 		/// <summary>
-		/// Executes the command contained within this object, keeping the connection open
-		/// so that the results can be read externally
+		/// Fetch data from the data source using either the Procedure or InlineCode member
+		/// variable as the instruction.  Keeps the connection open so that subsequent
+		/// recordsets can be retrieved if necessary.  Returns the first row of the retrieved
+		/// data as a dynamic object.
 		/// </summary>
-		/// <returns>True if successful; false otherwise</returns>
-		public bool Fetch()
+		/// <returns>An expando object containing the first row of the retrieved data.</returns>
+		public dynamic FetchOne()
 		{
 			Open();
 			mDataReader = mCommand.ExecuteReader();
-			return mDataReader.Read();
+			if (mDataReader.Read())
+			{
+				return RecordToExpando(mDataReader);
+			}
+
+			return null;
+		}
+
+		/// <summary>
+		/// Fetch data from the data source using either the Procedure or InlineCode member
+		/// variable as the instruction.  Keeps the connection open so that subsequent
+		/// recordsets can be retrieved if necessary.  Returns all rows of the retrieved
+		/// data as a list of dynamic objects.
+		/// </summary>
+		/// <returns>An list of expando objects containing the retrieved data.</returns>
+		public List<dynamic> Fetch()
+		{
+			Open();
+			mDataReader = mCommand.ExecuteReader();
+			return ToExpandoList(mDataReader);
 		}
 
 		/// <summary>
@@ -167,256 +183,41 @@ namespace ALite
 
 		#endregion
 
-		#region Data Retrieval
+		#region Expando Objects
 
 		/// <summary>
-		/// Check if the results set contains a column with the supplied name.
+		/// Converts a datareader row into an expando object.
 		/// </summary>
-		/// <param name="name">Name of the column to find.</param>
-		/// <returns>True if the results set contains the specified column.</returns>
-		public bool ContainsColumn(string name)
+		/// <param name="reader">The reader to extract the data from.</param>
+		/// <returns>An expando object representing the datareader row.</returns>
+		private static dynamic RecordToExpando(IDataReader reader)
 		{
-			for (int i = 0; i < mDataReader.VisibleFieldCount; ++i)
+			dynamic expando = new ExpandoObject();
+			var dictionary = expando as IDictionary<string, object>;
+
+			for (int i = 0; i < reader.FieldCount; i++)
 			{
-				if (mDataReader.GetName(i).Equals(name))
-				{
-					return true;
-				}
+				dictionary.Add(reader.GetName(i), reader.IsDBNull(i) ? null : reader[i]);
 			}
 
-			return false;
+			return expando;
 		}
 
 		/// <summary>
-		/// Gets a guid from the results
+		/// Converts a recordset into a list of expando objects.
 		/// </summary>
-		/// <param name="ordinal">The name of the field to return</param>
-		/// <returns>The requested value</returns>
-		public Guid GetGuid(string ordinal)
+		/// <param name="reader">The reader to extract the data from.</param>
+		/// <returns>A list of expando objects representing the datareader's recordset.</returns>
+		private static List<dynamic> ToExpandoList(IDataReader reader)
 		{
-            int index = mDataReader.GetOrdinal(ordinal);
+			var result = new List<dynamic>();
 
-            if (mDataReader.IsDBNull(index))
-            {
-                return Guid.Empty;
-            }
-            else
-            {
-                return mDataReader.GetGuid(index);
-            }
-		}
-
-		/// <summary>
-		/// Gets a string from the results
-		/// </summary>
-		/// <param name="ordinal">The name of the field to return</param>
-		/// <returns>The requested value</returns>
-		public string GetString(string ordinal)
-		{
-            int index = mDataReader.GetOrdinal(ordinal);
-
-            if (mDataReader.IsDBNull(index))
-            {
-                return "";
-            }
-            else
-            {
-                return mDataReader.GetString(index);
-            }
-		}
-
-		/// <summary>
-		/// Gets a 16-bit int from the results
-		/// </summary>
-		/// <param name="ordinal">The name of the field to return</param>
-		/// <returns>The requested value</returns>
-		public Int16 GetInt16(string ordinal)
-		{
-            int index = mDataReader.GetOrdinal(ordinal);
-
-            if (mDataReader.IsDBNull(index))
-            {
-                return 0;
-            }
-            else
-            {
-                return mDataReader.GetInt16(index);
-            }
-		}
-
-		/// <summary>
-		/// Gets a 32-bit int from the results
-		/// </summary>
-		/// <param name="ordinal">The name of the field to return</param>
-		/// <returns>The requested value</returns>
-		public Int32 GetInt32(string ordinal)
-		{
-            int index = mDataReader.GetOrdinal(ordinal);
-
-            if (mDataReader.IsDBNull(index))
-            {
-                return 0;
-            }
-            else
-            {
-                return mDataReader.GetInt32(index);
-            }
-		}
-
-        /// <summary>
-        /// Gets a 64-bit int from the results
-        /// </summary>
-        /// <param name="ordinal">The name of the field to return</param>
-        /// <returns>The requested value</returns>
-        public Int64 GetInt64(string ordinal)
-        {
-            int index = mDataReader.GetOrdinal(ordinal);
-
-            if (mDataReader.IsDBNull(index))
-            {
-                return 0;
-            }
-            else
-            {
-                return mDataReader.GetInt64(index);
-            }
-        }
-
-		/// <summary>
-		/// Gets a datetime from the results
-		/// </summary>
-		/// <param name="ordinal">The name of the field to return</param>
-		/// <returns>The requested value</returns>
-		public DateTime GetDateTime(string ordinal)
-		{
-            int index = mDataReader.GetOrdinal(ordinal);
-
-            if (mDataReader.IsDBNull(index))
-            {
-                return DateTime.MinValue;
-            }
-            else
-            {
-                return mDataReader.GetDateTime(index);
-            }
-		}
-
-		/// <summary>
-		/// Gets a byte from the results
-		/// </summary>
-		/// <param name="ordinal">The name of the field to return</param>
-		/// <returns>The requested value</returns>
-		public byte GetByte(string ordinal)
-		{
-            int index = mDataReader.GetOrdinal(ordinal);
-
-            if (mDataReader.IsDBNull(index))
-            {
-                return 0;
-            }
-            else
-            {
-                return mDataReader.GetByte(index);
-            }
-		}
-
-		/// <summary>
-		/// Read a stream of bytes from the results into buffer.
-		/// </summary>
-		/// <param name="ordinal">The name of the field.</param>
-		/// <param name="dataIndex">The index within the field from which to begin the read operation.</param>
-		/// <param name="buffer">The buffer into which to read the stream of bytes.</param>
-		/// <param name="bufferIndex">The index within the buffer where the write operation is to start.</param>
-		/// <param name="length">The maximum length to copy into the buffer.</param>
-		/// <returns>The number of bytes read.</returns>
-		public long GetBytes(string ordinal, long dataIndex, byte[] buffer, int bufferIndex, int length)
-		{
-			int index = mDataReader.GetOrdinal(ordinal);
-
-			if (mDataReader.IsDBNull(index))
+			while (reader.Read())
 			{
-				return 0;
+				result.Add(RecordToExpando(reader));
 			}
-			else
-			{
-				return mDataReader.GetBytes(index, dataIndex, buffer, bufferIndex, length);
-			}
-		}
 
-		/// <summary>
-		/// Gets a bool from the results
-		/// </summary>
-		/// <param name="ordinal">The name of the field to return</param>
-		/// <returns>The requested value</returns>
-		public bool GetBoolean(string ordinal)
-		{
-            int index = mDataReader.GetOrdinal(ordinal);
-
-            if (mDataReader.IsDBNull(index))
-            {
-                return false;
-            }
-            else
-            {
-                return mDataReader.GetBoolean(index);
-            }
-		}
-
-		/// <summary>
-		/// Gets a double from the results
-		/// </summary>
-		/// <param name="ordinal">The name of the field to return</param>
-		/// <returns>The requested value</returns>
-		public double GetDouble(string ordinal)
-		{
-            int index = mDataReader.GetOrdinal(ordinal);
-
-            if (mDataReader.IsDBNull(index))
-            {
-                return 0;
-            }
-            else
-            {
-                return mDataReader.GetDouble(index);
-            }
-		}
-
-		/// <summary>
-		/// Gets a decimal from the results
-		/// </summary>
-		/// <param name="ordinal">The name of the field to return</param>
-		/// <returns>The requested value</returns>
-		public decimal GetDecimal(string ordinal)
-		{
-            int index = mDataReader.GetOrdinal(ordinal);
-
-            if (mDataReader.IsDBNull(index))
-            {
-                return 0;
-            }
-            else
-            {
-                return mDataReader.GetDecimal(index);
-            }
-		}
-
-        /// <summary>
-        /// Gets a single from the results
-        /// </summary>
-        /// <param name="ordinal">The name of the field to return</param>
-        /// <returns>The requested value</returns>
-        public float GetSingle(string ordinal)
-        {
-            int index = mDataReader.GetOrdinal(ordinal);
-
-            if (mDataReader.IsDBNull(index))
-            {
-                return 0;
-            }
-            else
-            {
-                return mDataReader.GetFloat(index);
-            }
+			return result;
 		}
 
 		#endregion
@@ -430,15 +231,6 @@ namespace ALite
 		public bool MoveToNextRecordSet()
 		{
 			return mDataReader.NextResult();
-		}
-
-        /// <summary>
-        /// Move to the next row in the record set.
-        /// </summary>
-        /// <returns>Whether or not the next row was retrieved successfully.</returns>
-		public bool MoveToNextRecord()
-		{
-			return mDataReader.Read();
 		}
 
 		#endregion

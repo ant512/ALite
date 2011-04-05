@@ -56,6 +56,7 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="ObjectValidator">
       <HintPath>..\..\references\ObjectValidator.dll</HintPath>
     </Reference>

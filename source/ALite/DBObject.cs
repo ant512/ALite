@@ -276,6 +276,18 @@ namespace ALite
 			}
 		}
 
+		/// <summary>
+		/// Replace the internal expando data store with the specified object.
+		/// </summary>
+		/// <param name="data">Object containing data that will become the new
+		/// data repository of this object.</param>
+		protected void InjectData(dynamic data)
+		{
+			mDocument = data;
+			mStatus = 0;
+			mRestorePoint = null;
+		}
+
 		#endregion
 
 		#region Status
