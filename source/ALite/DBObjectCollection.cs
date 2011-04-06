@@ -21,20 +21,6 @@ namespace ALite
 		public event DBObjectDeletedEventHandler ChildDeleted;
 
 		/// <summary>
-		/// Delegate for handling the list being changed.
-		/// </summary>
-		/// <param name="sender">DBObjectCollection that fired the event</param>
-		/// <param name="e">Event arguments</param>
-		public delegate void ListChangedEventHandler(object sender, ListChangedEventArgs e);
-
-		/// <summary>
-		/// Delegate for handling the list being cleared.
-		/// </summary>
-		/// <param name="sender">DBObjectCollection that fired the event</param>
-		/// <param name="e">Event arguments</param>
-		public delegate void ListClearedEventHandler(object sender, EventArgs e);
-
-		/// <summary>
 		/// List changed event handler.
 		/// </summary>
 		public event ListChangedEventHandler ListChanged;

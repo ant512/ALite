@@ -4,6 +4,34 @@ using System.Collections.Generic;
 
 namespace ALite
 {
+	#region Delegates
+
+	/// <summary>
+	/// Event raised when a DBObject is deleted.
+	/// </summary>
+	/// <param name="sender">The object that raised the event.</param>
+	public delegate void DBObjectDeletedEventHandler(object sender);
+
+	/// <summary>
+	/// Event raised when a DBObject is created.
+	/// </summary>
+	/// <param name="sender">The object that raised the event.</param>
+	public delegate void DBObjectCreatedEventHandler(object sender);
+
+	/// <summary>
+	/// Event raised when a DBObject is updated.
+	/// </summary>
+	/// <param name="sender">The object that raised the event.</param>
+	public delegate void DBObjectUpdatedEventHandler(object sender);
+
+	/// <summary>
+	/// Event raised when a DBObject is fetched.
+	/// </summary>
+	/// <param name="sender">The object that raised the event.</param>
+	public delegate void DBObjectFetchedEventHandler(object sender);
+
+	#endregion
+
     /// <summary>
     /// Interface that describes the DBObject class
     /// </summary>
