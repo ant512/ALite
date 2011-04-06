@@ -38,7 +38,8 @@ namespace ALite
 	/// <summary>
 	/// Base class for objects that interact with the database.
 	/// </summary>
-	[Serializable] public abstract class DBObject : IDBObject, INotifyPropertyChanged
+	[Serializable]
+	public abstract class DBObject : IDBObject, INotifyPropertyChanged
 	{
 		#region Enums
 
@@ -284,7 +285,15 @@ namespace ALite
 		protected void InjectData(dynamic data)
 		{
 			mDocument = data;
+
+			// Reset status.  Since we are replacing the internal data store
+			// with an entirely new data store, we don't know what state the
+			// store is in.  We presume it has been fetched anew from the
+			// database and so the object is no longer dirty, new or deleted.
 			mStatus = 0;
+
+			// We have to scrap the restore point because it too is no longer
+			// relevant if we have replaced the data store.
 			mRestorePoint = null;
 		}
 
