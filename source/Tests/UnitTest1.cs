@@ -110,12 +110,22 @@ namespace Tests
 				throw new NotImplementedException("Updating data");
 			}
 
-			public void Fetch()
+			protected override void DeleteData()
+			{
+				throw new NotImplementedException("Deleting data");
+			}
+
+			protected override void FetchData()
 			{
 				Name = "Fetched";
 				Id = 4;
 				MarkOld();
 			}
+		}
+
+		private class TestObjectCollection : DBObjectCollection<TestObject>
+		{
+
 		}
 
 		[TestMethod]
@@ -191,48 +201,142 @@ namespace Tests
 		}
 
 		[TestMethod]
-		[ExpectedException(typeof(ValidationException))]
 		public void TestIdStandardRule()
 		{
 			var obj = new TestObject(2, "Bob");
 
-			obj.Id = 34;
+			try
+			{
+				obj.Id = 34;
+				Assert.Fail("Exception should be thrown by the rule system.");
+			}
+			catch (ValidationException)
+			{
+			}
 		}
 
 		[TestMethod]
-		[ExpectedException(typeof(ValidationException))]
 		public void TestNameStandardRule()
 		{
 			var obj = new TestObject(2, "Bob");
 
-			obj.Name = "A";
+			try
+			{
+				obj.Name = "A";
+				Assert.Fail("Exception should be thrown by the rule system.");
+			}
+			catch (ValidationException)
+			{
+			}
 		}
 
 		[TestMethod]
-		[ExpectedException(typeof(ValidationException))]
 		public void TestNameDelegateRule()
 		{
 			var obj = new TestObject(2, "Bob");
 
-			obj.Name = "Bert";
+			try
+			{
+				obj.Name = "Bert";
+				Assert.Fail("Exception should be thrown by the rule system.");
+			}
+			catch (ValidationException)
+			{
+			}
 		}
 
 		[TestMethod]
-		[ExpectedException(typeof(NotImplementedException))]
 		public void TestCreateExceptionThrowCreate()
 		{
 			var obj = new ExceptionThrowingObject(2, "Bob");
-			obj.Save();
+
+			try
+			{
+				obj.Save();
+				Assert.Fail("Exception should be thrown by the rule system.");
+			}
+			catch (NotImplementedException)
+			{
+			}
 		}
 
 		[TestMethod]
-		[ExpectedException(typeof(NotImplementedException))]
 		public void TestUpdateExceptionThrowCreate()
 		{
 			var obj = new ExceptionThrowingObject(2, "Bob");
 			obj.Fetch();
 			obj.Id = 2;
-			obj.Save();
+
+			try
+			{
+				obj.Save();
+				Assert.Fail("Exception should be thrown by the rule system.");
+			}
+			catch (NotImplementedException)
+			{
+			}
+		}
+
+		[TestMethod]
+		public void TestFetch()
+		{
+			var obj = new ExceptionThrowingObject(2, "Bob");
+			obj.Fetch();
+
+			Assert.AreEqual(4, obj.Id);
+		}
+
+		[TestMethod]
+		public void TestCollectionSave()
+		{
+			var list = new TestObjectCollection();
+
+			for (int i = 0; i < 5; ++i)
+			{
+				list.Add(new TestObject(i, String.Format("Object {0}", i)));
+			}
+
+			foreach (var obj in list)
+			{
+				Assert.AreEqual(true, obj.IsNew);
+			}
+
+			list.Save();
+
+			foreach (var obj in list)
+			{
+				Assert.AreEqual(false, obj.IsNew);
+			}
+		}
+
+		[TestMethod]
+		public void TestCollectionDelete()
+		{
+			var list = new TestObjectCollection();
+
+			for (int i = 0; i < 5; ++i)
+			{
+				list.Add(new TestObject(i, String.Format("Object {0}", i)));
+			}
+
+			list.Delete();
+
+			Assert.AreEqual(0, list.Count);
+		}
+
+		[TestMethod]
+		public void TestCollectionDeleteOne()
+		{
+			var list = new TestObjectCollection();
+
+			for (int i = 0; i < 5; ++i)
+			{
+				list.Add(new TestObject(i, String.Format("Object {0}", i)));
+			}
+
+			list[1].Delete();
+
+			Assert.AreEqual(4, list.Count);
 		}
 	}
 }
