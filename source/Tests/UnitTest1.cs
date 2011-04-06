@@ -56,6 +56,68 @@ namespace Tests
 			}
 		}
 
+		private class ExceptionThrowingObject : DBObject
+		{
+			public int Id
+			{
+				get
+				{
+					return GetProperty<int>("Id");
+				}
+				set
+				{
+					SetProperty("Id", value);
+				}
+			}
+
+			public string Name
+			{
+				get
+				{
+					return GetProperty<string>("Name");
+				}
+				set
+				{
+					SetProperty("Name", value);
+				}
+			}
+
+			public ExceptionThrowingObject(int id, string name)
+			{
+				Id = id;
+				Name = name;
+
+				AddRule("Id", new ObjectValidator.StandardRules.IntegerBoundsValidationRule(0, 10));
+				AddRule("Name", new ObjectValidator.StandardRules.StringLengthValidationRule(3, 8));
+				AddRule("Name", delegate(List<string> errorMessages, object value)
+				{
+					if ((string)value == "Bert")
+					{
+						errorMessages.Add("Name cannot be \"Bert\"");
+						return false;
+					}
+					return true;
+				});
+			}
+
+			protected override void CreateData()
+			{
+				throw new NotImplementedException("Creating data");
+			}
+
+			protected override void UpdateData()
+			{
+				throw new NotImplementedException("Updating data");
+			}
+
+			public void Fetch()
+			{
+				Name = "Fetched";
+				Id = 4;
+				MarkOld();
+			}
+		}
+
 		[TestMethod]
 		public void TestNewStatus()
 		{
@@ -153,6 +215,24 @@ namespace Tests
 			var obj = new TestObject(2, "Bob");
 
 			obj.Name = "Bert";
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(NotImplementedException))]
+		public void TestCreateExceptionThrowCreate()
+		{
+			var obj = new ExceptionThrowingObject(2, "Bob");
+			obj.Save();
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(NotImplementedException))]
+		public void TestUpdateExceptionThrowCreate()
+		{
+			var obj = new ExceptionThrowingObject(2, "Bob");
+			obj.Fetch();
+			obj.Id = 2;
+			obj.Save();
 		}
 	}
 }
