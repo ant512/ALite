@@ -370,10 +370,11 @@ namespace ALite
 
 			var dictionary = mDocument as IDictionary<string, object>;
 
-			// Extract the status from the document
+			// Ensure we revert to the status of the document as it was when
+			// we created the restore point.
 			mStatus = (Status)dictionary["mStatus"];
 
-			// Remove the status from the document
+			// We no longer need the backed-up status
 			dictionary.Remove("mStatus");
 		}
 
