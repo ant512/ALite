@@ -18,9 +18,6 @@ namespace ALite
 
 		private SqlConnection mConnection;
 		private SqlCommand mCommand;
-		private string mProcedure;
-		private string mInlineCode;
-		private List<SqlParameter> mParameters;
 		private SqlDataReader mDataReader;
 
 		#endregion
@@ -32,11 +29,11 @@ namespace ALite
         /// </summary>
 		public string Procedure
 		{
-			get { return mProcedure; }
+			get { return mCommand.CommandType == CommandType.StoredProcedure ? mCommand.CommandText : ""; }
 			set
 			{
-				mProcedure = value;
-				mInlineCode = "";
+				mCommand.CommandText = value;
+				mCommand.CommandType = CommandType.StoredProcedure;
 			}
 		}
 
@@ -45,11 +42,11 @@ namespace ALite
 		/// </summary>
 		public string InlineCode
 		{
-			get { return mInlineCode; }
+			get { return mCommand.CommandType == CommandType.Text ? mCommand.CommandText : ""; }
 			set
 			{
-				mInlineCode = value;
-				mProcedure = "";
+				mCommand.CommandText = value;
+				mCommand.CommandType = CommandType.Text;
 			}
 		}
 
@@ -68,16 +65,13 @@ namespace ALite
 		{
 			if (isConnectionName)
 			{
-				this.mConnection = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings[connection].ToString());
+				mConnection = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings[connection].ToString());
 			}
 			else
 			{
-				this.mConnection = new SqlConnection(connection);
+				mConnection = new SqlConnection(connection);
 			}
-			this.mCommand = mConnection.CreateCommand();
-			this.mParameters = new List<SqlParameter>();
-			this.mProcedure = "";
-			this.mInlineCode = "";
+			mCommand = mConnection.CreateCommand();
 		}
 
 		#endregion
@@ -103,41 +97,12 @@ namespace ALite
 		/// <param name="data">The value of the parameter</param>
 		public void AddParameter(string name, object data)
 		{
-			this.mParameters.Add(new SqlParameter(name, data));
+			mCommand.Parameters.Add(new SqlParameter(name, data));
 		}
 
 		#endregion
 
 		#region Database Interaction
-
-		/// <summary>
-		/// Open the connection to the database
-		/// </summary>
-		private void Open() 
-		{
-			mConnection.Open();
-			mCommand.Connection = mConnection;
-
-			// Choose type of command to run - sproc or SQL code
-			if (!String.IsNullOrEmpty(mProcedure))
-			{
-				// Sproc
-				mCommand.CommandType = CommandType.StoredProcedure;
-				mCommand.CommandText = mProcedure;
-			}
-			else
-			{
-				// Raw SQL code
-				mCommand.CommandType = CommandType.Text;
-				mCommand.CommandText = mInlineCode;
-			}
-
-			// Add parameters
-			foreach (SqlParameter item in mParameters)
-			{
-				mCommand.Parameters.Add(item);
-			}
-		}
 
 		/// <summary>
 		/// Fetch data from the data source using either the Procedure or InlineCode member
@@ -148,7 +113,7 @@ namespace ALite
 		/// <returns>An expando object containing the first row of the retrieved data.</returns>
 		public dynamic FetchOne()
 		{
-			Open();
+			mConnection.Open();
 			mDataReader = mCommand.ExecuteReader();
 			if (mDataReader.Read())
 			{
@@ -167,7 +132,7 @@ namespace ALite
 		/// <returns>An list of expando objects containing the retrieved data.</returns>
 		public List<dynamic> Fetch()
 		{
-			Open();
+			mConnection.Open();
 			mDataReader = mCommand.ExecuteReader();
 			return ToExpandoList(mDataReader);
 		}
@@ -177,7 +142,7 @@ namespace ALite
 		/// </summary>
 		public void Save()
 		{
-			Open();
+			mConnection.Open();
 			mCommand.ExecuteNonQuery();
 		}
 
@@ -272,7 +237,6 @@ namespace ALite
 				mCommand = null;
 				mConnection = null;
 				mDataReader = null;
-				mParameters = null;
 			}
 		}
 
