@@ -263,8 +263,6 @@ namespace ALite
 		{
 			mDocument = data;
 
-			// TODO: Check this
-
 			// Reset status.  Since we are replacing the internal data store
 			// with an entirely new data store, we don't know what state the
 			// store is in.  We presume it has been fetched anew from the
