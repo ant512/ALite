@@ -119,7 +119,6 @@ namespace Tests
 			{
 				Name = "Fetched";
 				Id = 4;
-				OnFetched();
 			}
 		}
 
@@ -273,7 +272,7 @@ namespace Tests
 			try
 			{
 				obj.Save();
-				Assert.Fail("Exception should be thrown by the rule system.");
+				Assert.Fail("Exception should be thrown by the unimplemented CreateData() method.");
 			}
 			catch (NotImplementedException)
 			{
@@ -290,7 +289,7 @@ namespace Tests
 			try
 			{
 				obj.Save();
-				Assert.Fail("Exception should be thrown by the rule system.");
+				Assert.Fail("Exception should be thrown by the unimplemented UpdateData() method.");
 			}
 			catch (NotImplementedException)
 			{
