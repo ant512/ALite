@@ -45,7 +45,7 @@ namespace ALite
 		/// Fired when the list is changed
 		/// </summary>
 		/// <param name="e"></param>
-		protected void OnListChanged(ListChangedEventArgs e)
+		protected void RaiseListChangedEvent(ListChangedEventArgs e)
 		{
 			ListChangedEventHandler handler = ListChanged;
 			if (handler != null)
@@ -58,7 +58,7 @@ namespace ALite
 		/// Fired when the list is cleared
 		/// </summary>
 		/// <param name="e"></param>
-		protected void OnListCleared(EventArgs e)
+		protected void RaiseListClearedEvent(EventArgs e)
 		{
 			ListClearedEventHandler handler = ListCleared;
 			if (handler != null)
@@ -90,7 +90,7 @@ namespace ALite
 		{
 			AddChildEvents(item);
 			mInternalList.Insert(index, item);
-			OnListChanged(new ListChangedEventArgs(ListChangedType.ItemAdded, index));
+			RaiseListChangedEvent(new ListChangedEventArgs(ListChangedType.ItemAdded, index));
 		}
 
 		/// <summary>
@@ -105,7 +105,7 @@ namespace ALite
 				if (mInternalList.Remove(item))
 				{
 					RemoveChildEvents(item);
-					OnListChanged(new ListChangedEventArgs(ListChangedType.ItemDeleted, -1, index));
+					RaiseListChangedEvent(new ListChangedEventArgs(ListChangedType.ItemDeleted, -1, index));
 				}
 			}
 		}
@@ -122,7 +122,7 @@ namespace ALite
 			{
 				AddChildEvents(value);
 				mInternalList[index] = value;
-				OnListChanged(new ListChangedEventArgs(ListChangedType.ItemChanged, index));
+				RaiseListChangedEvent(new ListChangedEventArgs(ListChangedType.ItemChanged, index));
 			}
 		}
 
@@ -138,7 +138,7 @@ namespace ALite
 		{
 			AddChildEvents(item);
 			mInternalList.Add(item);
-			OnListChanged(new ListChangedEventArgs(ListChangedType.ItemAdded, mInternalList.IndexOf(item)));
+			RaiseListChangedEvent(new ListChangedEventArgs(ListChangedType.ItemAdded, mInternalList.IndexOf(item)));
 		}
 
 		/// <summary>
@@ -155,7 +155,7 @@ namespace ALite
 				}
 
 				mInternalList.Clear();
-				OnListCleared(new EventArgs());
+				RaiseListClearedEvent(new EventArgs());
 			}
 		}
 
@@ -209,7 +209,7 @@ namespace ALite
 				if (mInternalList.Remove(item))
 				{
 					RemoveChildEvents(item);
-					OnListChanged(new ListChangedEventArgs(ListChangedType.ItemDeleted, -1, index));
+					RaiseListChangedEvent(new ListChangedEventArgs(ListChangedType.ItemDeleted, -1, index));
 					return true;
 				}
 				else
