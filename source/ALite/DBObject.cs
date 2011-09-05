@@ -76,7 +76,7 @@ namespace ALite
 		#endregion
 
 		/// <summary>
-        /// Status of the object as a bitmask; use the Status enum to unpack it.
+        /// Status of the object.
         /// </summary>
 		private Status mStatus = Status.New;
 
