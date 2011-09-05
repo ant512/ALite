@@ -48,21 +48,6 @@ namespace ALite
 		event DBObjectDeletedEventHandler DBObjectDeleted;
 
         /// <summary>
-        /// Is the object dirty?
-        /// </summary>
-		bool IsDirty { get; }
-
-        /// <summary>
-        /// Is the object new?
-        /// </summary>
-		bool IsNew { get; }
-
-        /// <summary>
-        /// Is the object deleted?
-        /// </summary>
-		bool IsDeleted { get; }
-
-        /// <summary>
         /// Save the object to the database.
         /// </summary>
 		void Save();

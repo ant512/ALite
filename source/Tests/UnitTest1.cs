@@ -119,7 +119,7 @@ namespace Tests
 			{
 				Name = "Fetched";
 				Id = 4;
-				MarkOld();
+				OnFetched();
 			}
 		}
 
@@ -133,9 +133,7 @@ namespace Tests
 		{
 			var obj = new TestObject(2, "Bob");
 
-			Assert.AreEqual(true, obj.IsDirty);
-			Assert.AreEqual(true, obj.IsNew);
-			Assert.AreEqual(false, obj.IsDeleted);
+			Assert.AreEqual(DBObject.Status.New, obj.State);
 		}
 
 		[TestMethod]
@@ -144,9 +142,7 @@ namespace Tests
 			var obj = new TestObject(2, "Bob");
 			obj.Save();
 
-			Assert.AreEqual(false, obj.IsDirty);
-			Assert.AreEqual(false, obj.IsNew);
-			Assert.AreEqual(false, obj.IsDeleted);
+			Assert.AreEqual(DBObject.Status.Unmodified, obj.State);
 		}
 
 		[TestMethod]
@@ -155,9 +151,7 @@ namespace Tests
 			var obj = new TestObject(2, "Bob");
 			obj.Delete();
 
-			Assert.AreEqual(false, obj.IsDirty);
-			Assert.AreEqual(false, obj.IsNew);
-			Assert.AreEqual(true, obj.IsDeleted);
+			Assert.AreEqual(DBObject.Status.Deleted, obj.State);
 		}
 
 		[TestMethod]
@@ -168,9 +162,7 @@ namespace Tests
 
 			obj.Id = 5;
 
-			Assert.AreEqual(true, obj.IsDirty);
-			Assert.AreEqual(false, obj.IsNew);
-			Assert.AreEqual(false, obj.IsDeleted);
+			Assert.AreEqual(DBObject.Status.Modified, obj.State);
 		}
 
 		[TestMethod]
@@ -182,6 +174,22 @@ namespace Tests
 
 			Assert.AreEqual(5, obj.Id);
 			Assert.AreEqual("Joe", obj.Name);
+		}
+
+		[TestMethod]
+		public void TestDeletedProperties()
+		{
+			var obj = new TestObject(2, "Bob");
+			obj.Delete();
+
+			try
+			{
+				obj.Name = "Joe";
+				Assert.Fail("Should not be able to set properties of deleted objects.");
+			}
+			catch (ArgumentException)
+			{
+			}
 		}
 
 		[TestMethod]
@@ -198,6 +206,18 @@ namespace Tests
 
 			Assert.AreEqual(2, obj.Id);
 			Assert.AreEqual("Bob", obj.Name);
+		}
+
+		[TestMethod]
+		public void TestRestorePointOfDeletedObject()
+		{
+			var obj = new TestObject(2, "Bob");
+
+			obj.SetRestorePoint();
+			obj.Delete();
+			obj.RevertToRestorePoint();
+
+			Assert.AreEqual(DBObject.Status.New, obj.State);
 		}
 
 		[TestMethod]
@@ -298,14 +318,14 @@ namespace Tests
 
 			foreach (var obj in list)
 			{
-				Assert.AreEqual(true, obj.IsNew);
+				Assert.AreEqual(DBObject.Status.New, obj.State);
 			}
 
 			list.Save();
 
 			foreach (var obj in list)
 			{
-				Assert.AreEqual(false, obj.IsNew);
+				Assert.AreEqual(DBObject.Status.Unmodified, obj.State);
 			}
 		}
 

@@ -19,12 +19,27 @@ namespace ALite
 		/// Lists all possible statuses for the object.  Primarily used to determine what
 		/// to do when Save() is called.
 		/// </summary>
-		[Flags]
-		private enum Status : byte
+		public enum Status
 		{
-			IsNew = 0x1,
-			IsDirty = 0x2,
-			IsDeleted = 0x4
+			/// <summary>
+			/// Object is newly created and does not exist in the data store.
+			/// </summary>
+			New,
+
+			/// <summary>
+			/// Object is identical to the data in the data store.
+			/// </summary>
+			Unmodified,
+
+			/// <summary>
+			/// Object exists in the data store but its properties have been altered.
+			/// </summary>
+			Modified,
+
+			/// <summary>
+			/// Object has been deleted from the data store.
+			/// </summary>
+			Deleted
 		}
 
 		#endregion
@@ -63,7 +78,7 @@ namespace ALite
 		/// <summary>
         /// Status of the object as a bitmask; use the Status enum to unpack it.
         /// </summary>
-		private Status mStatus = Status.IsNew | Status.IsDirty;
+		private Status mStatus = Status.New;
 
 		/// <summary>
 		/// List of rules that properties are checked against before they are set.
@@ -84,28 +99,13 @@ namespace ALite
 
 		#region Properties
 
-        /// <summary>
-        /// Is the object new?
-        /// </summary>
-		public bool IsNew
+		/// <summary>
+		/// Gets or sets the current status of the object.
+		/// </summary>
+		public Status State
 		{
-			get { return ((mStatus & Status.IsNew) != 0); }
-		}
-
-        /// <summary>
-        /// Is the object dirty?
-        /// </summary>
-		public bool IsDirty
-		{
-			get { return ((mStatus & Status.IsDirty) != 0); }
-		}
-
-        /// <summary>
-        /// Has the object been deleted?
-        /// </summary>
-		public bool IsDeleted
-		{
-			get { return ((mStatus & Status.IsDeleted) != 0); }
+			get { return mStatus; }
+			private set { mStatus = value; }
 		}
 
 		#endregion
@@ -128,16 +128,17 @@ namespace ALite
 		/// </summary>
 		public void Save()
 		{
-			if (IsDirty)
+			switch (mStatus)
 			{
-				if (IsNew)
-				{
+				case Status.New:
 					Create();
-				}
-				else
-				{
+					break;
+				case Status.Modified:
 					Update();
-				}
+					break;
+				case Status.Unmodified:
+				case Status.Deleted:
+					break;
 			}
 		}
 
@@ -167,7 +168,6 @@ namespace ALite
 		protected void Create()
 		{
 			CreateData();
-			MarkOld();
 			OnCreated();
 		}
 
@@ -177,7 +177,6 @@ namespace ALite
 		protected void Update()
 		{
 			UpdateData();
-			MarkOld();
 			OnUpdated();
 		}
 
@@ -187,7 +186,6 @@ namespace ALite
 		public void Fetch()
 		{
 			FetchData();
-			MarkOld();
 			OnFetched();
 		}
 
@@ -197,15 +195,16 @@ namespace ALite
 		public void Delete()
 		{
 			DeleteData();
-			MarkDeleted();
 			OnDeleted();
 		}
 
 		/// <summary>
 		/// Called when the object is created.
 		/// </summary>
-		private void OnCreated()
+		protected void OnCreated()
 		{
+			TransitionState(Status.Unmodified);
+
 			DBObjectCreatedEventHandler handler = DBObjectCreated;
 			if (handler != null)
 			{
@@ -216,8 +215,10 @@ namespace ALite
 		/// <summary>
 		/// Called when the object is updated.
 		/// </summary>
-		private void OnUpdated()
+		protected void OnUpdated()
 		{
+			TransitionState(Status.Unmodified);
+
 			DBObjectUpdatedEventHandler handler = DBObjectUpdated;
 			if (handler != null)
 			{
@@ -228,8 +229,10 @@ namespace ALite
 		/// <summary>
 		/// Called when the object is deleted.
 		/// </summary>
-		private void OnDeleted()
+		protected void OnDeleted()
 		{
+			TransitionState(Status.Deleted);
+
 			DBObjectDeletedEventHandler handler = DBObjectDeleted;
 			if (handler != null)
 			{
@@ -240,8 +243,10 @@ namespace ALite
 		/// <summary>
 		/// Called when the object is fetched.
 		/// </summary>
-		private void OnFetched()
+		protected void OnFetched()
 		{
+			TransitionState(Status.Unmodified);
+
 			DBObjectFetchedEventHandler handler = DBObjectFetched;
 			if (handler != null)
 			{
@@ -258,51 +263,17 @@ namespace ALite
 		{
 			mDocument = data;
 
+			// TODO: Check this
+
 			// Reset status.  Since we are replacing the internal data store
 			// with an entirely new data store, we don't know what state the
 			// store is in.  We presume it has been fetched anew from the
-			// database and so the object is no longer dirty, new or deleted.
-			mStatus = 0;
+			// database and so the object is unmodified.
+			mStatus = Status.Unmodified;
 
 			// We have to scrap the restore point because it too is no longer
 			// relevant if we have replaced the data store.
 			mRestorePoint = null;
-		}
-
-		#endregion
-
-		#region Status
-
-		/// <summary>
-		/// Marks the object as dirty.
-		/// </summary>
-		protected void MarkDirty()
-		{
-			mStatus |= Status.IsDirty;
-		}
-
-		/// <summary>
-		/// Marks the object as new.
-		/// </summary>
-		protected void MarkNew()
-		{
-			mStatus = Status.IsNew | Status.IsDirty;
-		}
-
-		/// <summary>
-		/// Marks the object as old.
-		/// </summary>
-		protected void MarkOld()
-		{
-			mStatus = (mStatus & Status.IsDeleted);
-		}
-
-		/// <summary>
-		/// Marks the object as deleted.
-		/// </summary>
-		protected void MarkDeleted()
-		{
-			mStatus = Status.IsDeleted;
 		}
 
 		#endregion
@@ -406,6 +377,11 @@ namespace ALite
 		{
 			lock (mDocument)
 			{
+				if (mStatus == Status.Deleted)
+				{
+					throw new ArgumentException("Cannot alter deleted objects.");
+				}
+
 				// Get the existing value from the document
 				T oldValue = GetProperty<T>(propertyName);
 
@@ -441,12 +417,59 @@ namespace ALite
 		}
 
 		/// <summary>
+		/// Transition from the current state to the specified state.  Protects against
+		/// illegal transitions, such as any state to "New" (only new, unsaved objects
+		/// are new) or "Deleted" to any state (deleted objects cannot be modified).
+		/// Throws an ArgumentException if an illegal transition is attempted.
+		/// </summary>
+		/// <param name="newState">The new state to switch to.</param>
+		private void TransitionState(Status newState) {
+			switch (newState)
+			{
+				case Status.Deleted:
+					mStatus = Status.Deleted;
+					break;
+
+				case Status.Modified:
+					switch (mStatus)
+					{
+						case Status.Modified:
+						case Status.New:
+							break;
+						case Status.Unmodified:
+							mStatus = Status.Modified;
+							break;
+						case Status.Deleted:
+							throw new ArgumentException("Cannot alter deleted objects.");
+					}
+					break;
+
+				case Status.New:
+					throw new ArgumentException("Objects cannot become new again.");
+
+				case Status.Unmodified:
+					switch (mStatus)
+					{
+						case Status.Modified:
+						case Status.New:
+							mStatus = Status.Unmodified;
+							break;
+						case Status.Unmodified:
+							break;
+						case Status.Deleted:
+							throw new ArgumentException("Cannot alter deleted objects.");
+					}
+					break;
+			}
+		}
+
+		/// <summary>
 		/// Called when a property is changed
 		/// </summary>
 		/// <param name="name">Name of the property that changed</param>
 		protected void OnPropertyChanged(string name)
 		{
-			MarkDirty();
+			TransitionState(Status.Modified);
 
 			PropertyChangedEventHandler handler = PropertyChanged;
 			if (handler != null)
