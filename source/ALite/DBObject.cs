@@ -168,7 +168,8 @@ namespace ALite
 		protected void Create()
 		{
 			CreateData();
-			OnCreated();
+			TransitionState(Status.Unmodified);
+			RaiseCreatedEvent();
 		}
 
 		/// <summary>
@@ -177,7 +178,8 @@ namespace ALite
 		protected void Update()
 		{
 			UpdateData();
-			OnUpdated();
+			TransitionState(Status.Unmodified);
+			RaiseUpdatedEvent();
 		}
 
 		/// <summary>
@@ -186,7 +188,8 @@ namespace ALite
 		public void Fetch()
 		{
 			FetchData();
-			OnFetched();
+			TransitionState(Status.Unmodified);
+			RaiseFetchedEvent();
 		}
 
 		/// <summary>
@@ -195,16 +198,15 @@ namespace ALite
 		public void Delete()
 		{
 			DeleteData();
-			OnDeleted();
+			TransitionState(Status.Deleted);
+			RaiseDeletedEvent();
 		}
 
 		/// <summary>
 		/// Called when the object is created.
 		/// </summary>
-		protected void OnCreated()
+		protected void RaiseCreatedEvent()
 		{
-			TransitionState(Status.Unmodified);
-
 			DBObjectCreatedEventHandler handler = DBObjectCreated;
 			if (handler != null)
 			{
@@ -215,10 +217,8 @@ namespace ALite
 		/// <summary>
 		/// Called when the object is updated.
 		/// </summary>
-		protected void OnUpdated()
+		protected void RaiseUpdatedEvent()
 		{
-			TransitionState(Status.Unmodified);
-
 			DBObjectUpdatedEventHandler handler = DBObjectUpdated;
 			if (handler != null)
 			{
@@ -229,10 +229,8 @@ namespace ALite
 		/// <summary>
 		/// Called when the object is deleted.
 		/// </summary>
-		protected void OnDeleted()
+		protected void RaiseDeletedEvent()
 		{
-			TransitionState(Status.Deleted);
-
 			DBObjectDeletedEventHandler handler = DBObjectDeleted;
 			if (handler != null)
 			{
@@ -243,10 +241,8 @@ namespace ALite
 		/// <summary>
 		/// Called when the object is fetched.
 		/// </summary>
-		protected void OnFetched()
+		protected void RaiseFetchedEvent()
 		{
-			TransitionState(Status.Unmodified);
-
 			DBObjectFetchedEventHandler handler = DBObjectFetched;
 			if (handler != null)
 			{
@@ -406,10 +402,11 @@ namespace ALite
 				{
 					var dictionary = mDocument as IDictionary<string, object>;
 
+					TransitionState(Status.Modified);
+
 					dictionary[propertyName] = newValue;
 
-					// Handle change event
-					OnPropertyChanged(propertyName);
+					RaisePropertyChangedEvent(propertyName);
 				}
 			}
 		}
@@ -462,13 +459,11 @@ namespace ALite
 		}
 
 		/// <summary>
-		/// Called when a property is changed
+		/// Called when a property is changed.
 		/// </summary>
-		/// <param name="name">Name of the property that changed</param>
-		protected void OnPropertyChanged(string name)
+		/// <param name="name">Name of the property that changed.</param>
+		protected void RaisePropertyChangedEvent(string name)
 		{
-			TransitionState(Status.Modified);
-
 			PropertyChangedEventHandler handler = PropertyChanged;
 			if (handler != null)
 			{
