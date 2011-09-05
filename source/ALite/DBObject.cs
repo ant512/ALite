@@ -110,15 +110,6 @@ namespace ALite
 
 		#endregion
 
-		#region Constructors
-
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-		protected DBObject() { }
-
-		#endregion
-
 		#region Methods
 
 		#region Data Access
