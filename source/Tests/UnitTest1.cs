@@ -132,7 +132,7 @@ namespace Tests
 		{
 			var obj = new TestObject(2, "Bob");
 
-			Assert.AreEqual(DBObject.Status.New, obj.State);
+			Assert.AreEqual(DBObjectState.New, obj.State);
 		}
 
 		[TestMethod]
@@ -141,7 +141,7 @@ namespace Tests
 			var obj = new TestObject(2, "Bob");
 			obj.Save();
 
-			Assert.AreEqual(DBObject.Status.Unmodified, obj.State);
+			Assert.AreEqual(DBObjectState.Unmodified, obj.State);
 		}
 
 		[TestMethod]
@@ -150,7 +150,7 @@ namespace Tests
 			var obj = new TestObject(2, "Bob");
 			obj.Delete();
 
-			Assert.AreEqual(DBObject.Status.Deleted, obj.State);
+			Assert.AreEqual(DBObjectState.Deleted, obj.State);
 		}
 
 		[TestMethod]
@@ -161,7 +161,7 @@ namespace Tests
 
 			obj.Id = 5;
 
-			Assert.AreEqual(DBObject.Status.Modified, obj.State);
+			Assert.AreEqual(DBObjectState.Modified, obj.State);
 		}
 
 		[TestMethod]
@@ -216,7 +216,7 @@ namespace Tests
 			obj.Delete();
 			obj.RevertToRestorePoint();
 
-			Assert.AreEqual(DBObject.Status.New, obj.State);
+			Assert.AreEqual(DBObjectState.New, obj.State);
 		}
 
 		[TestMethod]
@@ -317,14 +317,14 @@ namespace Tests
 
 			foreach (var obj in list)
 			{
-				Assert.AreEqual(DBObject.Status.New, obj.State);
+				Assert.AreEqual(DBObjectState.New, obj.State);
 			}
 
 			list.Save();
 
 			foreach (var obj in list)
 			{
-				Assert.AreEqual(DBObject.Status.Unmodified, obj.State);
+				Assert.AreEqual(DBObjectState.Unmodified, obj.State);
 			}
 		}
 

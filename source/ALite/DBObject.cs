@@ -13,37 +13,6 @@ namespace ALite
 	[Serializable]
 	public abstract class DBObject : IDBObject, INotifyPropertyChanged
 	{
-		#region Enums
-
-		/// <summary>
-		/// Lists all possible statuses for the object.  Primarily used to determine what
-		/// to do when Save() is called.
-		/// </summary>
-		public enum Status
-		{
-			/// <summary>
-			/// Object is newly created and does not exist in the data store.
-			/// </summary>
-			New,
-
-			/// <summary>
-			/// Object is identical to the data in the data store.
-			/// </summary>
-			Unmodified,
-
-			/// <summary>
-			/// Object exists in the data store but its properties have been altered.
-			/// </summary>
-			Modified,
-
-			/// <summary>
-			/// Object has been deleted from the data store.
-			/// </summary>
-			Deleted
-		}
-
-		#endregion
-
 		#region Members
 
 		#region Events
@@ -75,10 +44,7 @@ namespace ALite
 
 		#endregion
 
-		/// <summary>
-        /// Status of the object.
-        /// </summary>
-		private Status mStatus = Status.New;
+		private StateTracker mState = new StateTracker();
 
 		/// <summary>
 		/// List of rules that properties are checked against before they are set.
@@ -102,10 +68,9 @@ namespace ALite
 		/// <summary>
 		/// Gets or sets the current status of the object.
 		/// </summary>
-		public Status State
+		public DBObjectState State
 		{
-			get { return mStatus; }
-			private set { mStatus = value; }
+			get { return mState.State; }
 		}
 
 		#endregion
@@ -119,16 +84,16 @@ namespace ALite
 		/// </summary>
 		public void Save()
 		{
-			switch (mStatus)
+			switch (State)
 			{
-				case Status.New:
+				case DBObjectState.New:
 					Create();
 					break;
-				case Status.Modified:
+				case DBObjectState.Modified:
 					Update();
 					break;
-				case Status.Unmodified:
-				case Status.Deleted:
+				case DBObjectState.Unmodified:
+				case DBObjectState.Deleted:
 					break;
 			}
 		}
@@ -159,7 +124,7 @@ namespace ALite
 		protected void Create()
 		{
 			CreateData();
-			TransitionState(Status.Unmodified);
+			mState.TransitionState(DBObjectState.Unmodified);
 			RaiseCreatedEvent();
 		}
 
@@ -169,7 +134,7 @@ namespace ALite
 		protected void Update()
 		{
 			UpdateData();
-			TransitionState(Status.Unmodified);
+			mState.TransitionState(DBObjectState.Unmodified);
 			RaiseUpdatedEvent();
 		}
 
@@ -179,7 +144,7 @@ namespace ALite
 		public void Fetch()
 		{
 			FetchData();
-			TransitionState(Status.Unmodified);
+			mState.TransitionState(DBObjectState.Unmodified);
 			RaiseFetchedEvent();
 		}
 
@@ -189,7 +154,7 @@ namespace ALite
 		public void Delete()
 		{
 			DeleteData();
-			TransitionState(Status.Deleted);
+			mState.TransitionState(DBObjectState.Deleted);
 			RaiseDeletedEvent();
 		}
 
@@ -254,7 +219,7 @@ namespace ALite
 			// with an entirely new data store, we don't know what state the
 			// store is in.  We presume it has been fetched anew from the
 			// database and so the object is unmodified.
-			mStatus = Status.Unmodified;
+			mState.State = DBObjectState.Unmodified;
 
 			// We have to scrap the restore point because it too is no longer
 			// relevant if we have replaced the data store.
@@ -281,7 +246,7 @@ namespace ALite
 			}
 
 			// Ensure that the restore point contains the current state of the object
-			dest.Add("mStatus", mStatus);
+			dest.Add("mStatus", mState.State);
 
 			OnSetRestorePoint();
 		}
@@ -300,7 +265,7 @@ namespace ALite
 
 			// Ensure we revert to the status of the document as it was when
 			// we created the restore point.
-			mStatus = (Status)dictionary["mStatus"];
+			mState.State = (DBObjectState)dictionary["mStatus"];
 
 			// We no longer need the backed-up status
 			dictionary.Remove("mStatus");
@@ -362,7 +327,7 @@ namespace ALite
 		{
 			lock (mDocument)
 			{
-				if (mStatus == Status.Deleted)
+				if (State == DBObjectState.Deleted)
 				{
 					throw new ArgumentException("Cannot alter deleted objects.");
 				}
@@ -393,59 +358,12 @@ namespace ALite
 				{
 					var dictionary = mDocument as IDictionary<string, object>;
 
-					TransitionState(Status.Modified);
+					mState.TransitionState(DBObjectState.Modified);
 
 					dictionary[propertyName] = newValue;
 
 					RaisePropertyChangedEvent(propertyName);
 				}
-			}
-		}
-
-		/// <summary>
-		/// Transition from the current state to the specified state.  Protects against
-		/// illegal transitions, such as any state to "New" (only new, unsaved objects
-		/// are new) or "Deleted" to any state (deleted objects cannot be modified).
-		/// Throws an ArgumentException if an illegal transition is attempted.
-		/// </summary>
-		/// <param name="newState">The new state to switch to.</param>
-		private void TransitionState(Status newState) {
-			switch (newState)
-			{
-				case Status.Deleted:
-					mStatus = Status.Deleted;
-					break;
-
-				case Status.Modified:
-					switch (mStatus)
-					{
-						case Status.Modified:
-						case Status.New:
-							break;
-						case Status.Unmodified:
-							mStatus = Status.Modified;
-							break;
-						case Status.Deleted:
-							throw new ArgumentException("Cannot alter deleted objects.");
-					}
-					break;
-
-				case Status.New:
-					throw new ArgumentException("Objects cannot become new again.");
-
-				case Status.Unmodified:
-					switch (mStatus)
-					{
-						case Status.Modified:
-						case Status.New:
-							mStatus = Status.Unmodified;
-							break;
-						case Status.Unmodified:
-							break;
-						case Status.Deleted:
-							throw new ArgumentException("Cannot alter deleted objects.");
-					}
-					break;
 			}
 		}
 
