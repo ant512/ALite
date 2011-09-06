@@ -1,7 +1,7 @@
-ALite V3.0
-----------
+ALite V4.0
+==========
 
-  ALite is a small, lightweight and unobtrusive framework for constructing
+  ALite is a small, lightweight and unobtrusive library for constructing
   data-aware objects using the .NET platform.
   
 
@@ -23,29 +23,31 @@ Features
 Not Features
 ------------
 
-  The following features are not implemented by this framework:
+The following features are not implemented by this library:
   
-   - Multiple undos;
-   - Remoting;
-   - Caching;
-   - Anything else not listed in the "Features" section.
+ - Multiple undos;
+ - Remoting;
+ - Caching;
+ - Anything else not listed in the "Features" section.
    
 
 Requirements
 ------------
 
-  This library is designed for .NET2.  Although written in C#.NET, the compiled
-  library will also work with VB.NET.
+This library is designed for .NET4.
   
   
 Links
 -----
 
-  - http://ant.simianzombie.com                  - Development blog
-  - http://bitbucket.org/ant512/alite            - Project homepage and wiki
+ - [Development blog][1]
+ - [Bitbucket page][2]
+
+  [1]: http://ant.simianzombie.com
+  [2]: http://bitbucket.org/ant512/alite
 
 
 Email
 -----
 
-  Contact me at spam_mail250@yahoo.com.
+  Contact me at <ant@simianzombie.com>.
