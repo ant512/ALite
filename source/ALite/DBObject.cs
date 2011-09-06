@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Text;
 using ObjectValidator;
 
@@ -51,15 +50,7 @@ namespace ALite
 		/// </summary>
 		private Validator mValidator = new Validator();
 
-		/// <summary>
-		/// Stores all data accessed via the GetProperty() and SetProperty() methods.
-		/// </summary>
-		private ExpandoObject mDocument = new ExpandoObject();
-
-		/// <summary>
-		/// Stores the state of the object after a call to SetRestorePoint().
-		/// </summary>
-		private ExpandoObject mRestorePoint;
+		private PropertyStore mProperties = new PropertyStore();
 
 		#endregion
 
@@ -213,17 +204,13 @@ namespace ALite
 		/// data repository of this object.</param>
 		protected void InjectData(dynamic data)
 		{
-			mDocument = data;
+			mProperties.InjectData(data);
 
 			// Reset status.  Since we are replacing the internal data store
 			// with an entirely new data store, we don't know what state the
 			// store is in.  We presume it has been fetched anew from the
 			// database and so the object is unmodified.
 			mState.State = DBObjectState.Unmodified;
-
-			// We have to scrap the restore point because it too is no longer
-			// relevant if we have replaced the data store.
-			mRestorePoint = null;
 		}
 
 		#endregion
@@ -235,19 +222,12 @@ namespace ALite
 		/// </summary>
 		public void SetRestorePoint()
 		{
-			mRestorePoint = new ExpandoObject();
+			// Ensure that the state is backed up in the restore point
+			mProperties.SetProperty("mState", State);
+			mProperties.SetRestorePoint();
 
-			var source = mDocument as IDictionary<string, object>;
-			var dest = mRestorePoint as IDictionary<string, object>;
-
-			foreach (string key in source.Keys)
-			{
-				dest.Add(key, source[key]);
-			}
-
-			// Ensure that the restore point contains the current state of the object
-			dest.Add("mStatus", mState.State);
-
+			// We don't need the state to be in the property store, so we can remove it
+			mProperties.RemoveProperty("mState");
 			OnSetRestorePoint();
 		}
 
@@ -257,18 +237,13 @@ namespace ALite
 		public void RevertToRestorePoint()
 		{
 			OnRevertToRestorePoint();
+			mProperties.RevertToRestorePoint();
 
-			mDocument = mRestorePoint;
-			mRestorePoint = null;
+			// Restore the backed up state
+			mState.State = mProperties.GetProperty<DBObjectState>("mState");
 
-			var dictionary = mDocument as IDictionary<string, object>;
-
-			// Ensure we revert to the status of the document as it was when
-			// we created the restore point.
-			mState.State = (DBObjectState)dictionary["mStatus"];
-
-			// We no longer need the backed-up status
-			dictionary.Remove("mStatus");
+			// We no longer need the state to be in the property store
+			mProperties.RemoveProperty("mState");
 		}
 
 		/// <summary>
@@ -280,22 +255,6 @@ namespace ALite
 		/// Called when RevertToRestorePoint() runs.
 		/// </summary>
 		protected virtual void OnRevertToRestorePoint() { }
-
-		/// <summary>
-		/// Get a value from the restore point data.
-		/// </summary>
-		/// <typeparam name="T">Type of the value to return.</typeparam>
-		/// <param name="propertyName">Name of the property to return.</param>
-		/// <returns>The value of the property in the restore point, if available.</returns>
-		protected T GetRestorePointValue<T>(string propertyName)
-		{
-			// Give up if we don't have a restore point to get a value from
-			if (mRestorePoint == null) return default(T);
-
-			var dictionary = mRestorePoint as IDictionary<string, object>;
-
-			return (T)dictionary[propertyName];
-		}
 
 		#endregion
 
@@ -309,11 +268,9 @@ namespace ALite
 		/// <returns>The current value of the property.</returns>
 		protected T GetProperty<T>(string propertyName)
 		{
-			lock (mDocument)
+			lock (mProperties)
 			{
-				var dictionary = mDocument as IDictionary<string, object>;
-				if (dictionary.Keys.Contains(propertyName)) return (T)dictionary[propertyName];
-				return default(T);
+				return mProperties.GetProperty<T>(propertyName);
 			}
 		}
 
@@ -325,7 +282,7 @@ namespace ALite
 		/// <param name="newValue">New value</param>
 		protected void SetProperty<T>(string propertyName, T newValue)
 		{
-			lock (mDocument)
+			lock (mProperties)
 			{
 				if (State == DBObjectState.Deleted)
 				{
@@ -356,12 +313,8 @@ namespace ALite
 				// Is the value different to the old value?
 				if ((oldValue == null) || (!oldValue.Equals((T)newValue)))
 				{
-					var dictionary = mDocument as IDictionary<string, object>;
-
 					mState.TransitionState(DBObjectState.Modified);
-
-					dictionary[propertyName] = newValue;
-
+					mProperties.SetProperty<T>(propertyName, newValue);
 					RaisePropertyChangedEvent(propertyName);
 				}
 			}
