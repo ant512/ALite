@@ -49,6 +49,12 @@ namespace ALite
 			mRestorePoint = CopyExpando(mDocument);
 		}
 
+		/// <summary>
+		/// Sets the specified property to the specified value.
+		/// </summary>
+		/// <typeparam name="T">Type of the value.</typeparam>
+		/// <param name="name">Name of the property.</param>
+		/// <param name="value">The value to store.</param>
 		public void SetProperty<T>(string name, T value)
 		{
 			var doc = mDocument as IDictionary<string, object>;
@@ -56,6 +62,12 @@ namespace ALite
 			doc[name] = value;
 		}
 
+		/// <summary>
+		/// Gets the value of the specified property.
+		/// </summary>
+		/// <typeparam name="T">Type of the property.</typeparam>
+		/// <param name="name">Name of the property.</param>
+		/// <returns>The value of the property.</returns>
 		public T GetProperty<T>(string name)
 		{
 			var doc = mDocument as IDictionary<string, object>;
@@ -65,6 +77,10 @@ namespace ALite
 			return default(T);
 		}
 
+		/// <summary>
+		/// Removes the property from the store.
+		/// </summary>
+		/// <param name="name">The name of the property to remove.</param>
 		public void RemoveProperty(string name)
 		{
 			var doc = mDocument as IDictionary<string, object>;
@@ -81,6 +97,11 @@ namespace ALite
 			mRestorePoint = null;
 		}
 
+		/// <summary>
+		/// Creates a shallow copy of the supplied expando object.
+		/// </summary>
+		/// <param name="obj">The object to copy.</param>
+		/// <returns>A copy of the object.</returns>
 		private static ExpandoObject CopyExpando(ExpandoObject obj)
 		{
 			var result = new ExpandoObject();
