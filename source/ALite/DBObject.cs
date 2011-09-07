@@ -350,7 +350,9 @@ namespace ALite
 				concatErrors.Append(err);
 			}
 
-			return String.Format("New value '{0}' for property '{1}' violates rules: {2}", newValue.ToString(), propertyName, concatErrors.ToString());
+			string valueString = newValue == null ? "null" : newValue.ToString();
+
+			return String.Format("New value '{0}' for property '{1}' violates rules: {2}", valueString, propertyName, concatErrors.ToString());
 		}
 
 		#endregion

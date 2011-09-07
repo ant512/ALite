@@ -357,5 +357,25 @@ namespace Tests
 
 			Assert.AreEqual(4, list.Count);
 		}
+
+		[TestMethod]
+		public void TestNullString()
+		{
+			var obj = new TestObject(1, "bob");
+
+			try
+			{
+				obj.Name = null;
+				Assert.Fail("Validation exception should be thrown as null violates minimum length rule.");
+			}
+			catch (ValidationException)
+			{
+				// This is the expected behaviour
+			}
+			catch (NullReferenceException)
+			{
+				Assert.Fail("Null strings are not handled correctly by the validation system.");
+			}
+		}
 	}
 }
