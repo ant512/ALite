@@ -15,26 +15,14 @@ namespace Tests
 		{
 			public int Id
 			{
-				get
-				{
-					return GetProperty<int>("Id");
-				}
-				set
-				{
-					SetProperty("Id", value);
-				}
+				get { return GetProperty<int>("Id"); }
+				set { SetProperty("Id", value); }
 			}
 
 			public string Name
 			{
-				get
-				{
-					return GetProperty<string>("Name");
-				}
-				set
-				{
-					SetProperty("Name", value);
-				}
+				get { return GetProperty<string>("Name"); }
+				set { SetProperty("Name", value); }
 			}
 
 			public TestObject(int id, string name)
@@ -56,48 +44,11 @@ namespace Tests
 			}
 		}
 
-		private class ExceptionThrowingObject : DBObject
+		private class ExceptionThrowingObject : TestObject
 		{
-			public int Id
-			{
-				get
-				{
-					return GetProperty<int>("Id");
-				}
-				set
-				{
-					SetProperty("Id", value);
-				}
-			}
-
-			public string Name
-			{
-				get
-				{
-					return GetProperty<string>("Name");
-				}
-				set
-				{
-					SetProperty("Name", value);
-				}
-			}
-
 			public ExceptionThrowingObject(int id, string name)
+				: base(id, name)
 			{
-				Id = id;
-				Name = name;
-
-				AddRule("Id", new ObjectValidator.StandardRules.IntegerBoundsValidationRule(0, 10));
-				AddRule("Name", new ObjectValidator.StandardRules.StringLengthValidationRule(3, 8));
-				AddRule("Name", delegate(List<string> errorMessages, object value)
-				{
-					if ((string)value == "Bert")
-					{
-						errorMessages.Add("Name cannot be \"Bert\"");
-						return false;
-					}
-					return true;
-				});
 			}
 
 			protected override void CreateData()
@@ -124,7 +75,6 @@ namespace Tests
 
 		private class TestObjectCollection : DBObjectCollection<TestObject>
 		{
-
 		}
 
 		[TestMethod]
