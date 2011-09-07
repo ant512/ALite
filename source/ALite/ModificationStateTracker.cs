@@ -8,10 +8,9 @@ namespace ALite
 	#region Enums
 
 	/// <summary>
-	/// Lists all possible statuses for the object.  Primarily used to determine what
-	/// to do when Save() is called.
+	/// Lists all possible modification states of an object.
 	/// </summary>
-	public enum DBObjectState
+	public enum ModificationState
 	{
 		/// <summary>
 		/// Object is newly created and does not exist in the data store.
@@ -39,16 +38,16 @@ namespace ALite
 	/// <summary>
 	/// State machine that describes all possible states of a DBObject.
 	/// </summary>
-	class StateTracker
+	class ModificationStateTracker
 	{
 		#region Constructors
 
 		/// <summary>
 		/// Constructor.
 		/// </summary>
-		public StateTracker()
+		public ModificationStateTracker()
 		{
-			State = DBObjectState.New;
+			State = ModificationState.New;
 		}
 
 		#endregion
@@ -59,7 +58,7 @@ namespace ALite
 		/// Gets or sets the state of the object.  Typically TransitionState()
 		/// should be used instead of the setter to enforce the transition rules.
 		/// </summary>
-		public DBObjectState State
+		public ModificationState State
 		{
 			get;
 			set;
@@ -76,41 +75,41 @@ namespace ALite
 		/// Throws an ArgumentException if an illegal transition is attempted.
 		/// </summary>
 		/// <param name="newState">The new state to switch to.</param>
-		public void TransitionState(DBObjectState newState)
+		public void TransitionState(ModificationState newState)
 		{
 			switch (newState)
 			{
-				case DBObjectState.Deleted:
-					State = DBObjectState.Deleted;
+				case ModificationState.Deleted:
+					State = ModificationState.Deleted;
 					break;
 
-				case DBObjectState.Modified:
+				case ModificationState.Modified:
 					switch (State)
 					{
-						case DBObjectState.Modified:
-						case DBObjectState.New:
+						case ModificationState.Modified:
+						case ModificationState.New:
 							break;
-						case DBObjectState.Unmodified:
-							State = DBObjectState.Modified;
+						case ModificationState.Unmodified:
+							State = ModificationState.Modified;
 							break;
-						case DBObjectState.Deleted:
+						case ModificationState.Deleted:
 							throw new ArgumentException("Cannot alter deleted objects.");
 					}
 					break;
 
-				case DBObjectState.New:
+				case ModificationState.New:
 					throw new ArgumentException("Objects cannot become new again.");
 
-				case DBObjectState.Unmodified:
+				case ModificationState.Unmodified:
 					switch (State)
 					{
-						case DBObjectState.Modified:
-						case DBObjectState.New:
-							State = DBObjectState.Unmodified;
+						case ModificationState.Modified:
+						case ModificationState.New:
+							State = ModificationState.Unmodified;
 							break;
-						case DBObjectState.Unmodified:
+						case ModificationState.Unmodified:
 							break;
-						case DBObjectState.Deleted:
+						case ModificationState.Deleted:
 							throw new ArgumentException("Cannot alter deleted objects.");
 					}
 					break;

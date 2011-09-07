@@ -10,7 +10,7 @@ namespace ALite
 	/// Base class for objects that interact with the database.
 	/// </summary>
 	[Serializable]
-	public abstract class DBObject : IDBObject, INotifyPropertyChanged
+	public abstract class DBObject : IDBObject
 	{
 		#region Members
 
@@ -43,7 +43,7 @@ namespace ALite
 
 		#endregion
 
-		private StateTracker mState = new StateTracker();
+		private ModificationStateTracker mState = new ModificationStateTracker();
 
 		/// <summary>
 		/// List of rules that properties are checked against before they are set.
@@ -59,7 +59,7 @@ namespace ALite
 		/// <summary>
 		/// Gets or sets the current status of the object.
 		/// </summary>
-		public DBObjectState State
+		public ModificationState State
 		{
 			get { return mState.State; }
 		}
@@ -77,14 +77,14 @@ namespace ALite
 		{
 			switch (State)
 			{
-				case DBObjectState.New:
+				case ModificationState.New:
 					Create();
 					break;
-				case DBObjectState.Modified:
+				case ModificationState.Modified:
 					Update();
 					break;
-				case DBObjectState.Unmodified:
-				case DBObjectState.Deleted:
+				case ModificationState.Unmodified:
+				case ModificationState.Deleted:
 					break;
 			}
 		}
@@ -115,7 +115,7 @@ namespace ALite
 		protected void Create()
 		{
 			CreateData();
-			mState.TransitionState(DBObjectState.Unmodified);
+			mState.TransitionState(ModificationState.Unmodified);
 			RaiseCreatedEvent();
 		}
 
@@ -125,7 +125,7 @@ namespace ALite
 		protected void Update()
 		{
 			UpdateData();
-			mState.TransitionState(DBObjectState.Unmodified);
+			mState.TransitionState(ModificationState.Unmodified);
 			RaiseUpdatedEvent();
 		}
 
@@ -135,7 +135,7 @@ namespace ALite
 		public void Fetch()
 		{
 			FetchData();
-			mState.TransitionState(DBObjectState.Unmodified);
+			mState.TransitionState(ModificationState.Unmodified);
 			RaiseFetchedEvent();
 		}
 
@@ -145,7 +145,7 @@ namespace ALite
 		public void Delete()
 		{
 			DeleteData();
-			mState.TransitionState(DBObjectState.Deleted);
+			mState.TransitionState(ModificationState.Deleted);
 			RaiseDeletedEvent();
 		}
 
@@ -210,7 +210,7 @@ namespace ALite
 			// with an entirely new data store, we don't know what state the
 			// store is in.  We presume it has been fetched anew from the
 			// database and so the object is unmodified.
-			mState.State = DBObjectState.Unmodified;
+			mState.State = ModificationState.Unmodified;
 		}
 
 		#endregion
@@ -240,7 +240,7 @@ namespace ALite
 			mProperties.RevertToRestorePoint();
 
 			// Restore the backed up state
-			mState.State = mProperties.GetProperty<DBObjectState>("mState");
+			mState.State = mProperties.GetProperty<ModificationState>("mState");
 
 			// We no longer need the state to be in the property store
 			mProperties.RemoveProperty("mState");
@@ -284,7 +284,7 @@ namespace ALite
 		{
 			lock (mProperties)
 			{
-				if (State == DBObjectState.Deleted)
+				if (State == ModificationState.Deleted)
 				{
 					throw new ArgumentException("Cannot alter deleted objects.");
 				}
@@ -313,7 +313,7 @@ namespace ALite
 				// Is the value different to the old value?
 				if ((oldValue == null) || (!oldValue.Equals((T)newValue)))
 				{
-					mState.TransitionState(DBObjectState.Modified);
+					mState.TransitionState(ModificationState.Modified);
 					mProperties.SetProperty<T>(propertyName, newValue);
 					RaisePropertyChangedEvent(propertyName);
 				}

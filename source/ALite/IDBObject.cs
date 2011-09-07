@@ -35,13 +35,8 @@ namespace ALite
     /// <summary>
     /// Interface that describes the DBObject class
     /// </summary>
-	public interface IDBObject
+	public interface IDBObject : IRevertable, INotifyPropertyChanged
 	{
-		/// <summary>
-		/// Property changed event.
-		/// </summary>
-		event PropertyChangedEventHandler PropertyChanged;
-
 		/// <summary>
 		/// Object deleted event.
 		/// </summary>
@@ -61,15 +56,5 @@ namespace ALite
 		/// Deletes the object from the database.
 		/// </summary>
 		void Delete();
-
-		/// <summary>
-		/// Stores the current state of the object for future restoral.
-		/// </summary>
-		void SetRestorePoint();
-
-		/// <summary>
-		/// Reverts to the last saved restore point.
-		/// </summary>
-		void RevertToRestorePoint();
 	}
 }
