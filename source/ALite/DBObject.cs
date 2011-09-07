@@ -210,7 +210,7 @@ namespace ALite
 			// with an entirely new data store, we don't know what state the
 			// store is in.  We presume it has been fetched anew from the
 			// database and so the object is unmodified.
-			mState.State = ModificationState.Unmodified;
+			mState = new ModificationStateTracker(ModificationState.Unmodified);
 		}
 
 		#endregion
@@ -240,7 +240,7 @@ namespace ALite
 			mProperties.RevertToRestorePoint();
 
 			// Restore the backed up state
-			mState.State = mProperties.GetProperty<ModificationState>("mState");
+			mState = new ModificationStateTracker(mProperties.GetProperty<ModificationState>("mState"));
 
 			// We no longer need the state to be in the property store
 			mProperties.RemoveProperty("mState");

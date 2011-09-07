@@ -50,18 +50,26 @@ namespace ALite
 			State = ModificationState.New;
 		}
 
+		/// <summary>
+		/// Constructor.  Creates a state tracker with an initial state.
+		/// </summary>
+		/// <param name="initialState">The initial state for the new tracker.</param>
+		public ModificationStateTracker(ModificationState initialState)
+		{
+			State = initialState;
+		}
+
 		#endregion
 
 		#region Properties
 
 		/// <summary>
-		/// Gets or sets the state of the object.  Typically TransitionState()
-		/// should be used instead of the setter to enforce the transition rules.
+		/// Gets or sets the state of the object.
 		/// </summary>
 		public ModificationState State
 		{
 			get;
-			set;
+			private set;
 		}
 
 		#endregion

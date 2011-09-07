@@ -42,6 +42,11 @@ namespace ALite
 		/// </summary>
 		event DBObjectDeletedEventHandler DBObjectDeleted;
 
+		/// <summary>
+		/// Gets the modification state of the object.
+		/// </summary>
+		ModificationState State { get; }
+
         /// <summary>
         /// Save the object to the database.
         /// </summary>
