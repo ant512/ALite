@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ALite;
 using ObjectValidator;
 
-namespace Tests
+namespace ALite.Tests
 {
 	[TestClass]
 	public class UnitTest1
