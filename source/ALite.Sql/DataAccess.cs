@@ -6,8 +6,6 @@ using System.Configuration;
 using System.Dynamic;
 using ALite;
 
-[assembly: CLSCompliant(true)]
-
 namespace ALite.Sql
 {
 	/// <summary>
