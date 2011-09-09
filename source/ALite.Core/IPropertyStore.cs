@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ALite
+namespace ALite.Core
 {
 	/// <summary>
 	/// Interface defining the basic behaviour of a property store.

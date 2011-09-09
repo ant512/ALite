@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Collections;
 
-namespace ALite
+namespace ALite.Core
 {
 	/// <summary>
 	/// Collection of IPersistable objects.

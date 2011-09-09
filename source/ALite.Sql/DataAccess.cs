@@ -4,7 +4,7 @@ using System.Data.SqlClient;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Dynamic;
-using ALite;
+using ALite.Core;
 
 namespace ALite.Sql
 {

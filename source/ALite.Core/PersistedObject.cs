@@ -5,7 +5,7 @@ using System.Text;
 using System.Dynamic;
 using ALite.ObjectValidator;
 
-namespace ALite
+namespace ALite.Core
 {
 	/// <summary>
 	/// Base class for objects that interact with the database.

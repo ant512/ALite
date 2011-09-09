@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.Collections.Generic;
 
-namespace ALite
+namespace ALite.Core
 {
 	#region Delegates
 

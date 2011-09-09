@@ -8,8 +8,8 @@
     <ProjectGuid>{9F4B22E0-953A-4BC3-A760-781C0FA092C2}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ALite</RootNamespace>
-    <AssemblyName>ALite</AssemblyName>
+    <RootNamespace>ALite.Core</RootNamespace>
+    <AssemblyName>ALite.Core</AssemblyName>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <OldToolsVersion>3.5</OldToolsVersion>
@@ -52,7 +52,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\ALite.xml</DocumentationFile>
+    <DocumentationFile>bin\Release\ALite.Core.xml</DocumentationFile>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>

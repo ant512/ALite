@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Dynamic;
 using MongoDB;
-using ALite;
+using ALite.Core;
 
 namespace ALite.MongoDB
 {

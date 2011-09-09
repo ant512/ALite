@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Collections.Generic;
 using System.Text;
 using System.Dynamic;
-using ALite;
+using ALite.Core;
 
 namespace ALite.Sql
 {

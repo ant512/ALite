@@ -49,9 +49,9 @@
     <Compile Include="SqlBackedObject.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ALite\ALite.csproj">
+    <ProjectReference Include="..\ALite.Core\ALite.Core.csproj">
       <Project>{9F4B22E0-953A-4BC3-A760-781C0FA092C2}</Project>
-      <Name>ALite</Name>
+      <Name>ALite.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

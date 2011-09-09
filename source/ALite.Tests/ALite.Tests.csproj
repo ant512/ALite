@@ -57,6 +57,10 @@
     <Compile Include="ALiteTest.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ALite.Core\ALite.Core.csproj">
+      <Project>{9F4B22E0-953A-4BC3-A760-781C0FA092C2}</Project>
+      <Name>ALite.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ALite.MongoDB\ALite.MongoDB.csproj">
       <Project>{31570412-8368-47C3-8131-7E0E51CBD350}</Project>
       <Name>ALite.MongoDB</Name>
@@ -68,10 +72,6 @@
     <ProjectReference Include="..\ALite.Sql\ALite.Sql.csproj">
       <Project>{DC4E4F9E-8783-4CD0-87BE-BFF7F899AAE2}</Project>
       <Name>ALite.Sql</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ALite\ALite.csproj">
-      <Project>{9F4B22E0-953A-4BC3-A760-781C0FA092C2}</Project>
-      <Name>ALite</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

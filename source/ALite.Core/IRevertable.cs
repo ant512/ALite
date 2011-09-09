@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ALite
+namespace ALite.Core
 {
 	/// <summary>
 	/// Defines the properties of an object that can store a state and
