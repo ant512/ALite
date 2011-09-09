@@ -11,7 +11,7 @@ namespace ALite.Sql
 	/// <summary>
 	/// Abstraction layer for SQL Server data access.
 	/// </summary>
-	public class DataAccess : IDisposable, IDataAccess
+	public class DataAccess : IDisposable
 	{
 		#region Members
 
