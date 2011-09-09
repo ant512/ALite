@@ -1,9 +1,9 @@
 ALite V4.0
 ==========
 
-  ALite is a small, lightweight and unobtrusive library for constructing
-  data-aware objects using the .NET platform.
-  
+ALite is a small, lightweight and unobtrusive library for constructing
+data-aware objects using the .NET platform.
+
 
 Features
 --------

@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Collections.Generic;
 using System.Text;
 using System.Dynamic;
-using ObjectValidator;
+using ALite.ObjectValidator;
 
 namespace ALite
 {

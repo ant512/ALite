@@ -39,9 +39,6 @@
     <Reference Include="MongoDB">
       <HintPath>..\..\lib\MongoDB.dll</HintPath>
     </Reference>
-    <Reference Include="ObjectValidator">
-      <HintPath>..\..\lib\ObjectValidator.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -62,6 +59,10 @@
     <ProjectReference Include="..\ALite.MongoDB\ALite.MongoDB.csproj">
       <Project>{31570412-8368-47C3-8131-7E0E51CBD350}</Project>
       <Name>ALite.MongoDB</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ALite.ObjectValidator\ALite.ObjectValidator.csproj">
+      <Project>{25A43937-5740-433F-87D9-B77D526F4784}</Project>
+      <Name>ALite.ObjectValidator</Name>
     </ProjectReference>
     <ProjectReference Include="..\ALite.Sql\ALite.Sql.csproj">
       <Project>{DC4E4F9E-8783-4CD0-87BE-BFF7F899AAE2}</Project>

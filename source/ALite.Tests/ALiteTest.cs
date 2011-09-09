@@ -5,7 +5,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ALite;
 using ALite.Sql;
-using ObjectValidator;
+using ALite.ObjectValidator;
 
 namespace ALite.Tests
 {

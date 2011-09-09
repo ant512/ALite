@@ -5,8 +5,8 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ALite;
 using ALite.MongoDB;
-using ObjectValidator;
-using ObjectValidator.StandardRules;
+using ALite.ObjectValidator;
+using ALite.ObjectValidator.StandardRules;
 using MongoDB;
 
 namespace ALite.Tests
