@@ -11,7 +11,7 @@ namespace ALite.Tests
 	[TestClass]
 	public class UnitTest1
 	{
-		private class TestObject : DBObject
+		private class TestObject : SqlBackedObject
 		{
 			public int Id
 			{
@@ -73,7 +73,7 @@ namespace ALite.Tests
 			}
 		}
 
-		private class TestObjectCollection : DBObjectCollection<TestObject>
+		private class TestObjectCollection : PersistedObjectCollection<TestObject>
 		{
 		}
 

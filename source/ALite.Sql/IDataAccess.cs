@@ -2,8 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using ALite;
 
-namespace ALite
+namespace ALite.Sql
 {
 	/// <summary>
 	/// Interface that describes the DataAccess class

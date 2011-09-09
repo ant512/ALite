@@ -1,7 +1,8 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Text;
+using System.Dynamic;
 using ObjectValidator;
 
 namespace ALite
@@ -10,7 +11,7 @@ namespace ALite
 	/// Base class for objects that interact with the database.
 	/// </summary>
 	[Serializable]
-	public abstract class DBObject : IDBObject
+	public abstract class PersistedObject<PropertyStoreType> : IPersistable
 	{
 		#region Members
 
@@ -24,22 +25,22 @@ namespace ALite
 		/// <summary>
 		/// Event fired when the object is deleted.
 		/// </summary>
-		public event DBObjectDeletedEventHandler DBObjectDeleted;
+		public event PersistableDeletedEventHandler PersistableObjectDeleted;
 
 		/// <summary>
 		/// Object created event.
 		/// </summary>
-		public event DBObjectCreatedEventHandler DBObjectCreated;
+		public event PersistableCreatedEventHandler PersistableObjectCreated;
 
 		/// <summary>
 		/// Object updated event.
 		/// </summary>
-		public event DBObjectUpdatedEventHandler DBObjectUpdated;
+		public event PersistableUpdatedEventHandler PersistableObjectUpdated;
 
 		/// <summary>
 		/// Object fetched event.
 		/// </summary>
-		public event DBObjectFetchedEventHandler DBObjectFetched;
+		public event PersistableFetchedEventHandler PersistableObjectFetched;
 
 		#endregion
 
@@ -49,8 +50,6 @@ namespace ALite
 		/// List of rules that properties are checked against before they are set.
 		/// </summary>
 		private Validator mValidator = new Validator();
-
-		private PropertyStore mProperties = new PropertyStore();
 
 		#endregion
 
@@ -62,6 +61,21 @@ namespace ALite
 		public ModificationState State
 		{
 			get { return mState.State; }
+		}
+
+		protected IPropertyStore<PropertyStoreType> Properties
+		{
+			get;
+			private set;
+		}
+
+		#endregion
+
+		#region Constructors
+
+		public PersistedObject(IPropertyStore<PropertyStoreType> propertyStore)
+		{
+			Properties = propertyStore;
 		}
 
 		#endregion
@@ -154,7 +168,7 @@ namespace ALite
 		/// </summary>
 		protected void RaiseCreatedEvent()
 		{
-			DBObjectCreatedEventHandler handler = DBObjectCreated;
+			PersistableCreatedEventHandler handler = PersistableObjectCreated;
 			if (handler != null)
 			{
 				handler(this);
@@ -166,7 +180,7 @@ namespace ALite
 		/// </summary>
 		protected void RaiseUpdatedEvent()
 		{
-			DBObjectUpdatedEventHandler handler = DBObjectUpdated;
+			PersistableUpdatedEventHandler handler = PersistableObjectUpdated;
 			if (handler != null)
 			{
 				handler(this);
@@ -178,7 +192,7 @@ namespace ALite
 		/// </summary>
 		protected void RaiseDeletedEvent()
 		{
-			DBObjectDeletedEventHandler handler = DBObjectDeleted;
+			PersistableDeletedEventHandler handler = PersistableObjectDeleted;
 			if (handler != null)
 			{
 				handler(this);
@@ -190,7 +204,7 @@ namespace ALite
 		/// </summary>
 		protected void RaiseFetchedEvent()
 		{
-			DBObjectFetchedEventHandler handler = DBObjectFetched;
+			PersistableFetchedEventHandler handler = PersistableObjectFetched;
 			if (handler != null)
 			{
 				handler(this);
@@ -202,9 +216,9 @@ namespace ALite
 		/// </summary>
 		/// <param name="data">Object containing data that will become the new
 		/// data repository of this object.</param>
-		protected void InjectData(dynamic data)
+		protected void InjectData(PropertyStoreType data)
 		{
-			mProperties.InjectData(data);
+			Properties.InjectData(data);
 
 			// Reset status.  Since we are replacing the internal data store
 			// with an entirely new data store, we don't know what state the
@@ -223,11 +237,11 @@ namespace ALite
 		public void SetRestorePoint()
 		{
 			// Ensure that the state is backed up in the restore point
-			mProperties.SetProperty("mState", State);
-			mProperties.SetRestorePoint();
+			Properties.SetProperty("mState", State);
+			Properties.SetRestorePoint();
 
 			// We don't need the state to be in the property store, so we can remove it
-			mProperties.RemoveProperty("mState");
+			Properties.RemoveProperty("mState");
 			OnSetRestorePoint();
 		}
 
@@ -237,13 +251,13 @@ namespace ALite
 		public void RevertToRestorePoint()
 		{
 			OnRevertToRestorePoint();
-			mProperties.RevertToRestorePoint();
+			Properties.RevertToRestorePoint();
 
 			// Restore the backed up state
-			mState = new ModificationStateTracker(mProperties.GetProperty<ModificationState>("mState"));
+			mState = new ModificationStateTracker(Properties.GetProperty<ModificationState>("mState"));
 
 			// We no longer need the state to be in the property store
-			mProperties.RemoveProperty("mState");
+			Properties.RemoveProperty("mState");
 		}
 
 		/// <summary>
@@ -268,9 +282,9 @@ namespace ALite
 		/// <returns>The current value of the property.</returns>
 		protected T GetProperty<T>(string propertyName)
 		{
-			lock (mProperties)
+			lock (Properties)
 			{
-				return mProperties.GetProperty<T>(propertyName);
+				return Properties.GetProperty<T>(propertyName);
 			}
 		}
 
@@ -282,7 +296,7 @@ namespace ALite
 		/// <param name="newValue">New value</param>
 		protected void SetProperty<T>(string propertyName, T newValue)
 		{
-			lock (mProperties)
+			lock (Properties)
 			{
 				if (State == ModificationState.Deleted)
 				{
@@ -313,7 +327,7 @@ namespace ALite
 				// Is the value different to the old value?
 				if ((oldValue == null) || (!oldValue.Equals((T)newValue)))
 				{
-					mProperties.SetProperty<T>(propertyName, newValue);
+					Properties.SetProperty<T>(propertyName, newValue);
 					mState.TransitionState(ModificationState.Modified);
 					RaisePropertyChangedEvent(propertyName);
 				}
@@ -326,7 +340,7 @@ namespace ALite
 		/// <param name="name">Name of the property that changed.</param>
 		protected void RaisePropertyChangedEvent(string name)
 		{
-			lock (mProperties)
+			lock (Properties)
 			{
 				PropertyChangedEventHandler handler = PropertyChanged;
 				if (handler != null)

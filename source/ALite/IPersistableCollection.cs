@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Collections;
@@ -24,9 +24,9 @@ namespace ALite
 	#endregion
 
 	/// <summary>
-	/// Interface that describes the DBObjectCollection class
+	/// Interface that describes a collection of IPersistable objects.
 	/// </summary>
-	public interface IDBObjectCollection
+	public interface IPersistableCollection
 	{
 		/// <summary>
 		/// List changed event handler.
@@ -41,7 +41,7 @@ namespace ALite
 		/// <summary>
 		/// Event fired when a child is deleted.
 		/// </summary>
-		event DBObjectDeletedEventHandler ChildDeleted;
+		event PersistableDeletedEventHandler ChildDeleted;
 
 		/// <summary>
 		/// Save the collection.

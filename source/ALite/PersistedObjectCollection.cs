@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Collections;
@@ -9,7 +9,7 @@ namespace ALite
 	/// Collection of IDBObject objects
 	/// </summary>
 	[Serializable]
-	public class DBObjectCollection<T> : IList<T>, IDBObjectCollection where T : IDBObject
+	public class PersistedObjectCollection<T> : IList<T>, IPersistableCollection where T : IPersistable
 	{
 		#region Members
 
@@ -18,7 +18,7 @@ namespace ALite
 		/// <summary>
 		/// Event fired when a child is deleted.
 		/// </summary>
-		public event DBObjectDeletedEventHandler ChildDeleted;
+		public event PersistableDeletedEventHandler ChildDeleted;
 
 		/// <summary>
 		/// List changed event handler.
@@ -250,9 +250,9 @@ namespace ALite
 		/// <summary>
 		/// Constructor.
 		/// </summary>
-		public DBObjectCollection()
+		public PersistedObjectCollection()
 		{
-			ChildDeleted += new DBObjectDeletedEventHandler(HandleChildDeleted);
+			ChildDeleted += new PersistableDeletedEventHandler(HandleChildDeleted);
 		}
 
 		#endregion
@@ -320,7 +320,7 @@ namespace ALite
 		/// <param name="child">Child to remove events from</param>
 		private void RemoveChildEvents(T child)
 		{
-			child.DBObjectDeleted -= this.ChildDeleted;
+			child.PersistableObjectDeleted -= this.ChildDeleted;
 		}
 
 		/// <summary>
@@ -329,7 +329,7 @@ namespace ALite
 		/// <param name="child">Child to remove events from</param>
 		private void AddChildEvents(T child)
 		{
-			child.DBObjectDeleted += this.ChildDeleted;
+			child.PersistableObjectDeleted += this.ChildDeleted;
 		}
 
 		#endregion

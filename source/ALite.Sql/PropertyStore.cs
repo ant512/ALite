@@ -3,15 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Dynamic;
+using ALite;
 
-namespace ALite
+namespace ALite.Sql
 {
 	/// <summary>
 	/// Stores data in an ExpandoObject.  Also maintains an optional
 	/// restore point, providing the ability to roll back to a previous
 	/// version of the stored data.
 	/// </summary>
-	class PropertyStore
+	class PropertyStore : IPropertyStore<ExpandoObject>
 	{
 		#region Members
 
@@ -27,6 +28,15 @@ namespace ALite
 
 		#endregion
 
+		#region Properties
+
+		public ExpandoObject Document
+		{
+			get { return mDocument; }
+		}
+
+		#endregion
+
 		#region Methods
 
 		/// <summary>
@@ -35,7 +45,7 @@ namespace ALite
 		/// </summary>
 		/// <param name="data">Object containing data that will become the new
 		/// data repository of this object.</param>
-		public void InjectData(dynamic data)
+		public void InjectData(ExpandoObject data)
 		{
 			mDocument = CopyExpando(data);
 			mRestorePoint = null;
