@@ -93,6 +93,7 @@ namespace ALite
 		/// </summary>
 		public void RevertToRestorePoint()
 		{
+			if (mRestorePoint == null) return;
 			mDocument = mRestorePoint;
 			mRestorePoint = null;
 		}

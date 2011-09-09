@@ -313,8 +313,8 @@ namespace ALite
 				// Is the value different to the old value?
 				if ((oldValue == null) || (!oldValue.Equals((T)newValue)))
 				{
-					mState.TransitionState(ModificationState.Modified);
 					mProperties.SetProperty<T>(propertyName, newValue);
+					mState.TransitionState(ModificationState.Modified);
 					RaisePropertyChangedEvent(propertyName);
 				}
 			}
@@ -326,10 +326,13 @@ namespace ALite
 		/// <param name="name">Name of the property that changed.</param>
 		protected void RaisePropertyChangedEvent(string name)
 		{
-			PropertyChangedEventHandler handler = PropertyChanged;
-			if (handler != null)
+			lock (mProperties)
 			{
-				handler(this, new PropertyChangedEventArgs(name));
+				PropertyChangedEventHandler handler = PropertyChanged;
+				if (handler != null)
+				{
+					handler(this, new PropertyChangedEventArgs(name));
+				}
 			}
 		}
 
