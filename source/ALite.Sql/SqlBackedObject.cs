@@ -8,13 +8,16 @@ using ALite;
 namespace ALite.Sql
 {
 	/// <summary>
-	/// Base class for objects that interact with the database.
+	/// Base class for objects that can be persisted to SQL Server.
 	/// </summary>
 	[Serializable]
 	public abstract class SqlBackedObject : PersistedObject<ExpandoObject>
 	{
 		#region Constructors
 
+		/// <summary>
+		/// Initializes a new instance of the SqlBackedObject class.
+		/// </summary>
 		public SqlBackedObject()
 			: base(new PropertyStore())
 		{

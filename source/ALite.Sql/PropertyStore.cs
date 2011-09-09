@@ -12,6 +12,7 @@ namespace ALite.Sql
 	/// restore point, providing the ability to roll back to a previous
 	/// version of the stored data.
 	/// </summary>
+	[Serializable]
 	internal class PropertyStore : IPropertyStore<ExpandoObject>
 	{
 		#region Members

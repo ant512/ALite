@@ -52,6 +52,9 @@ namespace ALite
 			get { return StateTracker.State; }
 		}
 
+		/// <summary>
+		/// Gets or sets the property store used by the object.
+		/// </summary>
 		protected IPropertyStore<PropertyStoreType> Properties
 		{
 			get;
@@ -59,7 +62,8 @@ namespace ALite
 		}
 
 		/// <summary>
-		/// List of rules that properties are checked against before they are set.
+		/// Gets or sets the validator object, which contains a list of rules
+		/// that properties are checked against before they are set.
 		/// </summary>
 		private Validator Validator
 		{
@@ -67,6 +71,9 @@ namespace ALite
 			set;
 		}
 
+		/// <summary>
+		/// Gets or sets the state tracker object.
+		/// </summary>
 		private ModificationStateTracker StateTracker {
 			get;
 			set;
@@ -76,6 +83,10 @@ namespace ALite
 
 		#region Constructors
 
+		/// <summary>
+		/// Initializes a new instance of the PersistedObject class.
+		/// </summary>
+		/// <param name="propertyStore">The property store used to store property data.</param>
 		public PersistedObject(IPropertyStore<PropertyStoreType> propertyStore)
 		{
 			Properties = propertyStore;

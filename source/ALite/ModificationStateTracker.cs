@@ -38,6 +38,7 @@ namespace ALite
 	/// <summary>
 	/// State machine that describes all possible states of a DBObject.
 	/// </summary>
+	[Serializable]
 	class ModificationStateTracker
 	{
 		#region Constructors

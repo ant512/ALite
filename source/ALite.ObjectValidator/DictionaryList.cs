@@ -10,6 +10,7 @@ namespace ALite.ObjectValidator
 	/// </summary>
 	/// <typeparam name="TKey">Type of the key.</typeparam>
 	/// <typeparam name="TValue">Type of the values stored.</typeparam>
+	[Serializable]
 	class DictionaryList<TKey, TValue> : ICollection<KeyValuePair<TKey, TValue>>
 	{
 		#region Members

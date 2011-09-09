@@ -6,7 +6,7 @@ using System.Collections;
 namespace ALite
 {
 	/// <summary>
-	/// Collection of IDBObject objects
+	/// Collection of IPersistable objects.
 	/// </summary>
 	[Serializable]
 	public class PersistedObjectCollection<T> : IList<T>, IPersistableCollection where T : IPersistable

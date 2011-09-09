@@ -19,6 +19,7 @@ namespace ALite.ObjectValidator
 	/// <summary>
 	/// Collection of validation delegates.  Used by the DBObject to store all custom validation functions.
 	/// </summary>
+	[Serializable]
 	class DelegateRuleCollection : Dictionary<string, ValidatorDelegate>
 	{
 		#region Methods

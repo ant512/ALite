@@ -10,6 +10,7 @@ namespace ALite.ObjectValidator
 	/// Central class within the library.  To use the library, create an instance of this class,
 	/// add rules to it, and call its Validate() method to verify data.
 	/// </summary>
+	[Serializable]
 	public class Validator
 	{
 		#region Members
