@@ -46,11 +46,22 @@ namespace ALite.MongoDB
 
 		#region Constructors
 
+		/// <summary>
+		/// Initializes a new instance of the MongoBackedObject class.
+		/// </summary>
+		/// <param name="databaseName">The name of the database that stores the object.</param>
+		/// <param name="collectionName">The name of the collection that stores the object.</param>
 		public MongoBackedObject(string databaseName, string collectionName)
 			: this(databaseName, collectionName, null)
 		{
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the MongoBackedObject class.
+		/// </summary>
+		/// <param name="databaseName">The name of the database that stores the object.</param>
+		/// <param name="collectionName">The name of the collection that stores the object.</param>
+		/// <param name="document">The object's data fetched from MongoDB.</param>
 		public MongoBackedObject(string databaseName, string collectionName, Document document)
 			: base(new PropertyStore())
 		{
@@ -64,6 +75,9 @@ namespace ALite.MongoDB
 
 		#region Methods
 
+		/// <summary>
+		/// Inserts or updates the document's data.
+		/// </summary>
 		private void Upsert()
 		{
 			if (State != ModificationState.New && State != ModificationState.Modified) return;
@@ -75,11 +89,17 @@ namespace ALite.MongoDB
 			db.Disconnect();
 		}
 
+		/// <summary>
+		/// Inserts the object's document into MongoDB.
+		/// </summary>
 		protected override void CreateData()
 		{
 			Upsert();
 		}
 
+		/// <summary>
+		/// Deletes the object's document from MongoDB.
+		/// </summary>
 		protected override void DeleteData()
 		{
 			Mongo db = new Mongo();
@@ -93,6 +113,9 @@ namespace ALite.MongoDB
 			db.Disconnect();
 		}
 
+		/// <summary>
+		/// Fetches the object's data from MongoDB.
+		/// </summary>
 		protected override void FetchData()
 		{
 			Document doc = FetchDocument(Properties.Document, DatabaseName, CollectionName);
@@ -121,6 +144,9 @@ namespace ALite.MongoDB
 			Fetch();
 		}
 
+		/// <summary>
+		/// Updates the stored data.
+		/// </summary>
 		protected override void UpdateData()
 		{
 			Upsert();
@@ -130,7 +156,9 @@ namespace ALite.MongoDB
 		/// Fetch the object based on the specified document.
 		/// </summary>
 		/// <param name="query">Document prototype to retrieve.</param>
-		/// <returns>The matching document, or null if no match was found..</returns>
+		/// <param name="collectionName">The name of the MongoDB collection that stores the document.</param>
+		/// <param name="databaseName">The name of the MongoDB database that stores the document.</param>
+		/// <returns>The matching document, or null if no match was found.</returns>
 		protected static Document FetchDocument(Document query, string databaseName, string collectionName)
 		{
 			Mongo db = new Mongo();

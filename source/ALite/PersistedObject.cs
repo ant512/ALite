@@ -13,8 +13,6 @@ namespace ALite
 	[Serializable]
 	public abstract class PersistedObject<PropertyStoreType> : IPersistable
 	{
-		#region Members
-
 		#region Events
 
 		/// <summary>
@@ -44,15 +42,6 @@ namespace ALite
 
 		#endregion
 
-		private ModificationStateTracker mState = new ModificationStateTracker();
-
-		/// <summary>
-		/// List of rules that properties are checked against before they are set.
-		/// </summary>
-		private Validator mValidator = new Validator();
-
-		#endregion
-
 		#region Properties
 
 		/// <summary>
@@ -60,13 +49,27 @@ namespace ALite
 		/// </summary>
 		public ModificationState State
 		{
-			get { return mState.State; }
+			get { return StateTracker.State; }
 		}
 
 		protected IPropertyStore<PropertyStoreType> Properties
 		{
 			get;
 			private set;
+		}
+
+		/// <summary>
+		/// List of rules that properties are checked against before they are set.
+		/// </summary>
+		private Validator Validator
+		{
+			get;
+			set;
+		}
+
+		private ModificationStateTracker StateTracker {
+			get;
+			set;
 		}
 
 		#endregion
@@ -76,6 +79,8 @@ namespace ALite
 		public PersistedObject(IPropertyStore<PropertyStoreType> propertyStore)
 		{
 			Properties = propertyStore;
+			Validator = new Validator();
+			StateTracker = new ModificationStateTracker();
 		}
 
 		#endregion
@@ -129,7 +134,7 @@ namespace ALite
 		protected void Create()
 		{
 			CreateData();
-			mState.TransitionState(ModificationState.Unmodified);
+			StateTracker.TransitionState(ModificationState.Unmodified);
 			RaiseCreatedEvent();
 		}
 
@@ -139,7 +144,7 @@ namespace ALite
 		protected void Update()
 		{
 			UpdateData();
-			mState.TransitionState(ModificationState.Unmodified);
+			StateTracker.TransitionState(ModificationState.Unmodified);
 			RaiseUpdatedEvent();
 		}
 
@@ -149,7 +154,7 @@ namespace ALite
 		public void Fetch()
 		{
 			FetchData();
-			mState.TransitionState(ModificationState.Unmodified);
+			StateTracker.TransitionState(ModificationState.Unmodified);
 			RaiseFetchedEvent();
 		}
 
@@ -159,7 +164,7 @@ namespace ALite
 		public void Delete()
 		{
 			DeleteData();
-			mState.TransitionState(ModificationState.Deleted);
+			StateTracker.TransitionState(ModificationState.Deleted);
 			RaiseDeletedEvent();
 		}
 
@@ -224,7 +229,7 @@ namespace ALite
 			// with an entirely new data store, we don't know what state the
 			// store is in.  We presume it has been fetched anew from the
 			// database and so the object is unmodified.
-			mState = new ModificationStateTracker(ModificationState.Unmodified);
+			StateTracker = new ModificationStateTracker(ModificationState.Unmodified);
 		}
 
 		#endregion
@@ -254,7 +259,7 @@ namespace ALite
 			Properties.RevertToRestorePoint();
 
 			// Restore the backed up state
-			mState = new ModificationStateTracker(Properties.GetProperty<ModificationState>("mState"));
+			StateTracker = new ModificationStateTracker(Properties.GetProperty<ModificationState>("mState"));
 
 			// We no longer need the state to be in the property store
 			Properties.RemoveProperty("mState");
@@ -328,7 +333,7 @@ namespace ALite
 				if ((oldValue == null) || (!oldValue.Equals((T)newValue)))
 				{
 					Properties.SetProperty<T>(propertyName, newValue);
-					mState.TransitionState(ModificationState.Modified);
+					StateTracker.TransitionState(ModificationState.Modified);
 					RaisePropertyChangedEvent(propertyName);
 				}
 			}
@@ -387,7 +392,7 @@ namespace ALite
 		/// <returns>True if the value is valid; false if not.</returns>
 		protected bool Validate<T>(string propertyName, List<string> errorMessages, T value)
 		{
-			return mValidator.Validate<T>(propertyName, errorMessages, value);
+			return Validator.Validate<T>(propertyName, errorMessages, value);
 		}
 
 		/// <summary>
@@ -397,7 +402,7 @@ namespace ALite
 		/// <param name="rule">The IValidation object to add to the list.</param>
 		protected void AddRule(string propertyName, IValidationRule rule)
 		{
-			mValidator.AddRule(propertyName, rule);
+			Validator.AddRule(propertyName, rule);
 		}
 
 		/// <summary>
@@ -407,7 +412,7 @@ namespace ALite
 		/// <param name="delegateFunction">The function that will validate the property.</param>
 		protected void AddRule(string propertyName, ValidatorDelegate delegateFunction)
 		{
-			mValidator.AddRule(propertyName, delegateFunction);
+			Validator.AddRule(propertyName, delegateFunction);
 		}
 
 		#endregion
