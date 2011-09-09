@@ -3,41 +3,54 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Dynamic;
+using MongoDB;
+using ALite;
 
-namespace ALite
+namespace ALite.MongoDB
 {
 	/// <summary>
-	/// Stores data in an ExpandoObject.  Also maintains an optional
+	/// Stores data in a MongoDB Document.  Also maintains an optional
 	/// restore point, providing the ability to roll back to a previous
 	/// version of the stored data.
 	/// </summary>
-	class PropertyStore
+	internal class PropertyStore : IPropertyStore<Document>
 	{
 		#region Members
 
 		/// <summary>
 		/// Stores all data accessed via the GetProperty() and SetProperty() methods.
 		/// </summary>
-		private ExpandoObject mDocument = new ExpandoObject();
+		private Document mDocument = new Document();
 
 		/// <summary>
 		/// Stores the state of the object after a call to SetRestorePoint().
 		/// </summary>
-		private ExpandoObject mRestorePoint;
+		private Document mRestorePoint;
+
+		#endregion
+
+		#region Properties
+
+		public Document Document
+		{
+			get { return mDocument; }
+			private set { mDocument = value; }
+		}
 
 		#endregion
 
 		#region Methods
 
 		/// <summary>
-		/// Replace the internal expando data store with the specified object.
+		/// Replace the internal data store with the specified object.
 		/// Restore point is discarded.
 		/// </summary>
 		/// <param name="data">Object containing data that will become the new
 		/// data repository of this object.</param>
-		public void InjectData(dynamic data)
+		public void InjectData(Document data)
 		{
-			mDocument = CopyExpando(data);
+			mDocument = new Document();
+			data.CopyTo(mDocument);
 			mRestorePoint = null;
 		}
 
@@ -46,7 +59,8 @@ namespace ALite
 		/// </summary>
 		public void SetRestorePoint()
 		{
-			mRestorePoint = CopyExpando(mDocument);
+			mRestorePoint = new Document();
+			mDocument.CopyTo(mRestorePoint);
 		}
 
 		/// <summary>
@@ -57,9 +71,7 @@ namespace ALite
 		/// <param name="value">The value to store.</param>
 		public void SetProperty<T>(string name, T value)
 		{
-			var doc = mDocument as IDictionary<string, object>;
-
-			doc[name] = value;
+			mDocument[name] = value;
 		}
 
 		/// <summary>
@@ -70,10 +82,7 @@ namespace ALite
 		/// <returns>The value of the property.</returns>
 		public T GetProperty<T>(string name)
 		{
-			var doc = mDocument as IDictionary<string, object>;
-
-			if (doc.ContainsKey(name)) return (T)doc[name];
-
+			if (mDocument.Contains(name)) return (T)mDocument[name];
 			return default(T);
 		}
 
@@ -83,9 +92,7 @@ namespace ALite
 		/// <param name="name">The name of the property to remove.</param>
 		public void RemoveProperty(string name)
 		{
-			var doc = mDocument as IDictionary<string, object>;
-
-			if (doc.ContainsKey(name)) doc.Remove(name);
+			mDocument.Remove(name);
 		}
 
 		/// <summary>
@@ -96,26 +103,6 @@ namespace ALite
 			if (mRestorePoint == null) return;
 			mDocument = mRestorePoint;
 			mRestorePoint = null;
-		}
-
-		/// <summary>
-		/// Creates a shallow copy of the supplied expando object.
-		/// </summary>
-		/// <param name="obj">The object to copy.</param>
-		/// <returns>A copy of the object.</returns>
-		private static ExpandoObject CopyExpando(ExpandoObject obj)
-		{
-			var result = new ExpandoObject();
-
-			var source = obj as IDictionary<string, object>;
-			var dest = result as IDictionary<string, object>;
-
-			foreach (string key in source.Keys)
-			{
-				dest.Add(key, source[key]);
-			}
-
-			return result;
 		}
 
 		#endregion

@@ -4,10 +4,9 @@ using System.Data.SqlClient;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Dynamic;
+using ALite;
 
-[assembly: CLSCompliant(true)]
-
-namespace ALite
+namespace ALite.Sql
 {
 	/// <summary>
 	/// Abstraction layer for SQL Server data access.

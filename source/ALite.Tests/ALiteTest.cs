@@ -4,14 +4,15 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ALite;
+using ALite.Sql;
 using ObjectValidator;
 
 namespace ALite.Tests
 {
 	[TestClass]
-	public class UnitTest1
+	public class ALiteTest
 	{
-		private class TestObject : DBObject
+		private class TestObject : SqlBackedObject
 		{
 			public int Id
 			{
@@ -73,7 +74,7 @@ namespace ALite.Tests
 			}
 		}
 
-		private class TestObjectCollection : DBObjectCollection<TestObject>
+		private class TestObjectCollection : PersistedObjectCollection<TestObject>
 		{
 		}
 
