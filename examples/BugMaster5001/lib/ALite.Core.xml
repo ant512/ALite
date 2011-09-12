@@ -1,0 +1,589 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ALite.Core</name>
+    </assembly>
+    <members>
+        <member name="T:ALite.Core.ModificationState">
+            <summary>
+            Lists all possible modification states of an object.
+            </summary>
+        </member>
+        <member name="F:ALite.Core.ModificationState.New">
+            <summary>
+            Object is newly created and does not exist in the data store.
+            </summary>
+        </member>
+        <member name="F:ALite.Core.ModificationState.Unmodified">
+            <summary>
+            Object is identical to the data in the data store.
+            </summary>
+        </member>
+        <member name="F:ALite.Core.ModificationState.Modified">
+            <summary>
+            Object exists in the data store but its properties have been altered.
+            </summary>
+        </member>
+        <member name="F:ALite.Core.ModificationState.Deleted">
+            <summary>
+            Object has been deleted from the data store.
+            </summary>
+        </member>
+        <member name="T:ALite.Core.ModificationStateTracker">
+            <summary>
+            State machine that describes all possible states of a DBObject.
+            </summary>
+        </member>
+        <member name="M:ALite.Core.ModificationStateTracker.#ctor">
+            <summary>
+            Constructor.
+            </summary>
+        </member>
+        <member name="M:ALite.Core.ModificationStateTracker.#ctor(ALite.Core.ModificationState)">
+            <summary>
+            Constructor.  Creates a state tracker with an initial state.
+            </summary>
+            <param name="initialState">The initial state for the new tracker.</param>
+        </member>
+        <member name="M:ALite.Core.ModificationStateTracker.TransitionState(ALite.Core.ModificationState)">
+            <summary>
+            Transition from the current state to the specified state.  Protects against
+            illegal transitions, such as any state to "New" (only new, unsaved objects
+            are new) or "Deleted" to any state (deleted objects cannot be modified).
+            Throws an ArgumentException if an illegal transition is attempted.
+            </summary>
+            <param name="newState">The new state to switch to.</param>
+        </member>
+        <member name="P:ALite.Core.ModificationStateTracker.State">
+            <summary>
+            Gets or sets the state of the object.
+            </summary>
+        </member>
+        <member name="T:ALite.Core.IPropertyStore`1">
+            <summary>
+            Interface defining the basic behaviour of a property store.
+            </summary>
+            <typeparam name="DocumentType">The type of document used to store property data.</typeparam>
+        </member>
+        <member name="M:ALite.Core.IPropertyStore`1.SetRestorePoint">
+            <summary>
+            Backs up the current state of the store.
+            </summary>
+        </member>
+        <member name="M:ALite.Core.IPropertyStore`1.SetProperty``1(System.String,``0)">
+            <summary>
+            Sets the specified property to the specified value.
+            </summary>
+            <typeparam name="T">The type of the property.</typeparam>
+            <param name="name">The name of the property.</param>
+            <param name="value">The value of the property.</param>
+        </member>
+        <member name="M:ALite.Core.IPropertyStore`1.GetProperty``1(System.String)">
+            <summary>
+            Gets the value of the specified property.
+            </summary>
+            <typeparam name="T">The type of the property.</typeparam>
+            <param name="name">The name of the property.</param>
+            <returns>The value of the property.</returns>
+        </member>
+        <member name="M:ALite.Core.IPropertyStore`1.RemoveProperty(System.String)">
+            <summary>
+            Removes the specified property from the store.
+            </summary>
+            <param name="name">The name of the property to remove.</param>
+        </member>
+        <member name="M:ALite.Core.IPropertyStore`1.RevertToRestorePoint">
+            <summary>
+            Restores to the last backed up state.
+            </summary>
+        </member>
+        <member name="M:ALite.Core.IPropertyStore`1.InjectData(`0)">
+            <summary>
+            Overwrites the existing data with a copy of the supplied document.
+            </summary>
+            <param name="data">The document containing the new data for the store.</param>
+        </member>
+        <member name="P:ALite.Core.IPropertyStore`1.Document">
+            <summary>
+            Gets the property store document.
+            </summary>
+        </member>
+        <member name="T:ALite.Core.PersistedObjectCollection`1">
+            <summary>
+            Collection of IPersistable objects.
+            </summary>
+        </member>
+        <member name="T:ALite.Core.IPersistableCollection">
+            <summary>
+            Interface that describes a collection of IPersistable objects.
+            </summary>
+        </member>
+        <member name="M:ALite.Core.IPersistableCollection.Save">
+            <summary>
+            Save the collection.
+            </summary>
+        </member>
+        <member name="M:ALite.Core.IPersistableCollection.Delete">
+            <summary>
+            Delete the collection.
+            </summary>
+        </member>
+        <member name="E:ALite.Core.IPersistableCollection.ListChanged">
+            <summary>
+            List changed event handler.
+            </summary>
+        </member>
+        <member name="E:ALite.Core.IPersistableCollection.ListCleared">
+            <summary>
+            List cleared event handler.
+            </summary>
+        </member>
+        <member name="E:ALite.Core.IPersistableCollection.ChildDeleted">
+            <summary>
+            Event fired when a child is deleted.
+            </summary>
+        </member>
+        <member name="F:ALite.Core.PersistedObjectCollection`1.mInternalList">
+            <summary>
+            Internal list of DBObjects.
+            </summary>
+        </member>
+        <member name="M:ALite.Core.PersistedObjectCollection`1.RaiseListChangedEvent(System.ComponentModel.ListChangedEventArgs)">
+            <summary>
+            Fired when the list is changed
+            </summary>
+            <param name="e"></param>
+        </member>
+        <member name="M:ALite.Core.PersistedObjectCollection`1.RaiseListClearedEvent(System.EventArgs)">
+            <summary>
+            Fired when the list is cleared
+            </summary>
+            <param name="e"></param>
+        </member>
+        <member name="M:ALite.Core.PersistedObjectCollection`1.IndexOf(`0)">
+            <summary>
+            Get the index of the specified item
+            </summary>
+            <param name="item">Item to find the index of</param>
+            <returns>The index of the item</returns>
+        </member>
+        <member name="M:ALite.Core.PersistedObjectCollection`1.Insert(System.Int32,`0)">
+            <summary>
+            Insert an item at the specified index
+            </summary>
+            <param name="index">Index to insert at</param>
+            <param name="item">Item to insert</param>
+        </member>
+        <member name="M:ALite.Core.PersistedObjectCollection`1.RemoveAt(System.Int32)">
+            <summary>
+            Remove the item at the specified index
+            </summary>
+            <param name="index">Index of the item to remove</param>
+        </member>
+        <member name="M:ALite.Core.PersistedObjectCollection`1.Add(`0)">
+            <summary>
+            Add an item to the end of the list
+            </summary>
+            <param name="item">Them item to add</param>
+        </member>
+        <member name="M:ALite.Core.PersistedObjectCollection`1.Clear">
+            <summary>
+            Remove all items from the list
+            </summary>
+        </member>
+        <member name="M:ALite.Core.PersistedObjectCollection`1.Contains(`0)">
+            <summary>
+            Check if the list contains the specified item
+            </summary>
+            <param name="item">The item to check the existence of</param>
+            <returns>True if the item is stored within the list</returns>
+        </member>
+        <member name="M:ALite.Core.PersistedObjectCollection`1.CopyTo(`0[],System.Int32)">
+            <summary>
+            Disabled because list events remain wired up.
+            </summary>
+            <param name="array"></param>
+            <param name="arrayIndex"></param>
+        </member>
+        <member name="M:ALite.Core.PersistedObjectCollection`1.Remove(`0)">
+            <summary>
+            Remove the specified item from the list
+            </summary>
+            <param name="item"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ALite.Core.PersistedObjectCollection`1.GetEnumerator">
+            <summary>
+            Get an enumerator for the list
+            </summary>
+            <returns>An enumerator</returns>
+        </member>
+        <member name="M:ALite.Core.PersistedObjectCollection`1.System#Collections#IEnumerable#GetEnumerator">
+            <summary>
+            Get an enumerator for the list
+            </summary>
+            <returns>An enumerator</returns>
+        </member>
+        <member name="M:ALite.Core.PersistedObjectCollection`1.#ctor">
+            <summary>
+            Constructor.
+            </summary>
+        </member>
+        <member name="M:ALite.Core.PersistedObjectCollection`1.Save">
+            <summary>
+            Save all objects in the collection individually by calling their save methods.
+            </summary>
+        </member>
+        <member name="M:ALite.Core.PersistedObjectCollection`1.Delete">
+            <summary>
+            Delete all objects in the collection by calling their delete methods.
+            </summary>
+        </member>
+        <member name="M:ALite.Core.PersistedObjectCollection`1.Sort">
+            <summary>
+            Sort the list
+            </summary>
+        </member>
+        <member name="M:ALite.Core.PersistedObjectCollection`1.HandleChildDeleted(System.Object)">
+            <summary>
+            Called when a child is deleted.  Removes all event listeners
+            from the child and removes the child from the list.
+            </summary>
+            <param name="sender">The child that has been deleted</param>
+        </member>
+        <member name="M:ALite.Core.PersistedObjectCollection`1.RemoveChildEvents(`0)">
+            <summary>
+            Remove all events from the child
+            </summary>
+            <param name="child">Child to remove events from</param>
+        </member>
+        <member name="M:ALite.Core.PersistedObjectCollection`1.AddChildEvents(`0)">
+            <summary>
+            Add all events to the child
+            </summary>
+            <param name="child">Child to remove events from</param>
+        </member>
+        <member name="E:ALite.Core.PersistedObjectCollection`1.ChildDeleted">
+            <summary>
+            Event fired when a child is deleted.
+            </summary>
+        </member>
+        <member name="E:ALite.Core.PersistedObjectCollection`1.ListChanged">
+            <summary>
+            List changed event handler.
+            </summary>
+        </member>
+        <member name="E:ALite.Core.PersistedObjectCollection`1.ListCleared">
+            <summary>
+            List cleared event handler.
+            </summary>
+        </member>
+        <member name="P:ALite.Core.PersistedObjectCollection`1.Item(System.Int32)">
+            <summary>
+            Get or set the item at the specified index
+            </summary>
+            <param name="index">Index of the item to retrieve</param>
+            <returns>The item at the specified index</returns>
+        </member>
+        <member name="P:ALite.Core.PersistedObjectCollection`1.Count">
+            <summary>
+            Get the number of items in the list
+            </summary>
+        </member>
+        <member name="P:ALite.Core.PersistedObjectCollection`1.IsReadOnly">
+            <summary>
+            Returns true if the list is read-only
+            </summary>
+        </member>
+        <member name="T:ALite.Core.IRevertable">
+            <summary>
+            Defines the properties of an object that can store a state and
+            revert to that state at a future point.
+            </summary>
+        </member>
+        <member name="M:ALite.Core.IRevertable.SetRestorePoint">
+            <summary>
+            Stores the current state of the object for future restoral.
+            </summary>
+        </member>
+        <member name="M:ALite.Core.IRevertable.RevertToRestorePoint">
+            <summary>
+            Reverts to the last saved restore point.
+            </summary>
+        </member>
+        <member name="T:ALite.Core.ListChangedEventHandler">
+            <summary>
+            Delegate for handling the list being changed.
+            </summary>
+            <param name="sender">DBObjectCollection that fired the event</param>
+            <param name="e">Event arguments</param>
+        </member>
+        <member name="T:ALite.Core.ListClearedEventHandler">
+            <summary>
+            Delegate for handling the list being cleared.
+            </summary>
+            <param name="sender">DBObjectCollection that fired the event</param>
+            <param name="e">Event arguments</param>
+        </member>
+        <member name="T:ALite.Core.PersistableDeletedEventHandler">
+            <summary>
+            Event raised when a persistable object is deleted.
+            </summary>
+            <param name="sender">The object that raised the event.</param>
+        </member>
+        <member name="T:ALite.Core.PersistableCreatedEventHandler">
+            <summary>
+            Event raised when a persistable object is created.
+            </summary>
+            <param name="sender">The object that raised the event.</param>
+        </member>
+        <member name="T:ALite.Core.PersistableUpdatedEventHandler">
+            <summary>
+            Event raised when a persistable object is updated.
+            </summary>
+            <param name="sender">The object that raised the event.</param>
+        </member>
+        <member name="T:ALite.Core.PersistableFetchedEventHandler">
+            <summary>
+            Event raised when a persistable object is fetched.
+            </summary>
+            <param name="sender">The object that raised the event.</param>
+        </member>
+        <member name="T:ALite.Core.IPersistable">
+            <summary>
+            Interface that describes the persistable objects.
+            </summary>
+        </member>
+        <member name="M:ALite.Core.IPersistable.Save">
+            <summary>
+            Save the object to the database.
+            </summary>
+        </member>
+        <member name="M:ALite.Core.IPersistable.Fetch">
+            <summary>
+            Fetch the object from the database.
+            </summary>
+        </member>
+        <member name="M:ALite.Core.IPersistable.Delete">
+            <summary>
+            Deletes the object from the database.
+            </summary>
+        </member>
+        <member name="E:ALite.Core.IPersistable.PersistableObjectDeleted">
+            <summary>
+            Object deleted event.
+            </summary>
+        </member>
+        <member name="P:ALite.Core.IPersistable.State">
+            <summary>
+            Gets the modification state of the object.
+            </summary>
+        </member>
+        <member name="T:ALite.Core.PersistedObject`1">
+            <summary>
+            Base class for objects that interact with the database.
+            </summary>
+        </member>
+        <member name="M:ALite.Core.PersistedObject`1.#ctor(ALite.Core.IPropertyStore{`0})">
+            <summary>
+            Initializes a new instance of the PersistedObject class.
+            </summary>
+            <param name="propertyStore">The property store used to store property data.</param>
+        </member>
+        <member name="M:ALite.Core.PersistedObject`1.Save">
+            <summary>
+            Based on the current status of the object, chooses whether to create or update.
+            </summary>
+        </member>
+        <member name="M:ALite.Core.PersistedObject`1.CreateData">
+            <summary>
+            Called by Create().  Should be overridden in subclasses to provide database insertion code.
+            </summary>
+        </member>
+        <member name="M:ALite.Core.PersistedObject`1.UpdateData">
+            <summary>
+            Called by Update().  Should be overridden in subclasses to provide database update code.
+            </summary>
+        </member>
+        <member name="M:ALite.Core.PersistedObject`1.FetchData">
+            <summary>
+            Called by Fetch().  Should be overridden in subclasses to provide database retrieval code.
+            </summary>
+        </member>
+        <member name="M:ALite.Core.PersistedObject`1.DeleteData">
+            <summary>
+            Called by Delete().  Should be overridden in subclasses to provide database deletion code.
+            </summary>
+        </member>
+        <member name="M:ALite.Core.PersistedObject`1.Create">
+            <summary>
+            Inserts object into the database.
+            </summary>
+        </member>
+        <member name="M:ALite.Core.PersistedObject`1.Update">
+            <summary>
+            Updates the object's database representation with the values stored in this object.
+            </summary>
+        </member>
+        <member name="M:ALite.Core.PersistedObject`1.Fetch">
+            <summary>
+            Fetches the object from the database.
+            </summary>
+        </member>
+        <member name="M:ALite.Core.PersistedObject`1.Delete">
+            <summary>
+            Deletes the object from the database.
+            </summary>
+        </member>
+        <member name="M:ALite.Core.PersistedObject`1.RaiseCreatedEvent">
+            <summary>
+            Called when the object is created.
+            </summary>
+        </member>
+        <member name="M:ALite.Core.PersistedObject`1.RaiseUpdatedEvent">
+            <summary>
+            Called when the object is updated.
+            </summary>
+        </member>
+        <member name="M:ALite.Core.PersistedObject`1.RaiseDeletedEvent">
+            <summary>
+            Called when the object is deleted.
+            </summary>
+        </member>
+        <member name="M:ALite.Core.PersistedObject`1.RaiseFetchedEvent">
+            <summary>
+            Called when the object is fetched.
+            </summary>
+        </member>
+        <member name="M:ALite.Core.PersistedObject`1.InjectData(`0)">
+            <summary>
+            Replace the internal expando data store with the specified object.
+            </summary>
+            <param name="data">Object containing data that will become the new
+            data repository of this object.</param>
+        </member>
+        <member name="M:ALite.Core.PersistedObject`1.SetRestorePoint">
+            <summary>
+            Stores the current state of the object for future restoral.
+            </summary>
+        </member>
+        <member name="M:ALite.Core.PersistedObject`1.RevertToRestorePoint">
+            <summary>
+            Reverts to the last saved restore point.
+            </summary>
+        </member>
+        <member name="M:ALite.Core.PersistedObject`1.OnSetRestorePoint">
+            <summary>
+            Called when SetRestorePoint() runs.
+            </summary>
+        </member>
+        <member name="M:ALite.Core.PersistedObject`1.OnRevertToRestorePoint">
+            <summary>
+            Called when RevertToRestorePoint() runs.
+            </summary>
+        </member>
+        <member name="M:ALite.Core.PersistedObject`1.GetProperty``1(System.String)">
+            <summary>
+            Get a property.  Returns the default value for T if no property is currently set.
+            </summary>
+            <typeparam name="T">Type of the property to retrieve.</typeparam>
+            <param name="propertyName">Name of the property to retrieve</param>
+            <returns>The current value of the property.</returns>
+        </member>
+        <member name="M:ALite.Core.PersistedObject`1.SetProperty``1(System.String,``0)">
+            <summary>
+            Set a property and fire a change event.  Throws an exception if any validation rules are violated.
+            </summary>
+            <typeparam name="T">Type of the object</typeparam>
+            <param name="propertyName">Name of the property being changed</param>
+            <param name="newValue">New value</param>
+        </member>
+        <member name="M:ALite.Core.PersistedObject`1.RaisePropertyChangedEvent(System.String)">
+            <summary>
+            Called when a property is changed.
+            </summary>
+            <param name="name">Name of the property that changed.</param>
+        </member>
+        <member name="M:ALite.Core.PersistedObject`1.ConcatenateValidationErrorMessages``1(System.Collections.Generic.List{System.String},System.String,``0)">
+            <summary>
+            Combines a list of error messages into a single string.
+            </summary>
+            <typeparam name="T">The type of the property being changed that caused the errors.</typeparam>
+            <param name="errorMessages">The list of error messages.</param>
+            <param name="propertyName">The name of the property being changed.</param>
+            <param name="newValue">The new value being applied to the property.</param>
+            <returns>A string containing all error messages in a user-friendly format.</returns>
+        </member>
+        <member name="M:ALite.Core.PersistedObject`1.Validate``1(System.String,System.Collections.Generic.List{System.String},``0)">
+            <summary>
+            Validate the supplied value using all rules.
+            </summary>
+            <typeparam name="T">The type of the property to validate.</typeparam>
+            <param name="propertyName">The name of the property to validate.</param>
+            <param name="errorMessages">Will contain any errors arising from the validation
+            attempt once the function ends.</param>
+            <param name="value">Value to validate.</param>
+            <returns>True if the value is valid; false if not.</returns>
+        </member>
+        <member name="M:ALite.Core.PersistedObject`1.AddRule(System.String,ALite.ObjectValidator.IValidationRule)">
+            <summary>
+            Add an IValidationRule object to the rule list.
+            </summary>
+            <param name="propertyName">Name of the property to validate.</param>
+            <param name="rule">The IValidation object to add to the list.</param>
+        </member>
+        <member name="M:ALite.Core.PersistedObject`1.AddRule(System.String,ALite.ObjectValidator.ValidatorDelegate)">
+            <summary>
+            Add a function delegate as a custom rule
+            </summary>
+            <param name="propertyName">The name of the property that the function validates.</param>
+            <param name="delegateFunction">The function that will validate the property.</param>
+        </member>
+        <member name="E:ALite.Core.PersistedObject`1.PropertyChanged">
+            <summary>
+            Event fired when a property changes value.
+            </summary>
+        </member>
+        <member name="E:ALite.Core.PersistedObject`1.PersistableObjectDeleted">
+            <summary>
+            Event fired when the object is deleted.
+            </summary>
+        </member>
+        <member name="E:ALite.Core.PersistedObject`1.PersistableObjectCreated">
+            <summary>
+            Object created event.
+            </summary>
+        </member>
+        <member name="E:ALite.Core.PersistedObject`1.PersistableObjectUpdated">
+            <summary>
+            Object updated event.
+            </summary>
+        </member>
+        <member name="E:ALite.Core.PersistedObject`1.PersistableObjectFetched">
+            <summary>
+            Object fetched event.
+            </summary>
+        </member>
+        <member name="P:ALite.Core.PersistedObject`1.State">
+            <summary>
+            Gets or sets the current status of the object.
+            </summary>
+        </member>
+        <member name="P:ALite.Core.PersistedObject`1.Properties">
+            <summary>
+            Gets or sets the property store used by the object.
+            </summary>
+        </member>
+        <member name="P:ALite.Core.PersistedObject`1.Validator">
+            <summary>
+            Gets or sets the validator object, which contains a list of rules
+            that properties are checked against before they are set.
+            </summary>
+        </member>
+        <member name="P:ALite.Core.PersistedObject`1.StateTracker">
+            <summary>
+            Gets or sets the state tracker object.
+            </summary>
+        </member>
+    </members>
+</doc>

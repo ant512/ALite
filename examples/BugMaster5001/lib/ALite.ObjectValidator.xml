@@ -1,0 +1,388 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ALite.ObjectValidator</name>
+    </assembly>
+    <members>
+        <member name="T:ALite.ObjectValidator.StandardRules.StringLengthValidationRule">
+            <summary>
+            Class representing a single validation rule.  Validates the length of a string against minimum and
+            maximum values.
+            </summary>
+        </member>
+        <member name="T:ALite.ObjectValidator.IValidationRule">
+            <summary>
+            Interface defining the behaviour of a basic validation rule.
+            </summary>
+        </member>
+        <member name="M:ALite.ObjectValidator.IValidationRule.Validate(System.Object,System.Collections.Generic.List{System.String})">
+            <summary>
+            Validates the new value being applied to the property.
+            </summary>
+            <param name="value">The new value to validate.</param>
+            <param name="errorMessages">A list of error messages to be populated by the function.</param>
+            <returns>True if the value is valid; false if not.</returns>
+        </member>
+        <member name="F:ALite.ObjectValidator.StandardRules.StringLengthValidationRule.StringTooLongMessage">
+            <summary>
+            Message returned when the string being validated is too long.
+            </summary>
+        </member>
+        <member name="F:ALite.ObjectValidator.StandardRules.StringLengthValidationRule.StringTooShortMessage">
+            <summary>
+            Message returned when the string being validated is too short.
+            </summary>
+        </member>
+        <member name="M:ALite.ObjectValidator.StandardRules.StringLengthValidationRule.#ctor(System.Int32,System.Int32)">
+            <summary>
+            Constructor.
+            </summary>
+            <param name="minLength">The mimimum valid length of the string.</param>
+            <param name="maxLength">The maximum valid length of the string.</param>
+        </member>
+        <member name="M:ALite.ObjectValidator.StandardRules.StringLengthValidationRule.Validate(System.Object,System.Collections.Generic.List{System.String})">
+            <summary>
+            Validate the string.
+            </summary>
+            <param name="value">The string to validate.</param>
+            <param name="errorMessages">List of error messages output if an error occurs.</param>
+            <returns>True if the validation passed; false if not.</returns>
+        </member>
+        <member name="M:ALite.ObjectValidator.StandardRules.StringLengthValidationRule.ValidateMaxLength(System.String)">
+            <summary>
+            Check that the supplied string is shorter than the maximum length or of equal length.
+            </summary>
+            <param name="text">The string to validate.</param>
+            <returns>True if the string is valid; false if not.</returns>
+        </member>
+        <member name="M:ALite.ObjectValidator.StandardRules.StringLengthValidationRule.ValidateMinLength(System.String)">
+            <summary>
+            Check that the supplied string is longer than the minimum length or of equal length.
+            </summary>
+            <param name="text">The string to validate.</param>
+            <returns>True if the string is valid; false if not.</returns>
+        </member>
+        <member name="P:ALite.ObjectValidator.StandardRules.StringLengthValidationRule.MaxLength">
+            <summary>
+            The maximum length of a valid string.
+            </summary>
+        </member>
+        <member name="P:ALite.ObjectValidator.StandardRules.StringLengthValidationRule.MinLength">
+            <summary>
+            The minimum length of a valid string.
+            </summary>
+        </member>
+        <member name="T:ALite.ObjectValidator.Validator">
+            <summary>
+            Central class within the library.  To use the library, create an instance of this class,
+            add rules to it, and call its Validate() method to verify data.
+            </summary>
+        </member>
+        <member name="F:ALite.ObjectValidator.Validator.mRules">
+            <summary>
+            List of rules that properties are checked against before they are set
+            </summary>
+        </member>
+        <member name="F:ALite.ObjectValidator.Validator.mDelegateRules">
+            <summary>
+            List of delegates that function as custom rules
+            </summary>
+        </member>
+        <member name="M:ALite.ObjectValidator.Validator.Validate``1(System.String,System.Collections.Generic.List{System.String},``0)">
+            <summary>
+            Validate the supplied value using all rules.
+            </summary>
+            <typeparam name="T">The type of the property to validate.</typeparam>
+            <param name="propertyName">The name of the property to validate.</param>
+            <param name="errorMessages">Will contain any errors arising from the validation
+            attempt once the function ends.</param>
+            <param name="value">Value to validate.</param>
+            <returns>True if the value is valid; false if not.</returns>
+        </member>
+        <member name="M:ALite.ObjectValidator.Validator.AddRule(System.String,ALite.ObjectValidator.IValidationRule)">
+            <summary>
+            Add an IValidationRule object to the rule list.
+            </summary>
+            <param name="propertyName">The name of the property to validate.</param>
+            <param name="rule">The IValidation object to add to the list.</param>
+        </member>
+        <member name="M:ALite.ObjectValidator.Validator.AddRule(System.String,ALite.ObjectValidator.ValidatorDelegate)">
+            <summary>
+            Add a function delegate as a custom rule
+            </summary>
+            <param name="delegateFunction">The name of the property that the function validates</param>
+            <param name="propertyName">The function that will validate the property</param>
+        </member>
+        <member name="T:ALite.ObjectValidator.StandardRules.DateBoundsValidationRule">
+            <summary>
+            Class representing a single validation rule.  Validates the value of an date against minimum and
+            maximum values.
+            </summary>
+        </member>
+        <member name="F:ALite.ObjectValidator.StandardRules.DateBoundsValidationRule.DateTooLargeMessage">
+            <summary>
+            Message returned when the date being validated is too large.
+            </summary>
+        </member>
+        <member name="F:ALite.ObjectValidator.StandardRules.DateBoundsValidationRule.DateTooSmallMessage">
+            <summary>
+            Message returned when the date being validated is too small.
+            </summary>
+        </member>
+        <member name="M:ALite.ObjectValidator.StandardRules.DateBoundsValidationRule.#ctor(System.DateTime,System.DateTime)">
+            <summary>
+            Constructor.
+            </summary>
+            <param name="minValue">The minimum value of the date.</param>
+            <param name="maxValue">The maximum value of the date.</param>
+        </member>
+        <member name="M:ALite.ObjectValidator.StandardRules.DateBoundsValidationRule.Validate(System.Object,System.Collections.Generic.List{System.String})">
+            <summary>
+            Validate the date.
+            </summary>
+            <param name="value">The date to validate.</param>
+            <param name="errorMessages">List of error message output if an error occurs.</param>
+            <returns>True if the validation passed; false if not.</returns>
+        </member>
+        <member name="M:ALite.ObjectValidator.StandardRules.DateBoundsValidationRule.ValidateMaxValue(System.DateTime)">
+            <summary>
+            Check that the supplied date is smaller than or equal to the maximum value.
+            </summary>
+            <param name="value">The date to validate.</param>
+            <returns>True if the date is valid; false if not.</returns>
+        </member>
+        <member name="M:ALite.ObjectValidator.StandardRules.DateBoundsValidationRule.ValidateMinValue(System.DateTime)">
+            <summary>
+            Check that the supplied date is larger than or equal to the minimum value.
+            </summary>
+            <param name="value">The date to validate.</param>
+            <returns>True if the date is valid; false if not.</returns>
+        </member>
+        <member name="P:ALite.ObjectValidator.StandardRules.DateBoundsValidationRule.MinValue">
+            <summary>
+            The minimum valid value of the date.
+            </summary>
+        </member>
+        <member name="P:ALite.ObjectValidator.StandardRules.DateBoundsValidationRule.MaxValue">
+            <summary>
+            The minimum valid value of the date.
+            </summary>
+        </member>
+        <member name="T:ALite.ObjectValidator.ValidationException">
+            <summary>
+            Thrown if an error occurs when validating a DBObject.
+            </summary>
+        </member>
+        <member name="M:ALite.ObjectValidator.ValidationException.#ctor">
+            <summary>
+            Basic constructor.
+            </summary>
+        </member>
+        <member name="M:ALite.ObjectValidator.ValidationException.#ctor(System.String)">
+            <summary>
+            Constructor.
+            </summary>
+            <param name="message">Error message.</param>
+        </member>
+        <member name="M:ALite.ObjectValidator.ValidationException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Constructor.
+            </summary>
+            <param name="info"></param>
+            <param name="context"></param>
+        </member>
+        <member name="M:ALite.ObjectValidator.ValidationException.#ctor(System.String,System.Exception)">
+            <summary>
+            Constructor.
+            </summary>
+            <param name="message"></param>
+            <param name="innerException"></param>
+        </member>
+        <member name="T:ALite.ObjectValidator.ValidatorDelegate">
+            <summary>
+            Template for validation delegates.
+            </summary>
+            <param name="errorMessages">List of error message populated if the value is invalid.</param>
+            <param name="value">The new value of the property.</param>
+            <returns>True if valid, false if not.</returns>
+        </member>
+        <member name="T:ALite.ObjectValidator.DelegateRuleCollection">
+            <summary>
+            Collection of validation delegates.  Used by the DBObject to store all custom validation functions.
+            </summary>
+        </member>
+        <member name="M:ALite.ObjectValidator.DelegateRuleCollection.Validate``1(System.String,System.Collections.Generic.List{System.String},``0)">
+            <summary>
+            Validate the new value using all validators specified for the given property name.
+            </summary>
+            <typeparam name="T">Type of the property to validate.</typeparam>
+            <param name="propertyName">Name of the property to validate.</param>
+            <param name="errorMessages">List of error messages populated if the value is invalid.</param>
+            <param name="newValue">The new value of the property.</param>
+            <returns>True if the new value is valid; false if not.</returns>
+        </member>
+        <member name="M:ALite.ObjectValidator.DelegateRuleCollection.Add(ALite.ObjectValidator.ValidatorDelegate,System.String)">
+            <summary>
+            Add a rule.
+            </summary>
+            <param name="propertyName">The property to validate.</param>
+            <param name="rule">The delegate to perform the validation.</param>
+        </member>
+        <member name="T:ALite.ObjectValidator.ValidationRuleCollection">
+            <summary>
+            Collection of validation rule objects.
+            </summary>
+        </member>
+        <member name="T:ALite.ObjectValidator.DictionaryList`2">
+            <summary>
+            Class for storing multiple values against a single key in a dictionary.  Dictionary
+            internally stores TValue items in a list against each TKey.
+            </summary>
+            <typeparam name="TKey">Type of the key.</typeparam>
+            <typeparam name="TValue">Type of the values stored.</typeparam>
+        </member>
+        <member name="F:ALite.ObjectValidator.DictionaryList`2.mDictionary">
+            <summary>
+            Dictionary used for storing lists of items
+            </summary>
+        </member>
+        <member name="M:ALite.ObjectValidator.DictionaryList`2.#ctor">
+            <summary>
+            Constructor.
+            </summary>
+        </member>
+        <member name="M:ALite.ObjectValidator.DictionaryList`2.Values(`0)">
+            <summary>
+            Gets the list of items for the specified key.
+            </summary>
+            <param name="key">The key for which the list should be returned.</param>
+            <returns>The list of items if it exists, or null if it does not.</returns>
+        </member>
+        <member name="M:ALite.ObjectValidator.DictionaryList`2.Add(System.Collections.Generic.KeyValuePair{`0,`1})">
+            <summary>
+            Add a key/value pair.
+            </summary>
+            <param name="item">A KeyValuePair object containing the key and value to add.</param>
+        </member>
+        <member name="M:ALite.ObjectValidator.DictionaryList`2.Clear">
+            <summary>
+            Empties all data in the collection.
+            </summary>
+        </member>
+        <member name="M:ALite.ObjectValidator.DictionaryList`2.Contains(System.Collections.Generic.KeyValuePair{`0,`1})">
+            <summary>
+            Check if the collection contains the supplied key/value pair.
+            </summary>
+            <param name="item">The key/value pair to search for.</param>
+            <returns>True if the pair exists; false if not.</returns>
+        </member>
+        <member name="M:ALite.ObjectValidator.DictionaryList`2.CopyTo(System.Collections.Generic.KeyValuePair{`0,`1}[],System.Int32)">
+            <summary>
+            Not implemented.
+            </summary>
+            <param name="array"></param>
+            <param name="arrayIndex"></param>
+        </member>
+        <member name="M:ALite.ObjectValidator.DictionaryList`2.Remove(System.Collections.Generic.KeyValuePair{`0,`1})">
+            <summary>
+            Remove the key/value pair from the collection if it exists.
+            </summary>
+            <param name="item">The key/value pair to remove.</param>
+            <returns>True if the item was removed; false if not.</returns>
+        </member>
+        <member name="M:ALite.ObjectValidator.DictionaryList`2.GetEnumerator">
+            <summary>
+            Not implemented.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ALite.ObjectValidator.DictionaryList`2.System#Collections#IEnumerable#GetEnumerator">
+            <summary>
+            Get an enumerator.
+            </summary>
+            <returns>An enumerator.</returns>
+        </member>
+        <member name="P:ALite.ObjectValidator.DictionaryList`2.Count">
+            <summary>
+            Get the total number of values in the collection.
+            </summary>
+        </member>
+        <member name="P:ALite.ObjectValidator.DictionaryList`2.IsReadOnly">
+            <summary>
+            Not implemented.
+            </summary>
+        </member>
+        <member name="M:ALite.ObjectValidator.ValidationRuleCollection.Add(System.String,ALite.ObjectValidator.IValidationRule)">
+            <summary>
+            Add a new rule to the rule list.
+            </summary>
+            <param name="propertyName">The property to validate with the rule.</param>
+            <param name="rule">The rule to add to the list.</param>
+        </member>
+        <member name="M:ALite.ObjectValidator.ValidationRuleCollection.Validate``1(System.String,System.Collections.Generic.List{System.String},``0)">
+            <summary>
+            Validate the new value using all rules specified for the given property name.
+            </summary>
+            <typeparam name="T">Type of the property to validate.</typeparam>
+            <param name="propertyName">Name of the property to validate.</param>
+            <param name="errorMessages">List of error messages returned if the value is invalid.</param>
+            <param name="newValue">The new value for the property.</param>
+            <returns>True if the new value is valid; false if not.</returns>
+        </member>
+        <member name="T:ALite.ObjectValidator.StandardRules.IntegerBoundsValidationRule">
+            <summary>
+            Class representing a single validation rule.  Validates the value of an integer against minimum and
+            maximum values.
+            </summary>
+        </member>
+        <member name="F:ALite.ObjectValidator.StandardRules.IntegerBoundsValidationRule.IntegerTooLargeMessage">
+            <summary>
+            Message returned when the integer being validated is too large.
+            </summary>
+        </member>
+        <member name="F:ALite.ObjectValidator.StandardRules.IntegerBoundsValidationRule.IntegerTooSmallMessage">
+            <summary>
+            Message returned when the integer being validated is too small.
+            </summary>
+        </member>
+        <member name="M:ALite.ObjectValidator.StandardRules.IntegerBoundsValidationRule.#ctor(System.Int32,System.Int32)">
+            <summary>
+            Constructor.
+            </summary>
+            <param name="minValue">The minimum value of the integer.</param>
+            <param name="maxValue">The maximum value of the integer.</param>
+        </member>
+        <member name="M:ALite.ObjectValidator.StandardRules.IntegerBoundsValidationRule.Validate(System.Object,System.Collections.Generic.List{System.String})">
+            <summary>
+            Validate the integer.
+            </summary>
+            <param name="value">The integer to validate.</param>
+            <param name="errorMessages">List of error messages output if an error occurs.</param>
+            <returns>True if the validation passed; false if not.</returns>
+        </member>
+        <member name="M:ALite.ObjectValidator.StandardRules.IntegerBoundsValidationRule.ValidateMaxValue(System.Int32)">
+            <summary>
+            Check that the supplied integer is smaller than or equal to the maximum value.
+            </summary>
+            <param name="value">The integer to validate.</param>
+            <returns>True if the integer is valid; false if not.</returns>
+        </member>
+        <member name="M:ALite.ObjectValidator.StandardRules.IntegerBoundsValidationRule.ValidateMinValue(System.Int32)">
+            <summary>
+            Check that the supplied integer is larger than or equal to the minimum value.
+            </summary>
+            <param name="value">The integer to validate.</param>
+            <returns>True if the integer is valid; false if not.</returns>
+        </member>
+        <member name="P:ALite.ObjectValidator.StandardRules.IntegerBoundsValidationRule.MinValue">
+            <summary>
+            The minimum valid value of the integer.
+            </summary>
+        </member>
+        <member name="P:ALite.ObjectValidator.StandardRules.IntegerBoundsValidationRule.MaxValue">
+            <summary>
+            The minimum valid value of the integer.
+            </summary>
+        </member>
+    </members>
+</doc>

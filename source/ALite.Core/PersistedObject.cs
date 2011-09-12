@@ -105,17 +105,20 @@ namespace ALite.Core
 		/// </summary>
 		public void Save()
 		{
-			switch (State)
+			lock (Properties)
 			{
-				case ModificationState.New:
-					Create();
-					break;
-				case ModificationState.Modified:
-					Update();
-					break;
-				case ModificationState.Unmodified:
-				case ModificationState.Deleted:
-					break;
+				switch (State)
+				{
+					case ModificationState.New:
+						Create();
+						break;
+					case ModificationState.Modified:
+						Update();
+						break;
+					case ModificationState.Unmodified:
+					case ModificationState.Deleted:
+						break;
+				}
 			}
 		}
 
@@ -144,9 +147,12 @@ namespace ALite.Core
 		/// </summary>
 		protected void Create()
 		{
-			CreateData();
-			StateTracker.TransitionState(ModificationState.Unmodified);
-			RaiseCreatedEvent();
+			lock (Properties)
+			{
+				CreateData();
+				StateTracker.TransitionState(ModificationState.Unmodified);
+				RaiseCreatedEvent();
+			}
 		}
 
 		/// <summary>
@@ -154,9 +160,12 @@ namespace ALite.Core
 		/// </summary>
 		protected void Update()
 		{
-			UpdateData();
-			StateTracker.TransitionState(ModificationState.Unmodified);
-			RaiseUpdatedEvent();
+			lock (Properties)
+			{
+				UpdateData();
+				StateTracker.TransitionState(ModificationState.Unmodified);
+				RaiseUpdatedEvent();
+			}
 		}
 
 		/// <summary>
@@ -164,9 +173,12 @@ namespace ALite.Core
 		/// </summary>
 		public void Fetch()
 		{
-			FetchData();
-			StateTracker.TransitionState(ModificationState.Unmodified);
-			RaiseFetchedEvent();
+			lock (Properties)
+			{
+				FetchData();
+				StateTracker.TransitionState(ModificationState.Unmodified);
+				RaiseFetchedEvent();
+			}
 		}
 
 		/// <summary>
@@ -174,9 +186,12 @@ namespace ALite.Core
 		/// </summary>
 		public void Delete()
 		{
-			DeleteData();
-			StateTracker.TransitionState(ModificationState.Deleted);
-			RaiseDeletedEvent();
+			lock (Properties)
+			{
+				DeleteData();
+				StateTracker.TransitionState(ModificationState.Deleted);
+				RaiseDeletedEvent();
+			}
 		}
 
 		/// <summary>
@@ -252,13 +267,16 @@ namespace ALite.Core
 		/// </summary>
 		public void SetRestorePoint()
 		{
-			// Ensure that the state is backed up in the restore point
-			Properties.SetProperty("mState", State);
-			Properties.SetRestorePoint();
+			lock (Properties)
+			{
+				// Ensure that the state is backed up in the restore point
+				Properties.SetProperty("mState", State);
+				Properties.SetRestorePoint();
 
-			// We don't need the state to be in the property store, so we can remove it
-			Properties.RemoveProperty("mState");
-			OnSetRestorePoint();
+				// We don't need the state to be in the property store, so we can remove it
+				Properties.RemoveProperty("mState");
+				OnSetRestorePoint();
+			}
 		}
 
 		/// <summary>
@@ -266,14 +284,17 @@ namespace ALite.Core
 		/// </summary>
 		public void RevertToRestorePoint()
 		{
-			OnRevertToRestorePoint();
-			Properties.RevertToRestorePoint();
+			lock (Properties)
+			{
+				OnRevertToRestorePoint();
+				Properties.RevertToRestorePoint();
 
-			// Restore the backed up state
-			StateTracker = new ModificationStateTracker(Properties.GetProperty<ModificationState>("mState"));
+				// Restore the backed up state
+				StateTracker = new ModificationStateTracker(Properties.GetProperty<ModificationState>("mState"));
 
-			// We no longer need the state to be in the property store
-			Properties.RemoveProperty("mState");
+				// We no longer need the state to be in the property store
+				Properties.RemoveProperty("mState");
+			}
 		}
 
 		/// <summary>
