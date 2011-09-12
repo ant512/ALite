@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ALite.Core;
-using ALite.MongoDB;
+using ALite.MongoDBSamus;
 using ALite.ObjectValidator;
 using ALite.ObjectValidator.StandardRules;
 using MongoDB;

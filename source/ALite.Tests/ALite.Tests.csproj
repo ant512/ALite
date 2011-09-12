@@ -75,9 +75,9 @@
       <Project>{E913BF6E-C864-44B6-AA26-3E01EC254340}</Project>
       <Name>ALite.MongoDBOfficial</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ALite.MongoDB\ALite.MongoDB.csproj">
+    <ProjectReference Include="..\ALite.MongoDBSamus\ALite.MongoDBSamus.csproj">
       <Project>{31570412-8368-47C3-8131-7E0E51CBD350}</Project>
-      <Name>ALite.MongoDB</Name>
+      <Name>ALite.MongoDBSamus</Name>
     </ProjectReference>
     <ProjectReference Include="..\ALite.ObjectValidator\ALite.ObjectValidator.csproj">
       <Project>{25A43937-5740-433F-87D9-B77D526F4784}</Project>

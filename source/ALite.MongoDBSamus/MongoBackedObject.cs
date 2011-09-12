@@ -5,7 +5,7 @@ using System.Text;
 using ALite.Core;
 using MongoDB;
 
-namespace ALite.MongoDB
+namespace ALite.MongoDBSamus
 {
 	/// <summary>
 	/// Base class for objects that interact with the database.

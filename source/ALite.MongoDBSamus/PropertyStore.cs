@@ -6,7 +6,7 @@ using System.Dynamic;
 using MongoDB;
 using ALite.Core;
 
-namespace ALite.MongoDB
+namespace ALite.MongoDBSamus
 {
 	/// <summary>
 	/// Stores data in a MongoDB Document.  Also maintains an optional

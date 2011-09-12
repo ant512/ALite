@@ -8,7 +8,7 @@
     <ProjectGuid>{31570412-8368-47C3-8131-7E0E51CBD350}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ALite.MongoDB</RootNamespace>
+    <RootNamespace>ALite.MongoDBSamus</RootNamespace>
     <AssemblyName>ALite.MongoDB</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
