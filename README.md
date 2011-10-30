@@ -2,33 +2,23 @@ ALite V4.0
 ==========
 
 ALite is a small, lightweight and unobtrusive library for constructing
-data-aware objects using the .NET platform.
+data-aware objects using the .NET platform.  It follows the active record
+pattern but can be used in other ways.
 
 
 Features
 --------
 
- - Abstracted data access class to speed up the creation of database
+ * Abstracted data access class to speed up the creation of database
    interaction code;
- - Base classes for data-aware objects and collections of objects;
- - Reflection-based data rule system;
- - Delegate-based validation system;
- - Optional transactional database access;
- - Transaction system to rollback the effects of a set of property changes;
- - Object new/dirty/etc status tracking enables objects to automatically choose
-   the correct method for saving their data;
- - Does not enforce any design patterns on the developer.
-
-
-Not Features
-------------
-
-The following features are not implemented by this library:
-  
- - Multiple undos;
- - Remoting;
- - Caching;
- - Anything else not listed in the "Features" section.
+ * ALite will not attempt to generate any code or second-guess your intentions;
+ * SQL is used to interact with the database;
+ * Base classes for data-aware objects and collections of objects;
+ * Rule system for validating object properties;
+ * Undo system to revert objects to their previous state;
+ * Object new/modified/etc status tracking enables objects to automatically
+   choose the correct method for saving their data (ie. upserts);
+ * Does not enforce any design patterns on the developer.
    
 
 Requirements
@@ -40,8 +30,8 @@ This library is designed for .NET4.
 Links
 -----
 
- - [Development blog][1]
- - [Bitbucket page][2]
+ * [Development blog][1]
+ * [Bitbucket page][2]
 
   [1]: http://ant.simianzombie.com
   [2]: http://bitbucket.org/ant512/alite
@@ -50,4 +40,4 @@ Links
 Email
 -----
 
-  Contact me at <ant@simianzombie.com>.
+Contact me at <ant@simianzombie.com>.
