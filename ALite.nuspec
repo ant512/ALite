@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>ALite</id>
+    <version>4.0</version>
+    <authors>ant512</authors>
+    <owners>ant512</owners>
+    <licenseUrl>https://bitbucket.org/ant512/alite/src/tip/Licence.txt</licenseUrl>
+    <projectUrl>https://bitbucket.org/ant512/alite</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Lightweight library for creating SQL-backed objects.</description>
+    <releaseNotes>First nuget release.</releaseNotes>
+    <copyright>Copyright 2011</copyright>
+    <tags>alite</tags>
+  </metadata>
+</package>
