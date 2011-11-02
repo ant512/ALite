@@ -1,8 +1,8 @@
 using System;
-using System.Data;
-using System.Data.SqlClient;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data;
+using System.Data.SqlClient;
 using System.Dynamic;
 using ALite.Core;
 
@@ -15,46 +15,27 @@ namespace ALite.Sql
 	{
 		#region Members
 
+		/// <summary>
+		/// Connection the the database.
+		/// </summary>
 		private SqlConnection mConnection;
-		private SqlCommand mCommand;
-		private SqlDataReader mDataReader;
-
-		#endregion
-
-		#region Properties
-
-        /// <summary>
-        /// Gets or sets the name of the SQL procedure to execute
-        /// </summary>
-		public string Procedure
-		{
-			get { return mCommand.CommandType == CommandType.StoredProcedure ? mCommand.CommandText : ""; }
-			set
-			{
-				mCommand.CommandText = value;
-				mCommand.CommandType = CommandType.StoredProcedure;
-			}
-		}
 
 		/// <summary>
-		/// Gets or sets the inline SQL code to execute
+		/// Database command.
 		/// </summary>
-		public string InlineCode
-		{
-			get { return mCommand.CommandType == CommandType.Text ? mCommand.CommandText : ""; }
-			set
-			{
-				mCommand.CommandText = value;
-				mCommand.CommandType = CommandType.Text;
-			}
-		}
+		private SqlCommand mCommand;
+
+		/// <summary>
+		/// Database data reader.
+		/// </summary>
+		private SqlDataReader mDataReader;
 
 		#endregion
 
 		#region Constructors
 
 		/// <summary>
-		/// Constructor for the DataAccess class
+		/// Initializes a new instance of the DataAccess class
 		/// </summary>
 		/// <param name="connection">The name of the connection in the connection strings section of the config file,
 		/// or the string itself.</param>
@@ -70,7 +51,46 @@ namespace ALite.Sql
 			{
 				mConnection = new SqlConnection(connection);
 			}
+
 			mCommand = mConnection.CreateCommand();
+		}
+
+		#endregion
+
+		#region Properties
+
+        /// <summary>
+        /// Gets or sets the name of the SQL procedure to execute
+        /// </summary>
+		public string Procedure
+		{
+			get
+			{
+				return mCommand.CommandType == CommandType.StoredProcedure ? mCommand.CommandText : string.Empty;
+			}
+
+			set
+			{
+				mCommand.CommandText = value;
+				mCommand.CommandType = CommandType.StoredProcedure;
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets the inline SQL code to execute
+		/// </summary>
+		public string InlineCode
+		{
+			get
+			{
+				return mCommand.CommandType == CommandType.Text ? mCommand.CommandText : string.Empty;
+			}
+
+			set
+			{
+				mCommand.CommandText = value;
+				mCommand.CommandType = CommandType.Text;
+			}
 		}
 
 		#endregion
@@ -147,51 +167,12 @@ namespace ALite.Sql
 
 		#endregion
 
-		#region Expando Objects
-
-		/// <summary>
-		/// Converts a datareader row into an expando object.
-		/// </summary>
-		/// <param name="reader">The reader to extract the data from.</param>
-		/// <returns>An expando object representing the datareader row.</returns>
-		private static dynamic RecordToExpando(IDataReader reader)
-		{
-			dynamic expando = new ExpandoObject();
-			var dictionary = expando as IDictionary<string, object>;
-
-			for (int i = 0; i < reader.FieldCount; i++)
-			{
-				dictionary.Add(reader.GetName(i), reader.IsDBNull(i) ? null : reader[i]);
-			}
-
-			return expando;
-		}
-
-		/// <summary>
-		/// Converts a recordset into a list of expando objects.
-		/// </summary>
-		/// <param name="reader">The reader to extract the data from.</param>
-		/// <returns>A list of expando objects representing the datareader's recordset.</returns>
-		private static List<dynamic> ToExpandoList(IDataReader reader)
-		{
-			var result = new List<dynamic>();
-
-			while (reader.Read())
-			{
-				result.Add(RecordToExpando(reader));
-			}
-
-			return result;
-		}
-
-		#endregion
-
 		#region Data Navigation
 
 		/// <summary>
-        /// Move to the next record set.
-        /// </summary>
-        /// <returns>Whether or not the next recordset was retrieved successfully.</returns>
+		/// Move to the next record set.
+		/// </summary>
+		/// <returns>Whether or not the next recordset was retrieved successfully.</returns>
 		public bool MoveToNextRecordSet()
 		{
 			return mDataReader.NextResult();
@@ -237,6 +218,45 @@ namespace ALite.Sql
 				mConnection = null;
 				mDataReader = null;
 			}
+		}
+
+		#endregion
+
+		#region Expando Objects
+
+		/// <summary>
+		/// Converts a datareader row into an expando object.
+		/// </summary>
+		/// <param name="reader">The reader to extract the data from.</param>
+		/// <returns>An expando object representing the datareader row.</returns>
+		private static dynamic RecordToExpando(IDataReader reader)
+		{
+			dynamic expando = new ExpandoObject();
+			var dictionary = expando as IDictionary<string, object>;
+
+			for (int i = 0; i < reader.FieldCount; i++)
+			{
+				dictionary.Add(reader.GetName(i), reader.IsDBNull(i) ? null : reader[i]);
+			}
+
+			return expando;
+		}
+
+		/// <summary>
+		/// Converts a recordset into a list of expando objects.
+		/// </summary>
+		/// <param name="reader">The reader to extract the data from.</param>
+		/// <returns>A list of expando objects representing the datareader's recordset.</returns>
+		private static List<dynamic> ToExpandoList(IDataReader reader)
+		{
+			var result = new List<dynamic>();
+
+			while (reader.Read())
+			{
+				result.Add(RecordToExpando(reader));
+			}
+
+			return result;
 		}
 
 		#endregion

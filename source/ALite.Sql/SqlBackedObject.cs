@@ -1,8 +1,8 @@
 using System;
-using System.ComponentModel;
 using System.Collections.Generic;
-using System.Text;
+using System.ComponentModel;
 using System.Dynamic;
+using System.Text;
 using ALite.Core;
 
 namespace ALite.Sql
@@ -11,7 +11,7 @@ namespace ALite.Sql
 	/// Base class for objects that can be persisted to SQL Server.
 	/// </summary>
 	[Serializable]
-	public abstract class SqlBackedObject : PersistedObject<ExpandoObject>
+	public abstract class SqlBackedObject : PersistedObject<DynamicStore>
 	{
 		#region Constructors
 

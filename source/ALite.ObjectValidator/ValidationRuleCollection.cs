@@ -8,7 +8,7 @@ namespace ALite.ObjectValidator
 	/// Collection of validation rule objects.
 	/// </summary>
 	[Serializable]
-	class ValidationRuleCollection : DictionaryList<string, IValidationRule>
+	internal class ValidationRuleCollection : DictionaryList<string, IValidationRule>
 	{
 		#region Methods
 
