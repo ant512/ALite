@@ -11,7 +11,7 @@ namespace ALite.Core
 	/// Base class for objects that interact with the database.
 	/// </summary>
 	[Serializable]
-	public abstract class PersistedObject<PropertyStoreType> : IPersistable
+	public abstract class PersistedObject<TPropertyStoreType> : IPersistable
 	{
 		#region Events
 
@@ -55,7 +55,7 @@ namespace ALite.Core
 		/// <summary>
 		/// Gets or sets the property store used by the object.
 		/// </summary>
-		protected IPropertyStore<PropertyStoreType> Properties
+		protected IPropertyStore<TPropertyStoreType> Properties
 		{
 			get;
 			private set;
@@ -87,7 +87,7 @@ namespace ALite.Core
 		/// Initializes a new instance of the PersistedObject class.
 		/// </summary>
 		/// <param name="propertyStore">The property store used to store property data.</param>
-		public PersistedObject(IPropertyStore<PropertyStoreType> propertyStore)
+		protected PersistedObject(IPropertyStore<TPropertyStoreType> propertyStore)
 		{
 			Properties = propertyStore;
 			Validator = new Validator();
@@ -247,7 +247,7 @@ namespace ALite.Core
 		/// </summary>
 		/// <param name="data">Object containing data that will become the new
 		/// data repository of this object.</param>
-		protected void InjectData(PropertyStoreType data)
+		protected void InjectData(TPropertyStoreType data)
 		{
 			Properties.InjectData(data);
 
@@ -395,7 +395,7 @@ namespace ALite.Core
 		/// <param name="propertyName">The name of the property being changed.</param>
 		/// <param name="newValue">The new value being applied to the property.</param>
 		/// <returns>A string containing all error messages in a user-friendly format.</returns>
-		private string ConcatenateValidationErrorMessages<T>(List<string> errorMessages, string propertyName, T newValue)
+		private static string ConcatenateValidationErrorMessages<T>(List<string> errorMessages, string propertyName, T newValue)
 		{
 			StringBuilder concatErrors = new StringBuilder();
 			foreach (string err in errorMessages)

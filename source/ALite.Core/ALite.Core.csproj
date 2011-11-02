@@ -66,7 +66,7 @@
     <Compile Include="IPersistable.cs" />
     <Compile Include="IPersistableCollection.cs" />
     <Compile Include="IPropertyStore.cs" />
-    <Compile Include="IRevertable.cs" />
+    <Compile Include="IRevertible.cs" />
     <Compile Include="PersistedObject.cs" />
     <Compile Include="PersistedObjectCollection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

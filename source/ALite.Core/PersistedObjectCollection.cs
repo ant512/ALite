@@ -176,8 +176,7 @@ namespace ALite.Core
 		/// <param name="arrayIndex"></param>
 		public void CopyTo(T[] array, int arrayIndex)
 		{
-			//CopyTo(array, arrayIndex);
-			throw new Exception("Not implemented");
+			throw new NotImplementedException("Not implemented");
 		}
 
 		/// <summary>

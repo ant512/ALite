@@ -8,13 +8,13 @@ namespace ALite.Core
 	/// <summary>
 	/// Interface defining the basic behaviour of a property store.
 	/// </summary>
-	/// <typeparam name="DocumentType">The type of document used to store property data.</typeparam>
-	public interface IPropertyStore<DocumentType>
+	/// <typeparam name="TDocumentType">The type of document used to store property data.</typeparam>
+	public interface IPropertyStore<TDocumentType>
 	{
 		/// <summary>
 		/// Gets the property store document.
 		/// </summary>
-		DocumentType Document { get; }
+		TDocumentType Document { get; }
 
 		/// <summary>
 		/// Backs up the current state of the store.
@@ -52,6 +52,6 @@ namespace ALite.Core
 		/// Overwrites the existing data with a copy of the supplied document.
 		/// </summary>
 		/// <param name="data">The document containing the new data for the store.</param>
-		void InjectData(DocumentType data);
+		void InjectData(TDocumentType data);
 	}
 }

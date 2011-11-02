@@ -10,32 +10,32 @@ namespace ALite.Core
 	/// Event raised when a persistable object is deleted.
 	/// </summary>
 	/// <param name="sender">The object that raised the event.</param>
-	public delegate void PersistableDeletedEventHandler(IPersistable sender);
+	public delegate void PersistableDeletedEventHandler(object sender);
 
 	/// <summary>
 	/// Event raised when a persistable object is created.
 	/// </summary>
 	/// <param name="sender">The object that raised the event.</param>
-	public delegate void PersistableCreatedEventHandler(IPersistable sender);
+	public delegate void PersistableCreatedEventHandler(object sender);
 
 	/// <summary>
 	/// Event raised when a persistable object is updated.
 	/// </summary>
 	/// <param name="sender">The object that raised the event.</param>
-	public delegate void PersistableUpdatedEventHandler(IPersistable sender);
+	public delegate void PersistableUpdatedEventHandler(object sender);
 
 	/// <summary>
 	/// Event raised when a persistable object is fetched.
 	/// </summary>
 	/// <param name="sender">The object that raised the event.</param>
-	public delegate void PersistableFetchedEventHandler(IPersistable sender);
+	public delegate void PersistableFetchedEventHandler(object sender);
 
 	#endregion
 
 	/// <summary>
 	/// Interface that describes the persistable objects.
 	/// </summary>
-	public interface IPersistable : IRevertable, INotifyPropertyChanged
+	public interface IPersistable : IRevertible, INotifyPropertyChanged
 	{
 		/// <summary>
 		/// Object deleted event.

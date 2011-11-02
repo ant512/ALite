@@ -9,7 +9,7 @@ namespace ALite.Core
 	/// Defines the properties of an object that can store a state and
 	/// revert to that state at a future point.
 	/// </summary>
-	public interface IRevertable
+	public interface IRevertible
 	{
 		/// <summary>
 		/// Stores the current state of the object for future restoral.
