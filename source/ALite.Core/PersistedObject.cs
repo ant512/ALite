@@ -1,10 +1,12 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using System.Dynamic;
 using ALite.ObjectValidator;
 
+[assembly:CLSCompliant(false)]
 namespace ALite.Core
 {
 	/// <summary>
@@ -151,7 +153,7 @@ namespace ALite.Core
 			{
 				CreateData();
 				StateTracker.TransitionState(ModificationState.Unmodified);
-				RaiseCreatedEvent();
+				OnCreated();
 			}
 		}
 
@@ -164,7 +166,7 @@ namespace ALite.Core
 			{
 				UpdateData();
 				StateTracker.TransitionState(ModificationState.Unmodified);
-				RaiseUpdatedEvent();
+				OnUpdated();
 			}
 		}
 
@@ -177,7 +179,7 @@ namespace ALite.Core
 			{
 				FetchData();
 				StateTracker.TransitionState(ModificationState.Unmodified);
-				RaiseFetchedEvent();
+				OnFetched();
 			}
 		}
 
@@ -190,14 +192,14 @@ namespace ALite.Core
 			{
 				DeleteData();
 				StateTracker.TransitionState(ModificationState.Deleted);
-				RaiseDeletedEvent();
+				OnDeleted();
 			}
 		}
 
 		/// <summary>
 		/// Called when the object is created.
 		/// </summary>
-		protected void RaiseCreatedEvent()
+		protected void OnCreated()
 		{
 			PersistableCreatedEventHandler handler = PersistableObjectCreated;
 			if (handler != null)
@@ -209,7 +211,7 @@ namespace ALite.Core
 		/// <summary>
 		/// Called when the object is updated.
 		/// </summary>
-		protected void RaiseUpdatedEvent()
+		protected void OnUpdated()
 		{
 			PersistableUpdatedEventHandler handler = PersistableObjectUpdated;
 			if (handler != null)
@@ -221,7 +223,7 @@ namespace ALite.Core
 		/// <summary>
 		/// Called when the object is deleted.
 		/// </summary>
-		protected void RaiseDeletedEvent()
+		protected void OnDeleted()
 		{
 			PersistableDeletedEventHandler handler = PersistableObjectDeleted;
 			if (handler != null)
@@ -233,7 +235,7 @@ namespace ALite.Core
 		/// <summary>
 		/// Called when the object is fetched.
 		/// </summary>
-		protected void RaiseFetchedEvent()
+		protected void OnFetched()
 		{
 			PersistableFetchedEventHandler handler = PersistableObjectFetched;
 			if (handler != null)
@@ -366,7 +368,7 @@ namespace ALite.Core
 				{
 					Properties.SetProperty<T>(propertyName, newValue);
 					StateTracker.TransitionState(ModificationState.Modified);
-					RaisePropertyChangedEvent(propertyName);
+					OnPropertyChanged(propertyName);
 				}
 			}
 		}
@@ -375,7 +377,7 @@ namespace ALite.Core
 		/// Called when a property is changed.
 		/// </summary>
 		/// <param name="name">Name of the property that changed.</param>
-		protected void RaisePropertyChangedEvent(string name)
+		protected void OnPropertyChanged(string name)
 		{
 			lock (Properties)
 			{
@@ -405,8 +407,8 @@ namespace ALite.Core
 			}
 
 			string valueString = newValue == null ? "null" : newValue.ToString();
-
-			return String.Format("New value '{0}' for property '{1}' violates rules: {2}", valueString, propertyName, concatErrors.ToString());
+			
+			return String.Format(CultureInfo.InvariantCulture, "New value '{0}' for property '{1}' violates rules: {2}", valueString, propertyName, concatErrors.ToString());
 		}
 
 		#endregion

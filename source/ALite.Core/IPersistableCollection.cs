@@ -8,13 +8,6 @@ namespace ALite.Core
 	#region Delegates
 
 	/// <summary>
-	/// Delegate for handling the list being changed.
-	/// </summary>
-	/// <param name="sender">DBObjectCollection that fired the event</param>
-	/// <param name="e">Event arguments</param>
-	public delegate void ListChangedEventHandler(object sender, ListChangedEventArgs e);
-
-	/// <summary>
 	/// Delegate for handling the list being cleared.
 	/// </summary>
 	/// <param name="sender">DBObjectCollection that fired the event</param>

@@ -45,7 +45,7 @@ namespace ALite.Core
 		/// Fired when the list is changed
 		/// </summary>
 		/// <param name="e"></param>
-		protected void RaiseListChangedEvent(ListChangedEventArgs e)
+		protected void OnListChanged(ListChangedEventArgs e)
 		{
 			ListChangedEventHandler handler = ListChanged;
 			if (handler != null)
@@ -58,7 +58,7 @@ namespace ALite.Core
 		/// Fired when the list is cleared
 		/// </summary>
 		/// <param name="e"></param>
-		protected void RaiseListClearedEvent(EventArgs e)
+		protected void OnListCleared(EventArgs e)
 		{
 			ListClearedEventHandler handler = ListCleared;
 			if (handler != null)
@@ -90,7 +90,7 @@ namespace ALite.Core
 		{
 			AddChildEvents(item);
 			mInternalList.Insert(index, item);
-			RaiseListChangedEvent(new ListChangedEventArgs(ListChangedType.ItemAdded, index));
+			OnListChanged(new ListChangedEventArgs(ListChangedType.ItemAdded, index));
 		}
 
 		/// <summary>
@@ -105,7 +105,7 @@ namespace ALite.Core
 				if (mInternalList.Remove(item))
 				{
 					RemoveChildEvents(item);
-					RaiseListChangedEvent(new ListChangedEventArgs(ListChangedType.ItemDeleted, -1, index));
+					OnListChanged(new ListChangedEventArgs(ListChangedType.ItemDeleted, -1, index));
 				}
 			}
 		}
@@ -122,7 +122,7 @@ namespace ALite.Core
 			{
 				AddChildEvents(value);
 				mInternalList[index] = value;
-				RaiseListChangedEvent(new ListChangedEventArgs(ListChangedType.ItemChanged, index));
+				OnListChanged(new ListChangedEventArgs(ListChangedType.ItemChanged, index));
 			}
 		}
 
@@ -138,7 +138,7 @@ namespace ALite.Core
 		{
 			AddChildEvents(item);
 			mInternalList.Add(item);
-			RaiseListChangedEvent(new ListChangedEventArgs(ListChangedType.ItemAdded, mInternalList.IndexOf(item)));
+			OnListChanged(new ListChangedEventArgs(ListChangedType.ItemAdded, mInternalList.IndexOf(item)));
 		}
 
 		/// <summary>
@@ -155,7 +155,7 @@ namespace ALite.Core
 				}
 
 				mInternalList.Clear();
-				RaiseListClearedEvent(new EventArgs());
+				OnListCleared(new EventArgs());
 			}
 		}
 
@@ -208,7 +208,7 @@ namespace ALite.Core
 				if (mInternalList.Remove(item))
 				{
 					RemoveChildEvents(item);
-					RaiseListChangedEvent(new ListChangedEventArgs(ListChangedType.ItemDeleted, -1, index));
+					OnListChanged(new ListChangedEventArgs(ListChangedType.ItemDeleted, -1, index));
 					return true;
 				}
 				else
