@@ -11,7 +11,7 @@ using MongoDB.Driver;
 namespace ALite.MongoDBOfficial
 {
 	[Serializable]
-	public abstract class MongoBackedObject : PersistedObject<ExpandoObject>
+	public abstract class MongoBackedObject : PersistedObject<DynamicStore>
 	{
 		#region Constructors
 

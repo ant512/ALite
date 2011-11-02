@@ -13,25 +13,25 @@ namespace ALite.MongoDBOfficial
 	/// version of the stored data.
 	/// </summary>
 	[Serializable]
-	internal class PropertyStore : IPropertyStore<ExpandoObject>
+	internal class PropertyStore : IPropertyStore<DynamicStore>
 	{
 		#region Members
 
 		/// <summary>
 		/// Stores all data accessed via the GetProperty() and SetProperty() methods.
 		/// </summary>
-		private ExpandoObject mDocument = new ExpandoObject();
+		private DynamicStore mDocument = new DynamicStore();
 
 		/// <summary>
 		/// Stores the state of the object after a call to SetRestorePoint().
 		/// </summary>
-		private ExpandoObject mRestorePoint;
+		private DynamicStore mRestorePoint;
 
 		#endregion
 
 		#region Properties
 
-		public ExpandoObject Document
+		public DynamicStore Document
 		{
 			get { return mDocument; }
 			private set { mDocument = value; }
@@ -47,10 +47,9 @@ namespace ALite.MongoDBOfficial
 		/// </summary>
 		/// <param name="data">Object containing data that will become the new
 		/// data repository of this object.</param>
-		public void InjectData(ExpandoObject data)
+		public void InjectData(DynamicStore data)
 		{
-			mDocument = CopyExpando(data);
-			mRestorePoint = null;
+			mDocument = data.Clone() as DynamicStore;
 		}
 
 		/// <summary>
@@ -58,7 +57,7 @@ namespace ALite.MongoDBOfficial
 		/// </summary>
 		public void SetRestorePoint()
 		{
-			mRestorePoint = CopyExpando(mDocument);
+			mRestorePoint = mDocument.Clone() as DynamicStore;
 		}
 
 		/// <summary>
@@ -107,26 +106,6 @@ namespace ALite.MongoDBOfficial
 			if (mRestorePoint == null) return;
 			mDocument = mRestorePoint;
 			mRestorePoint = null;
-		}
-
-		/// <summary>
-		/// Creates a shallow copy of the supplied expando object.
-		/// </summary>
-		/// <param name="obj">The object to copy.</param>
-		/// <returns>A copy of the object.</returns>
-		private static ExpandoObject CopyExpando(ExpandoObject obj)
-		{
-			var result = new ExpandoObject();
-
-			var source = obj as IDictionary<string, object>;
-			var dest = result as IDictionary<string, object>;
-
-			foreach (string key in source.Keys)
-			{
-				dest.Add(key, source[key]);
-			}
-
-			return result;
 		}
 
 		#endregion

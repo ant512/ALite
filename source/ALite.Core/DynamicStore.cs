@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Permissions;
 
-namespace ALite.Sql
+namespace ALite.Core
 {
 	/// <summary>
 	/// Dynamic object that stores property values.
