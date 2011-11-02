@@ -8,7 +8,7 @@ using ALite.Core;
 namespace ALite.Sql
 {
 	/// <summary>
-	/// Stores data in an ExpandoObject.  Also maintains an optional
+	/// Stores data in a DynamicStore object.  Also maintains an optional
 	/// restore point, providing the ability to roll back to a previous
 	/// version of the stored data.
 	/// </summary>
