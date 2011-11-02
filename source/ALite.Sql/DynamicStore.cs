@@ -1,12 +1,12 @@
-﻿namespace ALite.Sql
-{
-	using System;
-	using System.Collections.Generic;
-	using System.Dynamic;
-	using System.Runtime.Serialization;
-	using System.Runtime.Serialization.Formatters.Binary;
-	using System.Security.Permissions;
+﻿using System;
+using System.Collections.Generic;
+using System.Dynamic;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Security.Permissions;
 
+namespace ALite.Sql
+{
 	/// <summary>
 	/// Dynamic object that stores property values.
 	/// </summary>
