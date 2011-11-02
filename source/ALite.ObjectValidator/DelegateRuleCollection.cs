@@ -20,7 +20,7 @@ namespace ALite.ObjectValidator
 	/// Collection of validation delegates.  Used by the DBObject to store all custom validation functions.
 	/// </summary>
 	[Serializable]
-	class DelegateRuleCollection : Dictionary<string, ValidatorDelegate>
+	internal class DelegateRuleCollection : Dictionary<string, ValidatorDelegate>
 	{
 		#region Methods
 
@@ -60,8 +60,8 @@ namespace ALite.ObjectValidator
 		/// <summary>
 		/// Add a rule.
 		/// </summary>
-		/// <param name="propertyName">The property to validate.</param>
 		/// <param name="rule">The delegate to perform the validation.</param>
+		/// <param name="propertyName">The property to validate.</param>
 		public void Add(ValidatorDelegate rule, string propertyName)
 		{
 			// Do we already have a delegate for this rule?

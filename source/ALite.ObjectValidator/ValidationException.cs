@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Runtime.Serialization;
+using System.Text;
 
 namespace ALite.ObjectValidator
 {
@@ -12,25 +12,25 @@ namespace ALite.ObjectValidator
 	public class ValidationException : Exception
 	{
 		/// <summary>
-		/// Basic constructor.
+		/// Initializes a new instance of the ValidationException class.
 		/// </summary>
 		public ValidationException() : base() { }
 
 		/// <summary>
-		/// Constructor.
+		/// Initializes a new instance of the ValidationException class.
 		/// </summary>
 		/// <param name="message">Error message.</param>
 		public ValidationException(string message) : base(message) { }
 
 		/// <summary>
-		/// Constructor.
+		/// Initializes a new instance of the ValidationException class.
 		/// </summary>
 		/// <param name="info"></param>
 		/// <param name="context"></param>
 		protected ValidationException(SerializationInfo info, StreamingContext context) : base(info, context) { }
 
 		/// <summary>
-		/// Constructor.
+		/// Initializes a new instance of the ValidationException class.
 		/// </summary>
 		/// <param name="message"></param>
 		/// <param name="innerException"></param>

@@ -11,7 +11,7 @@ namespace ALite.ObjectValidator
 	/// <typeparam name="TKey">Type of the key.</typeparam>
 	/// <typeparam name="TValue">Type of the values stored.</typeparam>
 	[Serializable]
-	class DictionaryList<TKey, TValue> : ICollection<KeyValuePair<TKey, TValue>>
+	internal class DictionaryList<TKey, TValue> : ICollection<KeyValuePair<TKey, TValue>>
 	{
 		#region Members
 
@@ -25,11 +25,41 @@ namespace ALite.ObjectValidator
 		#region Constructors
 
 		/// <summary>
-		/// Constructor.
+		/// Initializes a new instance of the DictionaryList class.
 		/// </summary>
 		public DictionaryList()
 		{
 			mDictionary = new Dictionary<TKey, List<TValue>>();
+		}
+
+		#endregion
+
+		#region properties
+
+		/// <summary>
+		/// Gets the total number of values in the collection.
+		/// </summary>
+		public int Count
+		{
+			get
+			{
+				int itemCount = 0;
+
+				foreach (TKey key in mDictionary.Keys)
+				{
+					itemCount += mDictionary[key].Count;
+				}
+
+				return itemCount;
+			}
+		}
+
+		/// <summary>
+		/// Gets a value indicating whether the object is readonly.
+		/// </summary>
+		public bool IsReadOnly
+		{
+			get { return false; }
 		}
 
 		#endregion
@@ -98,7 +128,6 @@ namespace ALite.ObjectValidator
 			{
 				if (listItem.Equals(item.Value))
 				{
-
 					// Item found
 					return true;
 				}
@@ -111,37 +140,11 @@ namespace ALite.ObjectValidator
 		/// <summary>
 		/// Not implemented.
 		/// </summary>
-		/// <param name="array"></param>
-		/// <param name="arrayIndex"></param>
+		/// <param name="array">The array to copy to.</param>
+		/// <param name="arrayIndex">The index to copy to.</param>
 		public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
 		{
-			throw new Exception("The method or operation is not implemented.");
-		}
-
-		/// <summary>
-		/// Get the total number of values in the collection.
-		/// </summary>
-		public int Count
-		{
-			get
-			{
-				int itemCount = 0;
-
-				foreach (TKey key in mDictionary.Keys)
-				{
-					itemCount += mDictionary[key].Count;
-				}
-
-				return itemCount;
-			}
-		}
-
-		/// <summary>
-		/// Not implemented.
-		/// </summary>
-		public bool IsReadOnly
-		{
-			get { throw new Exception("The method or operation is not implemented."); }
+			throw new NotImplementedException("The method or operation is not implemented.");
 		}
 
 		/// <summary>
@@ -185,7 +188,6 @@ namespace ALite.ObjectValidator
 		/// <returns></returns>
 		public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
 		{
-			//return mDictionary.GetEnumerator();
 			throw new NotImplementedException("Not implemented");
 		}
 

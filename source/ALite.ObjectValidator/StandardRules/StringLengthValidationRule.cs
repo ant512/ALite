@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Reflection;
 
 namespace ALite.ObjectValidator.StandardRules
 {
@@ -26,32 +25,10 @@ namespace ALite.ObjectValidator.StandardRules
 
 		#endregion
 
-		#region Properties
-
-		/// <summary>
-		/// The maximum length of a valid string.
-		/// </summary>
-		public int MaxLength
-		{
-			get;
-			private set;
-		}
-
-		/// <summary>
-		/// The minimum length of a valid string.
-		/// </summary>
-		public int MinLength
-		{
-			get;
-			private set;
-		}
-
-		#endregion
-
 		#region Constructors
 
 		/// <summary>
-		/// Constructor.
+		/// Initializes a new instance of the StringLengthValidationRule class.
 		/// </summary>
 		/// <param name="minLength">The mimimum valid length of the string.</param>
 		/// <param name="maxLength">The maximum valid length of the string.</param>
@@ -60,6 +37,20 @@ namespace ALite.ObjectValidator.StandardRules
 			MaxLength = maxLength;
 			MinLength = minLength;
 		}
+
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the maximum length of a valid string.
+		/// </summary>
+		public int MaxLength { get; private set; }
+
+		/// <summary>
+		/// Gets the minimum length of a valid string.
+		/// </summary>
+		public int MinLength { get; private set; }
 
 		#endregion
 
@@ -77,13 +68,13 @@ namespace ALite.ObjectValidator.StandardRules
 
 			if (!ValidateMaxLength((string)value))
 			{
-				errorMessages.Add(String.Format(StringTooLongMessage, MaxLength));
+				errorMessages.Add(string.Format(StringTooLongMessage, MaxLength));
 				valid = false;
 			}
 
 			if (!ValidateMinLength((string)value))
 			{
-				errorMessages.Add(String.Format(StringTooShortMessage, MinLength));
+				errorMessages.Add(string.Format(StringTooShortMessage, MinLength));
 				valid = false;
 			}
 
@@ -98,7 +89,7 @@ namespace ALite.ObjectValidator.StandardRules
 		private bool ValidateMaxLength(string text)
 		{
 			if (text == null) return true;
-			return (MaxLength >= text.Length);
+			return MaxLength >= text.Length;
 		}
 
 		/// <summary>
@@ -110,7 +101,7 @@ namespace ALite.ObjectValidator.StandardRules
 		{
 			if (MinLength > 0 && text == null) return false;
 			if (text == null) return true;
-			return (MinLength <= text.Length);
+			return MinLength <= text.Length;
 		}
 
 		#endregion

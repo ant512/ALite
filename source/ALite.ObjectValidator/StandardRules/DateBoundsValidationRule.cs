@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Reflection;
 
 namespace ALite.ObjectValidator.StandardRules
 {
@@ -26,32 +25,10 @@ namespace ALite.ObjectValidator.StandardRules
 
 		#endregion
 
-		#region Properties
-
-		/// <summary>
-		/// The minimum valid value of the date.
-		/// </summary>
-		public DateTime MinValue
-		{
-			get;
-			private set;
-		}
-
-		/// <summary>
-		/// The minimum valid value of the date.
-		/// </summary>
-		public DateTime MaxValue
-		{
-			get;
-			private set;
-		}
-
-		#endregion
-
 		#region Constructors
 
 		/// <summary>
-		/// Constructor.
+		/// Initializes a new instance of the DateBoundsValidationRule class.
 		/// </summary>
 		/// <param name="minValue">The minimum value of the date.</param>
 		/// <param name="maxValue">The maximum value of the date.</param>
@@ -60,6 +37,20 @@ namespace ALite.ObjectValidator.StandardRules
 			MaxValue = maxValue;
 			MinValue = minValue;
 		}
+
+		#endregion
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the minimum valid value of the date.
+		/// </summary>
+		public DateTime MinValue { get; private set; }
+
+		/// <summary>
+		/// Gets the minimum valid value of the date.
+		/// </summary>
+		public DateTime MaxValue { get; private set; }
 
 		#endregion
 
@@ -77,13 +68,13 @@ namespace ALite.ObjectValidator.StandardRules
 
 			if (!ValidateMaxValue((DateTime)value))
 			{
-				errorMessages.Add(String.Format(DateTooLargeMessage, MaxValue));
+				errorMessages.Add(string.Format(DateTooLargeMessage, MaxValue));
 				valid = false;
 			}
 
 			if (!ValidateMinValue((DateTime)value))
 			{
-				errorMessages.Add(String.Format(DateTooSmallMessage, MinValue));
+				errorMessages.Add(string.Format(DateTooSmallMessage, MinValue));
 				valid = false;
 			}
 
@@ -97,7 +88,7 @@ namespace ALite.ObjectValidator.StandardRules
 		/// <returns>True if the date is valid; false if not.</returns>
 		private bool ValidateMaxValue(DateTime value)
 		{
-			return (MaxValue >= value);
+			return MaxValue >= value;
 		}
 
 		/// <summary>
@@ -107,7 +98,7 @@ namespace ALite.ObjectValidator.StandardRules
 		/// <returns>True if the date is valid; false if not.</returns>
 		private bool ValidateMinValue(DateTime value)
 		{
-			return (MinValue <= value);
+			return MinValue <= value;
 		}
 
 		#endregion

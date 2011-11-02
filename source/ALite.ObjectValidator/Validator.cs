@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Reflection;
 
 namespace ALite.ObjectValidator
 {
@@ -62,10 +61,10 @@ namespace ALite.ObjectValidator
 		}
 
 		/// <summary>
-		/// Add a function delegate as a custom rule
+		/// Add a function delegate as a custom rule.
 		/// </summary>
-		/// <param name="delegateFunction">The name of the property that the function validates</param>
-		/// <param name="propertyName">The function that will validate the property</param>
+		/// <param name="propertyName">The function that will validate the property.</param>
+		/// <param name="delegateFunction">The name of the property that the function validates.</param>
 		public void AddRule(string propertyName, ValidatorDelegate delegateFunction)
 		{
 			mDelegateRules.Add(delegateFunction, propertyName);
