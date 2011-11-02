@@ -63,6 +63,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DynamicStore.cs" />
     <Compile Include="IPersistable.cs" />
     <Compile Include="IPersistableCollection.cs" />
     <Compile Include="IPropertyStore.cs" />
