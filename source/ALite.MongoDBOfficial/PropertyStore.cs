@@ -68,8 +68,7 @@ namespace ALite.MongoDBOfficial
 		/// <param name="value">The value to store.</param>
 		public void SetProperty<T>(string name, T value)
 		{
-			var doc = mDocument as IDictionary<string, object>;
-			doc[name] = value;
+			mDocument.SetValue<T>(name, value);
 		}
 
 		/// <summary>
@@ -80,11 +79,7 @@ namespace ALite.MongoDBOfficial
 		/// <returns>The value of the property.</returns>
 		public T GetProperty<T>(string name)
 		{
-			var doc = mDocument as IDictionary<string, object>;
-
-			if (doc.ContainsKey(name)) return (T)doc[name];
-
-			return default(T);
+			return mDocument.GetValue<T>(name);
 		}
 
 		/// <summary>
@@ -93,9 +88,7 @@ namespace ALite.MongoDBOfficial
 		/// <param name="name">The name of the property to remove.</param>
 		public void RemoveProperty(string name)
 		{
-			var doc = mDocument as IDictionary<string, object>;
-
-			if (doc.ContainsKey(name)) doc.Remove(name);
+			mDocument.RemoveValue(name);
 		}
 
 		/// <summary>

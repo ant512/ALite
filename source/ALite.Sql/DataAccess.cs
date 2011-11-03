@@ -130,13 +130,13 @@ namespace ALite.Sql
 		/// data as a dynamic object.
 		/// </summary>
 		/// <returns>An expando object containing the first row of the retrieved data.</returns>
-		public dynamic FetchOne()
+		public DynamicStore FetchOne()
 		{
 			mConnection.Open();
 			mDataReader = mCommand.ExecuteReader();
 			if (mDataReader.Read())
 			{
-				return RecordToExpando(mDataReader);
+				return RecordToDynamic(mDataReader);
 			}
 
 			return null;
@@ -149,11 +149,11 @@ namespace ALite.Sql
 		/// data as a list of dynamic objects.
 		/// </summary>
 		/// <returns>An list of expando objects containing the retrieved data.</returns>
-		public List<dynamic> Fetch()
+		public List<DynamicStore> Fetch()
 		{
 			mConnection.Open();
 			mDataReader = mCommand.ExecuteReader();
-			return ToExpandoList(mDataReader);
+			return ToDynamicList(mDataReader);
 		}
 
 		/// <summary>
@@ -229,17 +229,16 @@ namespace ALite.Sql
 		/// </summary>
 		/// <param name="reader">The reader to extract the data from.</param>
 		/// <returns>An expando object representing the datareader row.</returns>
-		private static dynamic RecordToExpando(IDataReader reader)
+		private static DynamicStore RecordToDynamic(IDataReader reader)
 		{
-			dynamic expando = new ExpandoObject();
-			var dictionary = expando as IDictionary<string, object>;
+			var output = new DynamicStore();
 
 			for (int i = 0; i < reader.FieldCount; i++)
 			{
-				dictionary.Add(reader.GetName(i), reader.IsDBNull(i) ? null : reader[i]);
+				output.SetValue(reader.GetName(i), reader.IsDBNull(i) ? null : reader[i]);
 			}
 
-			return expando;
+			return output;
 		}
 
 		/// <summary>
@@ -247,13 +246,13 @@ namespace ALite.Sql
 		/// </summary>
 		/// <param name="reader">The reader to extract the data from.</param>
 		/// <returns>A list of expando objects representing the datareader's recordset.</returns>
-		private static List<dynamic> ToExpandoList(IDataReader reader)
+		private static List<DynamicStore> ToDynamicList(IDataReader reader)
 		{
-			var result = new List<dynamic>();
+			var result = new List<DynamicStore>();
 
 			while (reader.Read())
 			{
-				result.Add(RecordToExpando(reader));
+				result.Add(RecordToDynamic(reader));
 			}
 
 			return result;

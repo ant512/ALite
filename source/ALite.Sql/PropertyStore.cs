@@ -72,7 +72,7 @@ namespace ALite.Sql
 		/// <param name="value">The value to store.</param>
 		public void SetProperty<T>(string name, T value)
 		{
-			mDocument.SetProperty<T>(name, value);
+			mDocument.SetValue<T>(name, value);
 		}
 
 		/// <summary>
@@ -83,7 +83,7 @@ namespace ALite.Sql
 		/// <returns>The value of the property.</returns>
 		public T GetProperty<T>(string name)
 		{
-			return mDocument.GetProperty<T>(name);
+			return mDocument.GetValue<T>(name);
 		}
 
 		/// <summary>
@@ -92,7 +92,7 @@ namespace ALite.Sql
 		/// <param name="name">The name of the property to remove.</param>
 		public void RemoveProperty(string name)
 		{
-			mDocument.RemoveProperty(name);
+			mDocument.RemoveValue(name);
 		}
 
 		/// <summary>

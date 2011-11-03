@@ -69,41 +69,45 @@ namespace ALite.Core
 		}
 
 		/// <summary>
-		/// Check if the specified property exists.
+		/// Check if the specified value exists.
 		/// </summary>
-		/// <param name="property">The property to find.</param>
-		/// <returns>True if the property exists.</returns>
-		public bool HasProperty(string property)
+		/// <param name="name">The value to find.</param>
+		/// <returns>True if the value exists.</returns>
+		public bool HasValue(string name)
 		{
-			return mData.ContainsKey(property);
+			return mData.ContainsKey(name);
 		}
 
 		/// <summary>
-		/// Gets the value of the specified property.
+		/// Gets the value for the specified name.
 		/// </summary>
-		/// <typeparam name="T">The type of the property.</typeparam>
-		/// <param name="property">The name of the property.</param>
-		/// <returns>The value of the property.</returns>
-		public T GetProperty<T>(string property)
+		/// <typeparam name="T">The type of the value.</typeparam>
+		/// <param name="name">The name of the value.</param>
+		/// <returns>The value.</returns>
+		public T GetValue<T>(string name)
 		{
-			if (HasProperty(property)) return (T)mData[property];
+			if (HasValue(name)) return (T)mData[name];
 			return default(T);
 		}
 
 		/// <summary>
-		/// Sets the value of the specified property.
+		/// Sets the value for the specified name.
 		/// </summary>
-		/// <typeparam name="T">The type of the property.</typeparam>
-		/// <param name="property">The name of the property.</param>
-		/// <param name="value">The value of the property.</param>
-		public void SetProperty<T>(string property, T value)
+		/// <typeparam name="T">The type of the value.</typeparam>
+		/// <param name="name">The name of the value.</param>
+		/// <param name="value">The value.</param>
+		public void SetValue<T>(string name, T value)
 		{
-			mData[property] = value;
+			mData[name] = value;
 		}
 
-		public void RemoveProperty(string property)
+		/// <summary>
+		/// Removes the value from the store.
+		/// </summary>
+		/// <param name="name">The name of the value to remove.</param>
+		public void RemoveValue(string name)
 		{
-			if (mData.ContainsKey(property)) mData.Remove(property);
+			if (mData.ContainsKey(name)) mData.Remove(name);
 		}
 
 		public object Clone()
@@ -112,7 +116,7 @@ namespace ALite.Core
 
 			foreach (string key in mData.Keys)
 			{
-				result.SetProperty(key, mData[key]);
+				result.SetValue(key, mData[key]);
 			}
 
 			return result;
