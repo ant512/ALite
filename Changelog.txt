@@ -1,12 +1,17 @@
+2011-11-04  4.1.1
+
+ * [CHANGED] ALite.Core.PersistedObject.State can be set within subclasses.
+
+
 2011-11-03  4.1
 
  * [FIXED] Resolved numerous StyleCop and CA warnings.
 
- * [NEW] Added Alite.Core.DynamicStore class as a more versatile way of
+ * [NEW] Added ALite.Core.DynamicStore class as a more versatile way of
    storing data than a plain ExpandoObject.
  
- * [CHANGED] Alite.Sql.DataAccess returns DynamicStore objects instead of
+ * [CHANGED] ALite.Sql.DataAccess returns DynamicStore objects instead of
    ExpandoObjects.
   
- * [CHANGED] Alite.Sql.PropertyStore uses DynamicStore objects instead of
+ * [CHANGED] ALite.Sql.PropertyStore uses DynamicStore objects instead of
    ExpandoObjects.
