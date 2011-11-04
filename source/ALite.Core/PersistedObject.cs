@@ -52,6 +52,7 @@ namespace ALite.Core
 		public ModificationState State
 		{
 			get { return StateTracker.State; }
+			protected set { StateTracker.TransitionState(value); }
 		}
 
 		/// <summary>
