@@ -2,14 +2,14 @@
 <package >
   <metadata>
     <id>ALite</id>
-    <version>4.1.1</version>
+    <version>4.1.2</version>
     <authors>ant512</authors>
     <owners>ant512</owners>
     <licenseUrl>https://bitbucket.org/ant512/alite/src/tip/Licence.txt</licenseUrl>
     <projectUrl>https://bitbucket.org/ant512/alite</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Lightweight library for creating SQL-backed objects.</description>
-    <releaseNotes>Bugfixes and miscellaneous internal changes.</releaseNotes>
+    <releaseNotes>Added PersistedObject.SaveComplete() method for overriding.</releaseNotes>
     <copyright>Copyright 2011</copyright>
     <tags>alite</tags>
   </metadata>

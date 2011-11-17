@@ -122,8 +122,15 @@ namespace ALite.Core
 					case ModificationState.Deleted:
 						break;
 				}
+
+				SaveComplete();
 			}
 		}
+
+		/// <summary>
+		/// Called by Save().  Should be overridden in subclasses to provide extra save functionality.
+		/// </summary>
+		protected virtual void SaveComplete() { }
 
 		/// <summary>
 		/// Called by Create().  Should be overridden in subclasses to provide database insertion code.
