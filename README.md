@@ -1,5 +1,5 @@
-ALite V4.0
-==========
+ALite V4.1.2
+============
 
 ALite is a small, lightweight and unobtrusive library for constructing
 data-aware objects using the .NET platform.  It follows the active record
@@ -33,7 +33,7 @@ Links
  * [Development blog][1]
  * [Bitbucket page][2]
 
-  [1]: http://ant.simianzombie.com
+  [1]: http://simianzombie.com
   [2]: http://bitbucket.org/ant512/alite
 
 

@@ -1,3 +1,9 @@
+2011-11-17  4.1.2
+
+ * [NEW] Added PersistedObject.SaveComplete() method to allow subclasses to save
+   nested children even if the parent object hasn't changed.
+
+
 2011-11-04  4.1.1
 
  * [CHANGED] ALite.Core.PersistedObject.State can be set within subclasses.
