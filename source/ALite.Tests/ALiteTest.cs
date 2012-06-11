@@ -328,5 +328,29 @@ namespace ALite.Tests
 				Assert.Fail("Null strings are not handled correctly by the validation system.");
 			}
 		}
+
+		[TestMethod]
+		public void TestValidationTime()
+		{
+			var obj = new TestObject(1, "bob");
+
+			obj.ValidationTime = ValidationTimeType.ValidatesOnSave;
+
+			obj.Name = null;
+
+			try
+			{
+				obj.Save();
+				Assert.Fail("Validation exception should be thrown as null violates minimum length rule.");
+			}
+			catch (ValidationException)
+			{
+				// This is the expected behaviour
+			}
+			catch (NullReferenceException)
+			{
+				Assert.Fail("Null strings are not handled correctly by the validation system.");
+			}
+		}
 	}
 }

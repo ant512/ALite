@@ -6,9 +6,30 @@ using System.Text;
 using System.Dynamic;
 using ALite.ObjectValidator;
 
-[assembly:CLSCompliant(false)]
+[assembly: CLSCompliant(false)]
 namespace ALite.Core
 {
+	#region Enums
+
+	/// <summary>
+	/// All possible ways in which the object can validate its properties.
+	/// </summary>
+	public enum ValidationTimeType
+	{
+		/// <summary>
+		/// Validation of new property values is performed when the properties are set.
+		/// </summary>
+		ValidatesOnPropertyChange = 0,
+
+		/// <summary>
+		/// Validation of new property values is performed when the properties are set,
+		/// but an exception isn't raised for any violations until Save() is called.
+		/// </summary>
+		ValidatesOnSave = 1
+	}
+
+	#endregion
+
 	/// <summary>
 	/// Base class for objects that interact with the database.
 	/// </summary>
@@ -77,7 +98,27 @@ namespace ALite.Core
 		/// <summary>
 		/// Gets or sets the state tracker object.
 		/// </summary>
-		private ModificationStateTracker StateTracker {
+		private ModificationStateTracker StateTracker
+		{
+			get;
+			set;
+		}
+
+		/// <summary>
+		/// Gets or sets the time at which the object validates its properties.
+		/// </summary>
+		public ValidationTimeType ValidationTime
+		{
+			get;
+			set;
+		}
+
+		/// <summary>
+		/// Gets or sets the list of all current validation errors that have
+		/// arisen from setting properties.
+		/// </summary>
+		public Dictionary<string, List<string>> ValidationErrors
+		{
 			get;
 			set;
 		}
@@ -95,6 +136,8 @@ namespace ALite.Core
 			Properties = propertyStore;
 			Validator = new Validator();
 			StateTracker = new ModificationStateTracker();
+			ValidationTime = ValidationTimeType.ValidatesOnPropertyChange;
+			ValidationErrors = new Dictionary<string, List<string>>();
 		}
 
 		#endregion
@@ -110,6 +153,23 @@ namespace ALite.Core
 		{
 			lock (Properties)
 			{
+				if (ValidationTime == ValidationTimeType.ValidatesOnSave)
+				{
+					if (ValidationErrors.Count > 0)
+					{
+						// Validation failed - combine all error messages
+						string errorMessage = "";
+
+						foreach (string propertyName in ValidationErrors.Keys)
+						{
+							errorMessage += ConcatenateValidationErrorMessages<object>(ValidationErrors[propertyName], propertyName, GetProperty<object>(propertyName));
+						}
+
+						// Indicate the error by throwing an exception
+						throw new ObjectValidator.ValidationException(errorMessage);
+					}
+				}
+
 				switch (State)
 				{
 					case ModificationState.New:
@@ -364,11 +424,20 @@ namespace ALite.Core
 
 				if (!Validate(propertyName, errorMessages, newValue))
 				{
-					// Validation failed - combine all error messages
-					string errorMessage = ConcatenateValidationErrorMessages<T>(errorMessages, propertyName, newValue);
+					ValidationErrors[propertyName] = errorMessages;
 
-					// Indicate the error by throwing an exception
-					throw new ObjectValidator.ValidationException(errorMessage);
+					if (ValidationTime == ValidationTimeType.ValidatesOnPropertyChange)
+					{
+						// Validation failed - combine all error messages
+						string errorMessage = ConcatenateValidationErrorMessages<T>(errorMessages, propertyName, newValue);
+
+						// Indicate the error by throwing an exception
+						throw new ObjectValidator.ValidationException(errorMessage);
+					}
+				}
+				else
+				{
+					ValidationErrors.Remove(propertyName);
 				}
 
 				// Is the value different to the old value?
@@ -415,7 +484,7 @@ namespace ALite.Core
 			}
 
 			string valueString = newValue == null ? "null" : newValue.ToString();
-			
+
 			return String.Format(CultureInfo.InvariantCulture, "New value '{0}' for property '{1}' violates rules: {2}", valueString, propertyName, concatErrors.ToString());
 		}
 
