@@ -84,15 +84,6 @@ namespace ALite.Core
 		}
 
 		/// <summary>
-		/// Gets or sets the time at which the object validates its properties.
-		/// </summary>
-		public ValidationTimeType ValidationTime
-		{
-			get;
-			set;
-		}
-
-		/// <summary>
 		/// Gets or sets the list of all current validation errors that have
 		/// arisen from setting properties.
 		/// </summary>
@@ -115,7 +106,6 @@ namespace ALite.Core
 			Properties = propertyStore;
 			Validator = new Validator();
 			StateTracker = new ModificationStateTracker();
-			ValidationTime = ValidationTimeType.ValidatesOnPropertyChange;
 			ValidationErrors = new Dictionary<string, List<string>>();
 		}
 
@@ -132,21 +122,18 @@ namespace ALite.Core
 		{
 			lock (Properties)
 			{
-				if (ValidationTime == ValidationTimeType.ValidatesOnSave)
+				if (ValidationErrors.Count > 0)
 				{
-					if (ValidationErrors.Count > 0)
+					// Validation failed - combine all error messages
+					string errorMessage = "";
+
+					foreach (string propertyName in ValidationErrors.Keys)
 					{
-						// Validation failed - combine all error messages
-						string errorMessage = "";
-
-						foreach (string propertyName in ValidationErrors.Keys)
-						{
-							errorMessage += ConcatenateValidationErrorMessages<object>(ValidationErrors[propertyName], propertyName, GetProperty<object>(propertyName));
-						}
-
-						// Indicate the error by throwing an exception
-						throw new ObjectValidator.ValidationException(errorMessage);
+						errorMessage += ConcatenateValidationErrorMessages<object>(ValidationErrors[propertyName], propertyName, GetProperty<object>(propertyName));
 					}
+
+					// Indicate the error by throwing an exception
+					throw new ObjectValidator.ValidationException(errorMessage);
 				}
 
 				switch (State)
@@ -404,15 +391,6 @@ namespace ALite.Core
 				if (!Validate(propertyName, errorMessages, newValue))
 				{
 					ValidationErrors[propertyName] = errorMessages;
-
-					if (ValidationTime == ValidationTimeType.ValidatesOnPropertyChange)
-					{
-						// Validation failed - combine all error messages
-						string errorMessage = ConcatenateValidationErrorMessages<T>(errorMessages, propertyName, newValue);
-
-						// Indicate the error by throwing an exception
-						throw new ObjectValidator.ValidationException(errorMessage);
-					}
 				}
 				else
 				{

@@ -78,6 +78,23 @@ namespace ALite.Tests
 		{
 		}
 
+		private enum StateTestStates
+		{
+			FirstState = 0,
+			SecondState = 1,
+			ThirdState = 2
+		}
+
+		private class StateTest : ALite.Core.StateMachine<StateTestStates>
+		{
+			public StateTest()
+				: base(StateTestStates.FirstState)
+			{
+				AddTransition(StateTestStates.FirstState, StateTestStates.SecondState);
+				AddTransition(StateTestStates.SecondState, StateTestStates.ThirdState);
+			}
+		}
+
 		[TestMethod]
 		public void TestNewStatus()
 		{
@@ -174,10 +191,11 @@ namespace ALite.Tests
 		public void TestIdStandardRule()
 		{
 			var obj = new TestObject(2, "Bob");
+			obj.Id = 34;
 
 			try
 			{
-				obj.Id = 34;
+				obj.Save();
 				Assert.Fail("Exception should be thrown by the rule system.");
 			}
 			catch (ValidationException)
@@ -189,10 +207,11 @@ namespace ALite.Tests
 		public void TestNameStandardRule()
 		{
 			var obj = new TestObject(2, "Bob");
+			obj.Name = "A";
 
 			try
 			{
-				obj.Name = "A";
+				obj.Save();
 				Assert.Fail("Exception should be thrown by the rule system.");
 			}
 			catch (ValidationException)
@@ -204,10 +223,11 @@ namespace ALite.Tests
 		public void TestNameDelegateRule()
 		{
 			var obj = new TestObject(2, "Bob");
+			obj.Name = "Bert";
 
 			try
 			{
-				obj.Name = "Bert";
+				obj.Save();
 				Assert.Fail("Exception should be thrown by the rule system.");
 			}
 			catch (ValidationException)
@@ -313,10 +333,11 @@ namespace ALite.Tests
 		public void TestNullString()
 		{
 			var obj = new TestObject(1, "bob");
+			obj.Name = null;
 
 			try
 			{
-				obj.Name = null;
+				obj.Save();
 				Assert.Fail("Validation exception should be thrown as null violates minimum length rule.");
 			}
 			catch (ValidationException)
@@ -330,11 +351,9 @@ namespace ALite.Tests
 		}
 
 		[TestMethod]
-		public void TestValidationTime()
+		public void TestValidationCount()
 		{
 			var obj = new TestObject(1, "bob");
-
-			obj.ValidationTime = ValidationTimeType.ValidatesOnSave;
 
 			obj.Name = null;
 			obj.Id = -1;
@@ -352,24 +371,6 @@ namespace ALite.Tests
 			catch (NullReferenceException)
 			{
 				Assert.Fail("Null strings are not handled correctly by the validation system.");
-			}
-		}
-
-
-		private enum StateTestStates
-		{
-			FirstState = 0,
-			SecondState = 1,
-			ThirdState = 2
-		}
-
-		private class StateTest : ALite.Core.StateMachine<StateTestStates>
-		{
-			public StateTest()
-				: base(StateTestStates.FirstState)
-			{
-				AddTransition(StateTestStates.FirstState, StateTestStates.SecondState);
-				AddTransition(StateTestStates.SecondState, StateTestStates.ThirdState);
 			}
 		}
 
