@@ -1,3 +1,13 @@
+2012-??-??  4.1.3
+
+ * [NEW] Added PersistedObject.ValidationTime property to allow objects to be
+   validated at property set or save time.
+
+ * [NEW] Added StateMachine class.
+
+ * [CHANGED] ModificationStateTracker class inherits from StateMachine.
+
+
 2011-11-17  4.1.2
 
  * [NEW] Added PersistedObject.SaveComplete() method to allow subclasses to save
