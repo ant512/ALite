@@ -354,5 +354,42 @@ namespace ALite.Tests
 				Assert.Fail("Null strings are not handled correctly by the validation system.");
 			}
 		}
+
+
+		private enum StateTestStates
+		{
+			FirstState = 0,
+			SecondState = 1,
+			ThirdState = 2
+		}
+
+		private class StateTest : ALite.Core.StateMachine<StateTestStates>
+		{
+			public StateTest()
+				: base(StateTestStates.FirstState)
+			{
+				AddTransition(StateTestStates.FirstState, StateTestStates.SecondState);
+				AddTransition(StateTestStates.SecondState, StateTestStates.ThirdState);
+			}
+		}
+
+		[TestMethod]
+		public void TestStateMachine()
+		{
+			var stateMachine = new StateTest();
+			stateMachine.State = StateTestStates.SecondState;
+
+			Assert.AreEqual(StateTestStates.SecondState, stateMachine.State);
+
+			try
+			{
+				stateMachine.State = StateTestStates.FirstState;
+				Assert.Fail("Should not be able to transition from second to first state.");
+			}
+			catch (ArgumentException)
+			{
+				// Expected behaviour
+			}
+		}
 	}
 }

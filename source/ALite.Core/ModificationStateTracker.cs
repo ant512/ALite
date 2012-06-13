@@ -39,90 +39,28 @@ namespace ALite.Core
 	/// State machine that describes all possible states of a DBObject.
 	/// </summary>
 	[Serializable]
-	class ModificationStateTracker
+	class ModificationStateTracker : StateMachine<ModificationState>
 	{
 		#region Constructors
 
 		/// <summary>
 		/// Constructor.
 		/// </summary>
-		public ModificationStateTracker()
-		{
-			State = ModificationState.New;
-		}
+		public ModificationStateTracker() : this(ModificationState.New) { }
 
 		/// <summary>
 		/// Constructor.  Creates a state tracker with an initial state.
 		/// </summary>
 		/// <param name="initialState">The initial state for the new tracker.</param>
 		public ModificationStateTracker(ModificationState initialState)
+			: base(initialState)
 		{
-			State = initialState;
-		}
-
-		#endregion
-
-		#region Properties
-
-		/// <summary>
-		/// Gets or sets the state of the object.
-		/// </summary>
-		public ModificationState State
-		{
-			get;
-			private set;
-		}
-
-		#endregion
-
-		#region Methods
-
-		/// <summary>
-		/// Transition from the current state to the specified state.  Protects against
-		/// illegal transitions, such as any state to "New" (only new, unsaved objects
-		/// are new) or "Deleted" to any state (deleted objects cannot be modified).
-		/// Throws an ArgumentException if an illegal transition is attempted.
-		/// </summary>
-		/// <param name="newState">The new state to switch to.</param>
-		public void TransitionState(ModificationState newState)
-		{
-			switch (newState)
-			{
-				case ModificationState.Deleted:
-					State = ModificationState.Deleted;
-					break;
-
-				case ModificationState.Modified:
-					switch (State)
-					{
-						case ModificationState.Modified:
-						case ModificationState.New:
-							break;
-						case ModificationState.Unmodified:
-							State = ModificationState.Modified;
-							break;
-						case ModificationState.Deleted:
-							throw new ArgumentException("Cannot alter deleted objects.");
-					}
-					break;
-
-				case ModificationState.New:
-					throw new ArgumentException("Objects cannot become new again.");
-
-				case ModificationState.Unmodified:
-					switch (State)
-					{
-						case ModificationState.Modified:
-						case ModificationState.New:
-							State = ModificationState.Unmodified;
-							break;
-						case ModificationState.Unmodified:
-							break;
-						case ModificationState.Deleted:
-							throw new ArgumentException("Cannot alter deleted objects.");
-					}
-					break;
-			}
+			AddTransition(ModificationState.New, ModificationState.Deleted);
+			AddTransition(ModificationState.New, ModificationState.Unmodified);
+			AddTransition(ModificationState.Modified, ModificationState.Unmodified);
+			AddTransition(ModificationState.Modified, ModificationState.Deleted);
+			AddTransition(ModificationState.Unmodified, ModificationState.Modified);
+			AddTransition(ModificationState.Unmodified, ModificationState.Deleted);
 		}
 
 		#endregion

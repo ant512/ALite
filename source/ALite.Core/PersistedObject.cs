@@ -52,7 +52,7 @@ namespace ALite.Core
 		public ModificationState State
 		{
 			get { return StateTracker.State; }
-			protected set { StateTracker.TransitionState(value); }
+			protected set { StateTracker.State = value; }
 		}
 
 		/// <summary>
@@ -199,7 +199,7 @@ namespace ALite.Core
 			lock (Properties)
 			{
 				CreateData();
-				StateTracker.TransitionState(ModificationState.Unmodified);
+				StateTracker.State = ModificationState.Unmodified;
 				OnCreated();
 			}
 		}
@@ -212,7 +212,7 @@ namespace ALite.Core
 			lock (Properties)
 			{
 				UpdateData();
-				StateTracker.TransitionState(ModificationState.Unmodified);
+				StateTracker.State = ModificationState.Unmodified;
 				OnUpdated();
 			}
 		}
@@ -225,7 +225,7 @@ namespace ALite.Core
 			lock (Properties)
 			{
 				FetchData();
-				StateTracker.TransitionState(ModificationState.Unmodified);
+				StateTracker.State = ModificationState.Unmodified;
 				OnFetched();
 			}
 		}
@@ -238,7 +238,7 @@ namespace ALite.Core
 			lock (Properties)
 			{
 				DeleteData();
-				StateTracker.TransitionState(ModificationState.Deleted);
+				StateTracker.State = ModificationState.Deleted;
 				OnDeleted();
 			}
 		}
@@ -423,7 +423,10 @@ namespace ALite.Core
 				if ((oldValue == null) || (!oldValue.Equals((T)newValue)))
 				{
 					Properties.SetProperty<T>(propertyName, newValue);
-					StateTracker.TransitionState(ModificationState.Modified);
+
+					// We don't want to change the state to modified if the object is new,
+					// because we'll then treat it as existing-but-changed instead of new.
+					if (State != ModificationState.New) StateTracker.State = ModificationState.Modified;
 					OnPropertyChanged(propertyName);
 				}
 			}
