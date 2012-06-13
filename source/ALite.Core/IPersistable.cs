@@ -35,7 +35,7 @@ namespace ALite.Core
 	/// <summary>
 	/// Interface that describes the persistable objects.
 	/// </summary>
-	public interface IPersistable : IRevertible, INotifyPropertyChanged
+	public interface IPersistable : IRevertible, IValidateable, INotifyPropertyChanged
 	{
 		/// <summary>
 		/// Object deleted event.

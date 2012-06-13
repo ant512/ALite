@@ -9,27 +9,6 @@ using ALite.ObjectValidator;
 [assembly: CLSCompliant(false)]
 namespace ALite.Core
 {
-	#region Enums
-
-	/// <summary>
-	/// All possible ways in which the object can validate its properties.
-	/// </summary>
-	public enum ValidationTimeType
-	{
-		/// <summary>
-		/// Validation of new property values is performed when the properties are set.
-		/// </summary>
-		ValidatesOnPropertyChange = 0,
-
-		/// <summary>
-		/// Validation of new property values is performed when the properties are set,
-		/// but an exception isn't raised for any violations until Save() is called.
-		/// </summary>
-		ValidatesOnSave = 1
-	}
-
-	#endregion
-
 	/// <summary>
 	/// Base class for objects that interact with the database.
 	/// </summary>

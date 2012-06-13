@@ -337,6 +337,7 @@ namespace ALite.Tests
 			obj.ValidationTime = ValidationTimeType.ValidatesOnSave;
 
 			obj.Name = null;
+			obj.Id = -1;
 
 			try
 			{
@@ -346,6 +347,7 @@ namespace ALite.Tests
 			catch (ValidationException)
 			{
 				// This is the expected behaviour
+				Assert.AreEqual(2, obj.ValidationErrors.Count);
 			}
 			catch (NullReferenceException)
 			{
