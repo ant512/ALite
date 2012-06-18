@@ -1,4 +1,4 @@
-ALite V4.1.2
+ALite V4.1.3
 ============
 
 ALite is a small, lightweight and unobtrusive library for constructing
