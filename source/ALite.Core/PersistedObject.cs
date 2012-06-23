@@ -379,12 +379,6 @@ namespace ALite.Core
 				// Get the existing value from the document
 				T oldValue = GetProperty<T>(propertyName);
 
-				// Are we trying to set a null value to null?
-				if ((oldValue == null) && (newValue == null))
-				{
-					return;
-				}
-
 				// Prepare a list in which to store validation error messages
 				List<string> errorMessages = new List<string>();
 
