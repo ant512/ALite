@@ -122,19 +122,7 @@ namespace ALite.Core
 		{
 			lock (Properties)
 			{
-				if (ValidationErrors.Count > 0)
-				{
-					// Validation failed - combine all error messages
-					string errorMessage = "";
-
-					foreach (string propertyName in ValidationErrors.Keys)
-					{
-						errorMessage += ConcatenateValidationErrorMessages<object>(ValidationErrors[propertyName], propertyName, GetProperty<object>(propertyName));
-					}
-
-					// Indicate the error by throwing an exception
-					throw new ObjectValidator.ValidationException(errorMessage);
-				}
+				if (ValidationErrors.Count > 0) ThrowValidationErrors();
 
 				switch (State)
 				{
@@ -478,6 +466,24 @@ namespace ALite.Core
 		protected void AddRule(string propertyName, ValidatorDelegate delegateFunction)
 		{
 			Validator.AddRule(propertyName, delegateFunction);
+		}
+
+		/// <summary>
+		/// Concatenates all validation errors into a single string and throws it as a 
+		/// validation exception.
+		/// </summary>
+		private void ThrowValidationErrors()
+		{
+			if (ValidationErrors.Count == 0) return;
+
+			string errorMessage = "";
+
+			foreach (string propertyName in ValidationErrors.Keys)
+			{
+				errorMessage += ConcatenateValidationErrorMessages<object>(ValidationErrors[propertyName], propertyName, GetProperty<object>(propertyName));
+			}
+
+			throw new ObjectValidator.ValidationException(errorMessage);
 		}
 
 		#endregion
