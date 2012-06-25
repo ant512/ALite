@@ -36,7 +36,7 @@ namespace ALite.Core
 	#endregion
 
 	/// <summary>
-	/// State machine that describes all possible states of a DBObject.
+	/// State machine that describes all possible states of a PersistedObject.
 	/// </summary>
 	[Serializable]
 	class ModificationStateTracker : StateMachine<ModificationState>
