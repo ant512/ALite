@@ -9,10 +9,10 @@ namespace ALite.ObjectValidator
 	/// <summary>
 	/// Template for validation delegates.
 	/// </summary>
-	/// <param name="errorMessages">List of error message populated if the value is invalid.</param>
 	/// <param name="value">The new value of the property.</param>
+	/// <param name="errorMessages">List of error message populated if the value is invalid.</param>
 	/// <returns>True if valid, false if not.</returns>
-	public delegate bool ValidatorDelegate(List<string> errorMessages, object value);
+	public delegate bool ValidatorDelegate(object value, List<string> errorMessages);
 
 	#endregion
 
@@ -46,7 +46,7 @@ namespace ALite.ObjectValidator
 				// all delegates can run and any errors can be remembered.
 				foreach (ValidatorDelegate subrule in rule.GetInvocationList())
 				{
-					if (!subrule(errorMessages, newValue))
+					if (!subrule(newValue, errorMessages))
 					{
 						valid = false;
 					}

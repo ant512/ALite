@@ -33,7 +33,7 @@ namespace ALite.Tests
 
 				AddRule("Id", new ObjectValidator.StandardRules.IntegerBoundsValidationRule(0, 10));
 				AddRule("Name", new ObjectValidator.StandardRules.StringLengthValidationRule(3, 8));
-				AddRule("Name", delegate(List<string> errorMessages, object value)
+				AddRule("Name", (value, errorMessages) =>
 				{
 					if ((string)value == "Bert")
 					{
