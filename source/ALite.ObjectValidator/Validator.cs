@@ -67,7 +67,7 @@ namespace ALite.ObjectValidator
 		/// <param name="delegateFunction">The name of the property that the function validates.</param>
 		public void AddRule(string propertyName, ValidatorDelegate delegateFunction)
 		{
-			mDelegateRules.Add(delegateFunction, propertyName);
+			mDelegateRules.Add(propertyName, delegateFunction);
 		}
 
 		#endregion

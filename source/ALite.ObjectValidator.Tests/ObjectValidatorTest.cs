@@ -28,5 +28,26 @@ namespace ALite.Tests
 				Assert.Fail("String validation fails when string is null.");
 			}
 		}
+
+		[TestMethod]
+		public void TestDelegateValidation()
+		{
+			var obj = new Validator();
+			obj.AddRule("name", (value, errors) =>
+			{
+				if ((string)value == "Bob")
+				{
+					errors.Add("Name cannot be 'Bob'");
+					return false;
+				}
+				return true;
+			});
+
+			var errorMessages = new List<string>();
+
+			var pass = obj.Validate<string>("name", errorMessages, "Bob");
+
+			Assert.IsFalse(pass, "Name cannot be 'Bob'");
+		}
 	}
 }

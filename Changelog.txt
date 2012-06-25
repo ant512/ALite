@@ -2,6 +2,14 @@
 
  * [CHANGED] Removed null check from PersistedObject.SetProperty().
 
+ * [CHANGED] Swapped order of validation delegate arguments for consistency.
+
+ * [CHANGED] DelegateRuleCollection includes a dictionary object instead of
+   inheriting from the Dictionary class.
+
+ * [CHANGED] Swapped order of DelegateRuleCollection method arguments for
+   consistency.
+
 
 2012-06-18  4.1.3
 

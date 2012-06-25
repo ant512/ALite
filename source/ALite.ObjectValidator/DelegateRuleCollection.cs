@@ -17,11 +17,13 @@ namespace ALite.ObjectValidator
 	#endregion
 
 	/// <summary>
-	/// Collection of validation delegates.  Used by the DBObject to store all custom validation functions.
+	/// Collection of validation delegates.  Used by the PersistedObject to store all custom validation functions.
 	/// </summary>
 	[Serializable]
-	internal class DelegateRuleCollection : Dictionary<string, ValidatorDelegate>
+	internal class DelegateRuleCollection
 	{
+		private Dictionary<string, ValidatorDelegate> mDictionary = new Dictionary<string, ValidatorDelegate>();
+
 		#region Methods
 
 		/// <summary>
@@ -37,10 +39,10 @@ namespace ALite.ObjectValidator
 			bool valid = true;
 
 			// Are there any rules for this property?
-			if (this.ContainsKey(propertyName))
+			if (mDictionary.ContainsKey(propertyName))
 			{
 				// Locate all rules
-				ValidatorDelegate rule = this[propertyName];
+				ValidatorDelegate rule = mDictionary[propertyName];
 
 				// Extract all method invocations from delegate - must do this so
 				// all delegates can run and any errors can be remembered.
@@ -60,20 +62,20 @@ namespace ALite.ObjectValidator
 		/// <summary>
 		/// Add a rule.
 		/// </summary>
-		/// <param name="rule">The delegate to perform the validation.</param>
 		/// <param name="propertyName">The property to validate.</param>
-		public void Add(ValidatorDelegate rule, string propertyName)
+		/// <param name="rule">The delegate to perform the validation.</param>
+		public void Add(string propertyName, ValidatorDelegate rule)
 		{
 			// Do we already have a delegate for this rule?
-			if (this.ContainsKey(propertyName))
+			if (mDictionary.ContainsKey(propertyName))
 			{
 				// Use multicasting to add new function to existing delegate
-				this[propertyName] += rule;
+				mDictionary[propertyName] += rule;
 			}
 			else
 			{
 				// Add a new rule to the dictionary
-				base.Add(propertyName, rule);
+				mDictionary.Add(propertyName, rule);
 			}
 		}
 
