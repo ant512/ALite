@@ -6,11 +6,11 @@
     <ProductVersion>
     </ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{284E1041-7398-43E5-82DA-819616F5C759}</ProjectGuid>
+    <ProjectGuid>{4948CB0A-17E7-4EF0-A5F7-EEA8C71CD765}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ALite.Tests</RootNamespace>
-    <AssemblyName>ALite.Tests</AssemblyName>
+    <RootNamespace>ALite.ObjectValidator.Tests</RootNamespace>
+    <AssemblyName>ALite.ObjectValidator.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -31,28 +31,13 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>
-    </DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-    <Reference Include="MongoDB">
-      <HintPath>..\..\lib\MongoSamus\MongoDB.dll</HintPath>
-    </Reference>
-    <Reference Include="MongoDB.Bson, Version=1.1.0.4184, Culture=neutral, PublicKeyToken=f686731cfb9cc103, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\MongoOfficial\MongoDB.Bson.dll</HintPath>
-    </Reference>
-    <Reference Include="MongoDB.Driver, Version=1.1.0.4184, Culture=neutral, PublicKeyToken=f686731cfb9cc103, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\MongoOfficial\MongoDB.Driver.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
-    <Reference Include="System.Data" />
-    <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
     <CodeAnalysisDependentAssemblyPaths Condition=" '$(VS100COMNTOOLS)' != '' " Include="$(VS100COMNTOOLS)..\IDE\PrivateAssemblies">
@@ -60,8 +45,7 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MongoTest.cs" />
-    <Compile Include="OfficialMongoTest.cs" />
+    <Compile Include="ObjectValidatorTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -69,21 +53,9 @@
       <Project>{9F4B22E0-953A-4BC3-A760-781C0FA092C2}</Project>
       <Name>ALite.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ALite.MongoDBOfficial\ALite.MongoDBOfficial.csproj">
-      <Project>{E913BF6E-C864-44B6-AA26-3E01EC254340}</Project>
-      <Name>ALite.MongoDBOfficial</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ALite.MongoDBSamus\ALite.MongoDBSamus.csproj">
-      <Project>{31570412-8368-47C3-8131-7E0E51CBD350}</Project>
-      <Name>ALite.MongoDBSamus</Name>
-    </ProjectReference>
     <ProjectReference Include="..\ALite.ObjectValidator\ALite.ObjectValidator.csproj">
       <Project>{25A43937-5740-433F-87D9-B77D526F4784}</Project>
       <Name>ALite.ObjectValidator</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ALite.Sql\ALite.Sql.csproj">
-      <Project>{DC4E4F9E-8783-4CD0-87BE-BFF7F899AAE2}</Project>
-      <Name>ALite.Sql</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
