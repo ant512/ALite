@@ -84,6 +84,8 @@ namespace ALite.Core
 		/// <param name="state">The state to transition to.</param>
 		private void TransitionState(T state)
 		{
+			if (state.Equals(mState)) return;
+
 			HashSet<T> validTransitions = mTransitionTable[mState];
 
 			if (validTransitions.Contains(state))

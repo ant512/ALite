@@ -122,12 +122,13 @@ namespace ALite.Tests
 		}
 
 		[TestMethod]
-		public void TestDirtyStatus()
+		public void TestModifiedStatus()
 		{
 			var obj = new TestObject(2, "Bob");
 			obj.Save();
 
 			obj.Id = 5;
+			obj.Id = 6;
 
 			Assert.AreEqual(ModificationState.Modified, obj.State);
 		}
