@@ -9,7 +9,7 @@
     <projectUrl>https://bitbucket.org/ant512/alite</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Lightweight library for creating SQL-backed objects.</description>
-    <releaseNotes>Validation enforcement occurs at save time.</releaseNotes>
+    <releaseNotes>Setting new value for modified property works correctly.</releaseNotes>
     <copyright>Copyright 2012</copyright>
     <tags>alite</tags>
   </metadata>
